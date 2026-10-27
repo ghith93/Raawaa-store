@@ -1,0 +1,6 @@
+# مخرجات بناء ثقيلة غير لازمة للنشر (يمكن إعادة توليدها بالأوامر في docs/run-and-deploy.md)
+assets/img/bottles/
+.cache/
+node_modules/
+__pycache__/
+*.pyc

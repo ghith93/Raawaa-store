@@ -1,0 +1,2 @@
+
+318750ed7aa55407fb51e40dd276717557e16c87	{"key":"make-fetch-happen:request-cache:https://registry.npmjs.org/-/ping?write=true","integrity":"sha512-J8dGcK23UHX60FjVzq97IMTneGyDuuijL2Jvl4KvNMmjPCBG72D9Knh403jin+yFGAa72aZ4ePOp8c2kgwdj/Q==","time":1793137676285,"size":2,"metadata":{"time":1793137676277,"url":"https://registry.npmjs.org/-/ping?write=true","reqHeaders":{},"resHeaders":{"content-type":"application/json","date":"Tue, 27 Oct 2026 21:47:56 GMT"},"options":{"compress":true}}}

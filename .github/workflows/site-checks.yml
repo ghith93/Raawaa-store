@@ -1,0 +1,115 @@
+name: Site checks
+
+# لا ينشر هذا السير العمل الموقع ولا يدمج شيئًا؛ يفحص الملفات والوصولية فقط.
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: site-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: فحص الملفات و JavaScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: فحص بناء JavaScript
+        run: |
+          node --check js/config.js
+          node --check js/cart.js
+
+      - name: الفحص الآلي للموقع
+        run: node scripts/check-site.mjs
+
+      - name: عرض الأدوات المستخدمة (بلا نشر)
+        run: echo "لا توجد خطوة نشر في هذا السير العمل."
+
+  accessibility:
+    name: تدقيق الإتاحة (axe-core · WCAG 2.1 AA)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: تثبيت Playwright و axe-core
+        run: |
+          python -m pip install --quiet playwright
+          python -m playwright install --with-deps chromium
+          npm install --silent --no-audit --no-fund axe-core
+          test -f node_modules/axe-core/axe.min.js && echo "axe-core جاهز: $(pwd)/node_modules/axe-core/axe.min.js"
+
+      - name: تشغيل خادم محلي
+        run: |
+          python -m http.server 8080 --bind 127.0.0.1 &
+          sleep 2
+          curl -sf -o /dev/null http://127.0.0.1:8080/index.html
+
+      - name: تدقيق الإتاحة وقياس الوزن
+        env:
+          AXE_PATH: ${{ github.workspace }}/node_modules/axe-core/axe.min.js
+        run: python scripts/a11y-audit.py --base http://127.0.0.1:8080
+
+      - name: رفع تقرير الإتاحة
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a11y-report
+          path: docs/a11y-report.json
+          if-no-files-found: warn
+
+  browser:
+    name: اختبار المتصفح الوظيفي
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: تثبيت Playwright
+        run: |
+          python -m pip install --quiet playwright
+          python -m playwright install --with-deps chromium
+
+      - name: تشغيل خادم محلي
+        run: |
+          python -m http.server 8080 --bind 127.0.0.1 &
+          sleep 2
+          curl -sf -o /dev/null http://127.0.0.1:8080/index.html
+
+      - name: اختبار السلة وواتساب والتجاوب
+        run: python scripts/browser-test.py --base http://127.0.0.1:8080

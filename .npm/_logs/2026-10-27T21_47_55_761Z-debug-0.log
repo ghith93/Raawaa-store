@@ -1,0 +1,21 @@
+0 verbose cli /usr/bin/node /usr/bin/npm
+1 info using npm@10.8.2
+2 info using node@v20.20.2
+3 silly config load:file:/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/tmp/.npmrc
+5 silly config load:file:/home/user/.npmrc
+6 silly config load:file:/usr/etc/npmrc
+7 verbose title npm ping
+8 verbose argv "ping"
+9 verbose logfile logs-max:10 dir:/home/user/.npm/_logs/2026-10-27T21_47_55_761Z-
+10 verbose logfile /home/user/.npm/_logs/2026-10-27T21_47_55_761Z-debug-0.log
+11 notice PING https://registry.npmjs.org/
+12 silly logfile done cleaning log files
+13 http fetch GET 200 https://registry.npmjs.org/-/ping?write=true 287ms (cache miss)
+14 notice PONG 289ms
+15 verbose cwd /tmp
+16 verbose os Linux 6.1.158+
+17 verbose node v20.20.2
+18 verbose npm  v10.8.2
+19 verbose exit 0
+20 info ok
