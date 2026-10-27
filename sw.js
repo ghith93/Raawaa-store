@@ -14,8 +14,8 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'rawaa-v1';
-const RUNTIME = 'rawaa-runtime-v1';
+const CACHE_VERSION = 'rawaa-v2';
+const RUNTIME = 'rawaa-runtime-v2';
 
 /** الأصول التي يجب أن تعمل بلا إنترنت */
 const CORE = [
@@ -28,7 +28,16 @@ const CORE = [
   './js/cart.js',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
-  './assets/icons/apple-touch-icon.png'
+  './assets/icons/apple-touch-icon.png',
+  './assets/icons/favicon-64.png',
+  './assets/favicon.svg',
+  './assets/fonts/almarai-400.subset.woff2',
+  './assets/fonts/almarai-700.subset.woff2',
+  './assets/fonts/amiri-400.subset.woff2',
+  './assets/fonts/almarai-400-latin.subset.woff2',
+  './assets/fonts/almarai-700-latin.subset.woff2',
+  './assets/fonts/amiri-400-latin.subset.woff2',
+  './assets/fonts/cormorant-500-latin.subset.woff2'
 ];
 
 self.addEventListener('install', (event) => {

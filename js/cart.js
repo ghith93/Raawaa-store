@@ -315,6 +315,13 @@
       renderSummary(summary);
     }
 
+    // زر «مشاركة السلة»
+    if (el.shareBtn) {
+      var shareUrl = summary.count > 0 ? cartShareLink() : '';
+      el.shareBtn.hidden = !shareUrl;
+      if (shareUrl) el.shareBtn.setAttribute('data-share-url', shareUrl);
+    }
+
     // شريط السلة اللاصق على الهاتف
     if (el.stickyBar) {
       if (!isEmpty && !(el.dialog && el.dialog.open)) {
@@ -610,6 +617,7 @@
     }
 
     cart[id] = clampQty(current + 1);
+    saveCart();
     renderCart();
 
     if (button) {
@@ -645,6 +653,7 @@
     var next = clampQty(cart[id] + delta);
     if (next === cart[id]) return;
     cart[id] = next;
+    saveCart();
     renderCart();
 
     var product = getProduct(id);
@@ -657,6 +666,7 @@
     var product = getProduct(id);
     if (!cart[id]) return;
     delete cart[id];
+    saveCart();
     renderCart();
     if (product) announce('تمت إزالة الحجم ' + product.sizeLabel + ' من السلة.');
     var trigger = el.items.querySelector('[data-remove-item="' + id + '"]');
@@ -749,6 +759,28 @@
 
   function hideFallback() {
     if (el.fallback) el.fallback.hidden = true;
+  }
+
+  /** مشاركة السلة: Web Share API على الآيفون، وإلا نسخ الرابط. */
+  function shareCart(button) {
+    var url = button.getAttribute('data-share-url');
+    if (!url) return;
+    var text = 'طلب من رواء — افتحي الرابط لترى نفس السلة:';
+
+    if (navigator.share) {
+      navigator.share({ title: 'سلة رواء', text: text, url: url })
+        .catch(function () { /* أُلغيت المشاركة — ليس خطأ */ });
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(function () {
+        announce('تم نسخ رابط السلة.');
+      }, function () {
+        announce('انسخي الرابط يدويًا: ' + url);
+      });
+      return;
+    }
+    announce('انسخي الرابط يدويًا: ' + url);
   }
 
   function copyNumber(button) {
@@ -878,6 +910,63 @@
     return base + '?offer=' + encodeURIComponent(methodId) + '#payment';
   }
 
+  /* ------------------------------ حفظ ومشاركة السلة ------------------------------ */
+
+  /**
+   * نحفظ السلة في sessionStorage فقط (تُمسَح عند إغلاق التبويب).
+   * السبب: الشبكة في سوريا متقطّعة، وفقدان الاختيار عند تحديث الصفحة يفقد طلبًا.
+   * لا يُرسَل شيء لأي جهة، ولا يبقى بعد إغلاق التبويب، ولا كوكيز.
+   */
+  var STORAGE_KEY = 'rawaa:cart:v1';
+
+  function saveCart() {
+    try {
+      var plain = {};
+      Object.keys(cart).forEach(function (k) { plain[k] = cart[k]; });
+      window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(plain));
+    } catch (error) { /* التخزين قد يكون معطّلًا — الموقع يعمل بدونه */ }
+  }
+
+  function restoreCart() {
+    try {
+      var raw = window.sessionStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      Object.keys(data).forEach(function (id) {
+        var qty = parseInt(data[id], 10);
+        if (getProduct(id) && qty > 0) cart[id] = clampQty(qty);
+      });
+    } catch (error) { /* تجاهل أي بيانات تالفة */ }
+  }
+
+  /**
+   * رابط سلة قابل للمشاركة: ?cart=serum-30x1,serum-50x2
+   * يفيد الزبونة التي تريد إرسال طلبها لصديقة، أو نشره في مجموعة.
+   * يُقرأ بأمان: أي معرّف غير معروف يُتجاهل.
+   */
+  function loadCartFromUrl() {
+    var params;
+    try { params = new URLSearchParams(window.location.search); } catch (e) { return; }
+    var raw = params.get('cart');
+    if (!raw) return;
+    raw.split(',').forEach(function (chunk) {
+      var parts = chunk.split('x');
+      if (parts.length !== 2) return;
+      var id = parts[0].trim();
+      var qty = parseInt(parts[1], 10);
+      if (getProduct(id) && qty > 0) cart[id] = clampQty(qty);
+    });
+  }
+
+  /** يبني رابط مشاركة للسلة الحالية. */
+  function cartShareLink() {
+    var entries = cartEntries();
+    if (!entries.length) return '';
+    var payload = entries.map(function (e) { return e.product.id + 'x' + e.qty; }).join(',');
+    var base = window.location.href.split('?')[0].split('#')[0];
+    return base + '?cart=' + encodeURIComponent(payload) + '#products';
+  }
+
   function init() {
     el.grid = document.querySelector('[data-product-grid]');
     el.toastRegion = document.querySelector('[data-toast-region]');
@@ -901,6 +990,7 @@
     el.deliveryRow = document.querySelector('[data-row-delivery]');
     el.deliveryValue = document.querySelector('[data-cart-delivery]');
     el.totalNote = document.querySelector('[data-cart-total-note]');
+    el.shareBtn = document.querySelector('[data-cart-share]');
     el.stickyBar = document.querySelector('[data-sticky-bar]');
     el.stickyCount = document.querySelector('[data-sticky-count]');
     el.stickyTotal = document.querySelector('[data-sticky-total]');
@@ -911,6 +1001,8 @@
     if (!CONFIG || !el.grid) return;
 
     applyOfferFromUrl();
+    loadCartFromUrl();
+    restoreCart();
     renderProducts();
     renderPaymentCards();
     renderCart();
@@ -943,6 +1035,11 @@
       if (target.hasAttribute('data-cart-checkout')) {
         event.preventDefault();
         checkout();
+        return;
+      }
+      if (target.hasAttribute('data-cart-share')) {
+        event.preventDefault();
+        shareCart(target);
         return;
       }
       if (target.hasAttribute('data-cart-copy-number')) {
@@ -1060,6 +1157,10 @@
     pricing: pricing,
     setMethod: setMethod,
     offerLink: offerLink,
+    cartShareLink: cartShareLink,
+    loadCartFromUrl: loadCartFromUrl,
+    saveCart: saveCart,
+    restoreCart: restoreCart,
     applyOfferFromUrl: applyOfferFromUrl,
     getMethod: function (id) { return getMethod(id); },
     methods: availableMethods,

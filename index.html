@@ -38,6 +38,110 @@
 <link rel="stylesheet" href="css/styles.css">
 <script src="js/config.js" defer></script>
 <script src="js/cart.js" defer></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://ghith93.github.io/Raawaa-store/#org",
+      "name": "RAWAA | رواء",
+      "url": "https://ghith93.github.io/Raawaa-store/",
+      "logo": "https://ghith93.github.io/Raawaa-store/assets/icons/icon-512.png",
+      "areaServed": {
+        "@type": "Country",
+        "name": "Syria"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "الرقة",
+        "addressCountry": "SY"
+      },
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "contactType": "sales",
+          "telephone": "+963997310856",
+          "availableLanguage": [
+            "ar"
+          ]
+        }
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://ghith93.github.io/Raawaa-store/#website",
+      "url": "https://ghith93.github.io/Raawaa-store/",
+      "name": "RAWAA | رواء",
+      "inLanguage": "ar",
+      "publisher": {
+        "@id": "https://ghith93.github.io/Raawaa-store/#org"
+      }
+    },
+    {
+      "@type": "Product",
+      "@id": "https://ghith93.github.io/Raawaa-store/#product",
+      "name": "سيروم رواء للشعر",
+      "description": "سيروم شعر نسائي بثلاثة أحجام: 30 و50 و100 مل. الطلب مباشر عبر واتساب.",
+      "brand": {
+        "@type": "Brand",
+        "name": "RAWAA"
+      },
+      "image": "https://ghith93.github.io/Raawaa-store/assets/img/products/og-image-1200.jpg",
+      "url": "https://ghith93.github.io/Raawaa-store/#products",
+      "offers": {
+        "@type": "AggregateOffer",
+        "priceCurrency": "USD",
+        "lowPrice": "6",
+        "highPrice": "12",
+        "offerCount": "3",
+        "availability": "https://schema.org/InStock",
+        "seller": {
+          "@id": "https://ghith93.github.io/Raawaa-store/#org"
+        }
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://ghith93.github.io/Raawaa-store/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "ما الأحجام والأسعار؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "ثلاثة أحجام: 30 مل بسعر 6 دولارات، 50 مل بسعر 10 دولارات، 100 مل بسعر 12 دولارًا. الأسعار مرجعية وتُؤكَّد في المحادثة."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "ما طرق الدفع المتاحة؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "شام كاش: خصم 10% على قيمة المنتجات مع توصيل مجاني. الدفع عند الاستلام: بلا خصم مع رسوم توصيل 2 دولار."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "هل يوجد دفع إلكتروني داخل الموقع؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "لا. لا توجد بوابة دفع ولا يمرّ أي مبلغ عبر الموقع. الطلب والتأكيد يجريان عبر واتساب."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "كيف أطلب؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "تختارين الحجم والكمية، ثم تُرسلين رسالة واتساب جاهزة بالتفاصيل، ويُؤكَّد معك التوفّر والسعر والتوصيل قبل الشحن."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
 </head>
 <body id="top">
 <a class="skip-link" href="#main">تخطَّ إلى المحتوى الرئيسي</a>
@@ -517,6 +621,9 @@
       </p>
       <button type="button" class="btn btn-primary btn-block" data-cart-checkout>
         متابعة الطلب عبر واتساب
+      </button>
+      <button type="button" class="btn btn-ghost btn-block cart-share" data-cart-share hidden>
+        مشاركة السلة
       </button>
       <p class="cart-disclaimer">
         إرسال الرسالة لا يسجّل الطلب ولا يؤكده. لا يوجد نظام طلبات خلفي ولا تأكيد آلي.

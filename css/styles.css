@@ -914,6 +914,8 @@ bdi { unicode-bidi: isolate; }
   font-feature-settings: "lnum" 1, "onum" 0, "tnum" 1;
 }
 .cart-note { margin: var(--space-3) 0 var(--space-4); font-size: 0.76rem; line-height: 1.8; color: var(--taupe); }
+.cart-share { margin-top: 8px; }
+.cart-share[hidden] { display: none; }
 .cart-disclaimer { margin: var(--space-3) 0 0; font-size: 0.72rem; color: var(--taupe); text-align: center; }
 
 .cart-fallback {

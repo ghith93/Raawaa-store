@@ -289,6 +289,48 @@ def run(base: str) -> int:
               op2.evaluate("window.__RAWAA_TEST__.selectedMethod()") == "shamcash")
         offer_ctx.close()
 
+        # 9ج) حفظ السلة بعد التحديث + مشاركة السلة برابط
+        cart_ctx = browser.new_context(viewport={"width": 390, "height": 844}, locale="ar")
+        cp = cart_ctx.new_page()
+        cp.goto(base + "/index.html", wait_until="load")
+        cp.wait_for_selector(".product-card")
+        cp.wait_for_timeout(400)
+        cp.locator('[data-add-to-cart="serum-30"]').click()
+        cp.locator('[data-add-to-cart="serum-100"]').click()
+        cp.wait_for_timeout(400)
+        check("السلة تحفظ اختيارين", cp.locator("[data-cart-count]").inner_text() == "2")
+        share_url = cp.evaluate("window.__RAWAA_TEST__.cartShareLink()")
+        check("رابط مشاركة السلة يُبنى بصيغة صحيحة",
+              "?cart=" in share_url and "serum-30" in share_url and "serum-100" in share_url, share_url)
+
+        cp.reload(wait_until="load")
+        cp.wait_for_selector(".product-card")
+        cp.wait_for_timeout(700)
+        check("السلة تبقى بعد تحديث الصفحة", cp.locator("[data-cart-count]").inner_text() == "2",
+              cp.locator("[data-cart-count]").inner_text())
+
+        sp = cart_ctx.new_page()
+        sp.goto(share_url, wait_until="load")
+        sp.wait_for_selector(".product-card")
+        sp.wait_for_timeout(700)
+        check("رابط السلة المشترك يعيد بناء نفس السلة",
+              sp.locator("[data-cart-count]").inner_text() == "2",
+              sp.locator("[data-cart-count]").inner_text())
+        sp.locator("[data-cart-open]").first.click()
+        sp.wait_for_timeout(500)
+        check("إجمالي السلة المشتركة صحيح ($16.20 مع شام كاش)",
+              sp.locator("[data-cart-total]").inner_text() == "$16.20",
+              sp.locator("[data-cart-total]").inner_text())
+
+        # رابط سلة غير صالح يجب ألا يكسر الصفحة
+        bp = cart_ctx.new_page()
+        bp.goto(base + "/index.html?cart=serum-999x5,هراء", wait_until="load")
+        bp.wait_for_selector(".product-card")
+        bp.wait_for_timeout(500)
+        check("رابط سلة غير صالح يُتجاهل بهدوء",
+              bp.locator("[data-cart-count]").is_hidden() or bp.locator("[data-cart-count]").inner_text() == "0")
+        cart_ctx.close()
+
         # 10) قائمة الهاتف على سطح المكتب مخفية، وعلى الهاتف تعمل
         ctx2 = browser.new_context(viewport={"width": 390, "height": 844}, is_mobile=True,
                                    has_touch=True, device_scale_factor=3, locale="ar")
