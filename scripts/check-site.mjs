@@ -788,6 +788,78 @@ async function checkMarketingConsistency() {
   else fail('الخطة لا تُذكّر بأن الصور تصورات تصميمية');
 }
 
+/**
+ * 14) PWA: مانيفست + عامل خدمة + أيقونات.
+ * أيقونات iOS و Android هي ما يجعل الموقع «تطبيقًا» على شاشة الآيفون.
+ */
+async function checkPwa() {
+  group('تطبيق الويب التثبيتي (PWA)');
+
+  for (const f of ['manifest.webmanifest', 'sw.js']) {
+    if (await exists(f)) pass(`${f} موجود`);
+    else fail(`${f} مفقود`);
+  }
+
+  const icons = [
+    'assets/icons/icon-192.png',
+    'assets/icons/icon-512.png',
+    'assets/icons/icon-maskable-512.png',
+    'assets/icons/apple-touch-icon.png',
+    'assets/icons/favicon-64.png'
+  ];
+  for (const f of icons) {
+    if (await exists(f)) pass(`أيقونة: ${f.split('/').pop()}`);
+    else fail(`أيقونة مفقودة: ${f}`);
+  }
+
+  if (await exists('manifest.webmanifest')) {
+    let mani = null;
+    try {
+      mani = JSON.parse(await read('manifest.webmanifest'));
+    } catch (error) {
+      fail('المانيفست ليس JSON صالحًا');
+    }
+    if (mani) {
+      if (mani.dir === 'rtl') pass('المانيفست يعلن اتجاه rtl');
+      else fail('المانيفست لا يعلن rtl');
+      if (mani.lang && String(mani.lang).startsWith('ar')) pass(`لغة المانيفست: ${mani.lang}`);
+      else fail('لغة المانيفست ليست عربية');
+      if (mani.display === 'standalone') pass('وضع العرض standalone');
+      else fail('وضع العرض ليس standalone');
+      const purposes = new Set((mani.icons || []).map((i) => i.purpose || 'any'));
+      if (purposes.has('any') && purposes.has('maskable')) pass('المانيفست يحتوي any + maskable');
+      else fail('المانيفست لا يحتوي الأيقونات المطلوبة');
+
+      // كل أيقونة معلنة يجب أن تكون موجودة فعليًا
+      for (const icon of mani.icons || []) {
+        if (await exists(icon.src)) pass(`أيقونة المانيفست موجودة: ${icon.src.split('/').pop()}`);
+        else fail(`أيقونة المانيفست مفقودة على القرص: ${icon.src}`);
+      }
+    }
+  }
+
+  const index = await read('index.html');
+  const declared = [
+    ['rel="manifest"', 'ربط المانيفست'],
+    ['apple-touch-icon', 'أيقونة آيفون'],
+    ['apple-mobile-web-app-capable', 'دعم التثبيت على iOS'],
+    ['serviceWorker.register', 'تسجيل عامل الخدمة']
+  ];
+  for (const [needle, label] of declared) {
+    if (index.includes(needle)) pass(label);
+    else fail(`مفقود في index.html: ${label}`);
+  }
+
+  // عامل الخدمة يجب ألا يخزّن نطاقات خارجية (لا تتبّع، لا تسريب)
+  if (await exists('sw.js')) {
+    const sw = await read('sw.js');
+    if (/origin\s*!==\s*self\.location\.origin/.test(sw)) pass('عامل الخدمة يتجاهل النطاقات الخارجية');
+    else fail('عامل الخدمة لا يقيّد الطلبات بالنطاق نفسه');
+    if (!/analytics|gtag|fbq|hotjar/i.test(sw)) pass('عامل الخدمة بلا أي تتبّع');
+    else fail('عامل الخدمة يحتوي أثر تتبّع');
+  }
+}
+
 try {
   const { config } = await loadConfig();
   await checkRequiredFiles();
@@ -803,6 +875,7 @@ try {
   await checkResponsiveImages();
   await checkWorkflow();
   await checkMarketingConsistency();
+  await checkPwa();
 } catch (error) {
   fail('خطأ غير متوقع في أداة الفحص', error.message);
 }

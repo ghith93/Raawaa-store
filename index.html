@@ -22,6 +22,13 @@
 <meta name="twitter:image" content="https://ghith93.github.io/Raawaa-store/assets/img/products/og-image-1200.jpg">
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/icons/favicon-64.png" sizes="64x64" type="image/png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="رواء">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preload" href="assets/fonts/almarai-400.subset.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/amiri-400.subset.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/img/products/hero-wide-1080.avif" as="image" type="image/avif"
@@ -537,5 +544,14 @@
 
 <div class="toast-region" role="status" aria-live="polite" aria-atomic="true" data-toast-region></div>
 
+<script>
+// تسجيل عامل الخدمة: يجعل الموقع يعمل بلا إنترنت ويُثبَّت على الشاشة الرئيسية.
+// إن لم يكن مدعومًا (أو كان الملف مفتوحًا من القرص) لا يحدث شيء ولا تتأثر الوظائف.
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () { /* اختياري تمامًا */ });
+  });
+}
+</script>
 </body>
 </html>

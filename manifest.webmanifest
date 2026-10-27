@@ -1,0 +1,33 @@
+{
+  "name": "RAWAA | رواء — سيروم شعر",
+  "short_name": "رواء",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "description": "سيروم شعر نسائي بثلاثة أحجام، بطلب مباشر عبر واتساب.",
+  "categories": ["shopping", "lifestyle"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "الأحجام والأسعار",
+      "short_name": "الأحجام",
+      "url": "./index.html#products",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "الدفع والتوصيل",
+      "short_name": "الدفع",
+      "url": "./index.html#payment",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "passed": 98,
+  "passed": 109,
   "failed": 0,
   "results": [
     {
@@ -386,6 +386,61 @@
       "name": "الشريط يختفي عند إفراغ السلة",
       "ok": true,
       "detail": ""
+    },
+    {
+      "name": "رابط المانيفست معلن في الصفحة",
+      "ok": true,
+      "detail": "http://127.0.0.1:8080/manifest.webmanifest"
+    },
+    {
+      "name": "المانيفست يُقرأ ويُحلَّل بنجاح",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "اسم التطبيق عربي وصحيح",
+      "ok": true,
+      "detail": "رواء"
+    },
+    {
+      "name": "اتجاه التطبيق rtl",
+      "ok": true,
+      "detail": "rtl"
+    },
+    {
+      "name": "وضع العرض standalone",
+      "ok": true,
+      "detail": "standalone"
+    },
+    {
+      "name": "يحتوي أيقونة 192 وأيقونة maskable",
+      "ok": true,
+      "detail": "['any', 'any', 'maskable']"
+    },
+    {
+      "name": "عامل الخدمة مسجَّل ونشِط",
+      "ok": true,
+      "detail": "controller=True"
+    },
+    {
+      "name": "أيقونة آيفون (apple-touch-icon) معلنة",
+      "ok": true,
+      "detail": "assets/icons/apple-touch-icon.png"
+    },
+    {
+      "name": "الصفحة تعمل بلا إنترنت",
+      "ok": true,
+      "detail": "بطاقات=3"
+    },
+    {
+      "name": "السلة تعمل بلا إنترنت",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "الحساب يعمل بلا إنترنت ($9 مع شام كاش)",
+      "ok": true,
+      "detail": "$9"
     },
     {
       "name": "لا تمرير أفقي عند 320px (iPhone SE صغير)",

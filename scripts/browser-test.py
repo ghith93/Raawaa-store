@@ -329,6 +329,60 @@ def run(base: str) -> int:
         m.wait_for_timeout(300)
         check("الشريط يختفي عند إفراغ السلة", m.locator("[data-sticky-bar]").is_hidden())
 
+        # 10ج) PWA: مانيفست + عامل خدمة + عمل بلا إنترنت
+        pwa_ctx = browser.new_context(viewport={"width": 390, "height": 844}, locale="ar")
+        pw = pwa_ctx.new_page()
+        pw.goto(base + "/index.html", wait_until="load")
+        pw.wait_for_selector(".product-card")
+        pw.wait_for_timeout(4000)
+
+        import json as _json
+        mani_href = pw.evaluate("document.querySelector('link[rel=manifest]')?.href || ''")
+        check("رابط المانيفست معلن في الصفحة", bool(mani_href), mani_href)
+
+        mani = pw.evaluate(
+            """async () => {
+                const l = document.querySelector('link[rel=manifest]');
+                if (!l) return null;
+                const r = await fetch(l.href);
+                return await r.json();
+            }"""
+        )
+        check("المانيفست يُقرأ ويُحلَّل بنجاح", isinstance(mani, dict))
+        if isinstance(mani, dict):
+            check("اسم التطبيق عربي وصحيح", mani.get("short_name") == "رواء", str(mani.get("short_name")))
+            check("اتجاه التطبيق rtl", mani.get("dir") == "rtl", str(mani.get("dir")))
+            check("وضع العرض standalone", mani.get("display") == "standalone", str(mani.get("display")))
+            check("يحتوي أيقونة 192 وأيقونة maskable",
+                  {i.get("purpose", "any") for i in mani.get("icons", [])} >= {"any", "maskable"},
+                  str([i.get("purpose", "any") for i in mani.get("icons", [])]))
+
+        check("عامل الخدمة مسجَّل ونشِط",
+              pw.evaluate("!!navigator.serviceWorker.controller"),
+              "controller=" + str(pw.evaluate("!!navigator.serviceWorker.controller")))
+
+        apple_icon = pw.evaluate(
+            "() => { const l = document.querySelector('link[rel=\"apple-touch-icon\"]'); return l ? l.getAttribute('href') : ''; }"
+        )
+        check("أيقونة آيفون (apple-touch-icon) معلنة", "apple-touch-icon" in apple_icon, apple_icon)
+
+        # القطع الحقيقي: إعادة التحميل بلا شبكة
+        pwa_ctx.set_offline(True)
+        pw.reload(wait_until="load")
+        pw.wait_for_timeout(1500)
+        check("الصفحة تعمل بلا إنترنت", pw.locator(".product-card").count() == 3,
+              f"بطاقات={pw.locator('.product-card').count()}")
+        pw.locator('[data-add-to-cart="serum-50"]').click()
+        pw.wait_for_timeout(400)
+        check("السلة تعمل بلا إنترنت", pw.locator("[data-cart-count]").inner_text() == "1")
+        pw.locator("[data-cart-open]").first.click()
+        pw.wait_for_timeout(500)
+        check("الحساب يعمل بلا إنترنت ($9 مع شام كاش)",
+              pw.locator("[data-cart-total]").inner_text() == "$9",
+              pw.locator("[data-cart-total]").inner_text())
+        pwa_ctx.set_offline(False)
+        pwa_ctx.close()
+
         # 11) عدم وجود تمرير أفقي + أحجام اللمس
         for w, h, label in [(320, 640, "iPhone SE صغير"), (375, 812, "iPhone X"), (390, 844, "iPhone 14"),
                             (430, 932, "iPhone 15 Pro Max"), (768, 1024, "iPad"), (1024, 768, "لابتوب"),
