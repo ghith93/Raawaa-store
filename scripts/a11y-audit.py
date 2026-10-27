@@ -8,12 +8,29 @@ RAWAA — تدقيق إتاحة فعلي مع axe-core (WCAG 2.1 AA) + قياس 
 import argparse
 import json
 import sys
+import os
 from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
-AXE = Path("/tmp/node_modules/axe-core/axe.min.js")
+def _find_axe():
+    """يبحث عن axe.min.js في المواضع المعتادة: محليًا وفي CI."""
+    candidates = [
+        os.environ.get("AXE_PATH"),
+        "/tmp/node_modules/axe-core/axe.min.js",
+        str(Path.cwd() / "node_modules/axe-core/axe.min.js"),
+        str(Path(__file__).resolve().parent.parent / "node_modules/axe-core/axe.min.js"),
+        "/usr/lib/node_modules/axe-core/axe.min.js",
+        "/usr/local/lib/node_modules/axe-core/axe.min.js",
+    ]
+    for c in candidates:
+        if c and Path(c).is_file():
+            return Path(c)
+    return None
+
+
+AXE = _find_axe()
 OUT = ROOT / "docs" / "a11y-report.json"
 
 

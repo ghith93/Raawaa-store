@@ -30,7 +30,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: فحص بناء JavaScript
         run: |
@@ -59,13 +59,14 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: تثبيت Playwright و axe-core
         run: |
           python -m pip install --quiet playwright
           python -m playwright install --with-deps chromium
-          npm install --silent axe-core
+          npm install --silent --no-audit --no-fund axe-core
+          test -f node_modules/axe-core/axe.min.js && echo "axe-core جاهز: $(pwd)/node_modules/axe-core/axe.min.js"
 
       - name: تشغيل خادم محلي
         run: |
@@ -74,6 +75,8 @@ jobs:
           curl -sf -o /dev/null http://127.0.0.1:8080/index.html
 
       - name: تدقيق الإتاحة وقياس الوزن
+        env:
+          AXE_PATH: ${{ github.workspace }}/node_modules/axe-core/axe.min.js
         run: python scripts/a11y-audit.py --base http://127.0.0.1:8080
 
       - name: رفع تقرير الإتاحة
