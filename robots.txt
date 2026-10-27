@@ -10,4 +10,4 @@ Disallow: /docs/
 Disallow: /scripts/
 Disallow: /.github/
 
-Sitemap: ./sitemap.xml
+Sitemap: https://ghith93.github.io/Raawaa-store/sitemap.xml

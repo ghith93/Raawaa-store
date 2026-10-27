@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  RAWAA | رواء — خريطة الموقع (نسخة أولية)
-  النطاق النهائي غير محدد بعد. عند النشر: استبدل "./" بعنوان الموقع الكامل
-  (مثال: https://example.com/) وأزل هذا التعليق.
--->
+<!-- RAWAA | رواء — خريطة الموقع (النطاق الحقيقي الحالي على GitHub Pages) -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>./index.html</loc>
+    <loc>https://ghith93.github.io/Raawaa-store/</loc>
     <lastmod>2026-10-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>./privacy.html</loc>
+    <loc>https://ghith93.github.io/Raawaa-store/privacy.html</loc>
     <lastmod>2026-10-28</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

@@ -599,8 +599,26 @@ async function checkBrandAssets() {
 
   // دقة صور المشاركة الاجتماعية
   const og = index.match(/<meta property="og:image" content="([^"]+)"/);
-  if (og && (await exists(og[1]))) pass(`og:image موجود وصالح: ${og[1]}`);
-  else fail('og:image مفقود أو غير موجود على القرص');
+  if (!og) {
+    fail('og:image مفقود');
+  } else {
+    // الصورة قد تكون رابطًا مطلقًا على النطاق المنشور أو مسارًا نسبيًا محليًا
+    const raw = og[1];
+    // أصل الموقع المنشور — بدّله عند الانتقال إلى نطاق خاص
+    const SITE_BASE = 'https://ghith93.github.io/Raawaa-store/';
+    let localPath;
+    if (raw.startsWith(SITE_BASE)) localPath = raw.slice(SITE_BASE.length);
+    else if (raw.startsWith('http')) localPath = raw.replace(/^https?:\/\/[^/]+\//, '');
+    else localPath = raw.replace(/^\.\//, '');
+    if (raw.startsWith('http')) {
+      if (await exists(localPath)) pass(`og:image مطلق ويشير إلى ملف موجود: ${raw}`);
+      else fail(`og:image مطلق لكن الملف غير موجود محليًا: ${raw}`);
+    } else if (await exists(localPath)) {
+      pass(`og:image موجود وصالح: ${raw}`);
+    } else {
+      fail('og:image مفقود أو غير موجود على القرص');
+    }
+  }
 }
 
 /* ------------------------- 10) صور الاستجابة (AVIF/WebP) ------------------------- */
