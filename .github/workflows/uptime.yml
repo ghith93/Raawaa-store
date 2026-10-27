@@ -1,0 +1,69 @@
+name: المراقبة الدورية للموقع الحيّ
+
+# يفحص الموقع المنشور فعليًا كل 6 ساعات، ويفشل إن تعطّل.
+# السبب: لو تعطّل الموقع لا نعرف إلا إذا أخبرتنا زبونة. هذا يخبرنا نحن أولًا.
+# بلا تكلفة: GitHub Actions مجاني للمستودعات العامة.
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  uptime:
+    name: فحص الموقع المنشور
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: فحص الصفحات والأصول الأساسية
+        run: |
+          BASE="https://ghith93.github.io/Raawaa-store"
+          FAIL=0
+          for path in "" "privacy.html" "manifest.webmanifest" "sw.js" \
+                      "css/styles.css" "js/config.js" "js/cart.js" \
+                      "assets/icons/apple-touch-icon.png" \
+                      "assets/img/products/hero-wide-720.avif" \
+                      "sitemap.xml" "robots.txt"; do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 25 --retry 3 --retry-delay 5 "$BASE/$path")
+            if [ "$CODE" != "200" ]; then
+              echo "✗ /$path => $CODE"
+              FAIL=1
+            else
+              echo "✓ /$path"
+            fi
+          done
+          if [ "$FAIL" = "1" ]; then
+            echo "::error::الموقع المنشور به مسارات لا تعمل"
+            exit 1
+          fi
+
+      - name: فحص المحتوى الحرج في الصفحة الرئيسية
+        run: |
+          HTML=$(curl -s --max-time 25 "https://ghith93.github.io/Raawaa-store/")
+          for needle in "RAWAA" "رواء" "data-product-grid" "963997310856" "شام كاش"; do
+            if echo "$HTML" | grep -q "$needle"; then
+              echo "✓ يحتوي: $needle"
+            else
+              echo "::error::الصفحة الرئيسية لا تحتوي: $needle"
+              exit 1
+            fi
+          done
+
+      - name: تثبيت Playwright
+        run: |
+          python -m pip install --quiet playwright
+          python -m playwright install --with-deps chromium
+
+      - name: اختبار وظيفي كامل على الموقع المنشور
+        run: python scripts/browser-test.py --base https://ghith93.github.io/Raawaa-store

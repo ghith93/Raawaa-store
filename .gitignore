@@ -4,3 +4,11 @@ assets/img/bottles/
 node_modules/
 __pycache__/
 *.pyc
+
+# ملفات بيئة محلية لا تخص المشروع — لا تُرفع أبدًا
+.npm/
+.local/
+.cache/
+.pytest_cache/
+__pycache__/
+*.pyc
