@@ -1,0 +1,99 @@
+{
+  "violations_total": 0,
+  "viewports": {
+    "iPhone SE": {
+      "violations": [],
+      "passes": 43,
+      "incomplete": [
+        "aria-valid-attr-value"
+      ]
+    },
+    "iPhone SE — السلة مفتوحة": {
+      "violations": [],
+      "passes": 0,
+      "incomplete": []
+    },
+    "iPhone 14": {
+      "violations": [],
+      "passes": 43,
+      "incomplete": [
+        "aria-valid-attr-value"
+      ]
+    },
+    "iPhone 14 — السلة مفتوحة": {
+      "violations": [],
+      "passes": 0,
+      "incomplete": []
+    },
+    "iPad": {
+      "violations": [],
+      "passes": 43,
+      "incomplete": [
+        "aria-valid-attr-value"
+      ]
+    },
+    "iPad — السلة مفتوحة": {
+      "violations": [],
+      "passes": 0,
+      "incomplete": []
+    },
+    "سطح المكتب": {
+      "violations": [],
+      "passes": 43,
+      "incomplete": [
+        "aria-valid-attr-value"
+      ]
+    },
+    "سطح المكتب — السلة مفتوحة": {
+      "violations": [],
+      "passes": 0,
+      "incomplete": []
+    }
+  },
+  "weights": {
+    "iPhone SE": {
+      "requests": 5,
+      "total_kb": 262.6,
+      "by_type_kb": {
+        "document": 31.0,
+        "font": 76.6,
+        "stylesheet": 35.6,
+        "image": 74.1,
+        "script": 45.3
+      }
+    },
+    "iPhone 14": {
+      "requests": 5,
+      "total_kb": 269.5,
+      "by_type_kb": {
+        "document": 31.0,
+        "stylesheet": 35.6,
+        "font": 76.6,
+        "image": 81.0,
+        "script": 45.3
+      }
+    },
+    "iPad": {
+      "requests": 5,
+      "total_kb": 336.4,
+      "by_type_kb": {
+        "document": 31.0,
+        "font": 76.6,
+        "image": 148.0,
+        "stylesheet": 35.6,
+        "script": 45.3
+      }
+    },
+    "سطح المكتب": {
+      "requests": 5,
+      "total_kb": 366.0,
+      "by_type_kb": {
+        "document": 31.0,
+        "image": 177.6,
+        "stylesheet": 35.6,
+        "font": 76.6,
+        "script": 45.3
+      }
+    }
+  }
+}
