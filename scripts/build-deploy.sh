@@ -24,6 +24,15 @@ done
 rm -rf "$OUT/assets/img/design-raw" "$OUT/assets/img/design-raw-reference.png" 2>/dev/null || true
 # ملفات المصدر الخام للصور لا تُنشر — فقط المشتقات المُحسَّنة
 rm -rf "$OUT/assets/img/source" 2>/dev/null || true
+
+# احذف الخطوط غير المرجعية من @font-face — 325 KB كان يُنشر بلا سبب
+for f in assets/fonts/*.woff2; do
+  b=$(basename "$f")
+  case " almarai-400-latin.subset.woff2 almarai-400.subset.woff2 almarai-700-latin.subset.woff2 almarai-700.subset.woff2 amiri-400-latin.subset.woff2 amiri-400.subset.woff2 cormorant-500-latin.subset.woff2 " in
+    *" $b "*) ;;
+    *) rm -f "$OUT/assets/fonts/$b" ;;
+  esac
+done
 find "$OUT" -name "*.map" -delete 2>/dev/null || true
 
 # لوحة الهوية: ملف مرجعي للمالك، لا يطلبه أي زائر (755 KB)
@@ -57,3 +66,30 @@ files = sorted(((f.stat().st_size, f) for f in out.rglob('*') if f.is_file()), r
 for size, f in files[:5]:
     print(f"    {size/1024:7.1f} KB  {f.relative_to(out)}")
 PYEOF
+
+# ── ضغط CSS في حزمة النشر فقط (المصدر يبقى مقروءًا للمراجعة) ──
+python3 - <<'MINEOF'
+import re, gzip
+from pathlib import Path
+src = Path("css/styles.css")
+dst = Path("dist/site/css/styles.css")
+if src.is_file() and dst.is_file():
+    css = src.read_text(encoding="utf-8")
+    out, i, n = [], 0, len(css)
+    while i < n:
+        c = css[i]
+        if c == "/" and i + 1 < n and css[i + 1] == "*":
+            j = css.find("*/", i + 2); i = n if j < 0 else j + 2; continue
+        if c in "\"'":
+            j = i + 1
+            while j < n and css[j] != c:
+                j += 2 if css[j] == "\\" else 1
+            out.append(css[i:j + 1]); i = j + 1; continue
+        out.append(c); i += 1
+    s = "".join(out)
+    s = re.sub(r"\s+", " ", s)
+    s = re.sub(r"\s*([{}:;,>])\s*", r"\1", s).replace(";}", "}")
+    dst.write_text(s, encoding="utf-8")
+    before, after = len(css.encode()), len(s.encode())
+    print(f"  CSS مضغوط: {before//1024} KB → {after//1024} KB (gzip {len(gzip.compress(s.encode(), 9))//1024} KB)")
+MINEOF

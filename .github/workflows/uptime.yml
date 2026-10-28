@@ -67,3 +67,26 @@ jobs:
 
       - name: اختبار وظيفي كامل على الموقع المنشور
         run: python scripts/browser-test.py --base https://raawaa-store.pages.dev
+
+  quality:
+    name: أبواب الجودة (axe + Lighthouse)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: تثبيت المتطلبات
+        run: |
+          python -m pip install --quiet playwright
+          python -m playwright install --with-deps chromium
+      - name: npm ci (lighthouse)
+        run: npm install --no-save lighthouse chrome-launcher
+      - name: تدقيق إمكانية الوصول (axe-core)
+        run: python scripts/axe-audit.py --fail-on serious
+      - name: ميزانية الأداء (Lighthouse)
+        run: node scripts/perf-budget.mjs
