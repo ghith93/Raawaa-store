@@ -22,6 +22,8 @@ done
 
 # 3) تنظيف ما لا يخص الزائر
 rm -rf "$OUT/assets/img/design-raw" "$OUT/assets/img/design-raw-reference.png" 2>/dev/null || true
+# ملفات المصدر الخام للصور لا تُنشر — فقط المشتقات المُحسَّنة
+rm -rf "$OUT/assets/img/source" 2>/dev/null || true
 find "$OUT" -name "*.map" -delete 2>/dev/null || true
 
 # لوحة الهوية: ملف مرجعي للمالك، لا يطلبه أي زائر (755 KB)
