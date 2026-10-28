@@ -254,6 +254,32 @@
     });
   }
 
+  /* ---------------------------- التخصيص ------------------------------
+     العطر والزيوت المضافة — تُحفظ في الذاكرة وتُرسل في رسالة واتساب.
+     هذا هو التخصيص الذي نملكه فعلًا: القاعدة ثابتة، والاختيار حسّي. */
+  var custom = { scent: '', oil: '' };
+
+  function setCustom(field, value) {
+    custom[field] = value || '';
+    renderCustomSummary();
+  }
+
+  function renderCustomSummary() {
+    var host = document.querySelector('[data-custom-summary]');
+    if (!host) return;
+    var parts = [];
+    var cfg = CONFIG.customization || {};
+    if (custom.scent) {
+      var sc = (cfg.scentOptions || []).filter(function (o) { return o.id === custom.scent; })[0];
+      if (sc) parts.push('العطر: ' + sc.label);
+    }
+    if (custom.oil) {
+      var ol = (cfg.oilAdditions || []).filter(function (o) { return o.id === custom.oil; })[0];
+      if (ol) parts.push('إضافة: ' + ol.label);
+    }
+    host.textContent = parts.length ? parts.join(' · ') : 'لم تختر عطرًا بعد — اختياري';
+  }
+
   /* ------------------------------ السلة ------------------------------ */
 
   function cartEntries() {
@@ -983,6 +1009,20 @@
     }
 
     lines.push('المجموع المرجعي: ' + money(p.totalCents / 100));
+    if (custom.scent || custom.oil) {
+      var cfgC = CONFIG.customization || {};
+      lines.push('');
+      lines.push('التخصيص:');
+      if (custom.scent) {
+        var so = (cfgC.scentOptions || []).filter(function (o) { return o.id === custom.scent; })[0];
+        if (so) lines.push('• العطر: ' + so.label);
+      }
+      if (custom.oil) {
+        var oo = (cfgC.oilAdditions || []).filter(function (o) { return o.id === custom.oil; })[0];
+        if (oo) lines.push('• إضافة زيت: ' + oo.label);
+      }
+    }
+
     lines.push('');
     lines.push('أرجو تأكيد ما يلي:');
     CONFIG.order.confirmationPoints.forEach(function (point, index) {
@@ -993,6 +1033,38 @@
       ' — الأسعار المعروضة مرجعية بالدولار الأمريكي، وهذا الاستفسار لا يُعد طلبًا مؤكدًا حتى ردّكم.)');
 
     return lines.join('\n');
+  }
+
+  /** يبني قائمة اختيار العطر والزيت من CONFIG — لا خيارات مكتوبة يدويًا. */
+  function renderCustomPickers() {
+    var cfg = CONFIG.customization;
+    if (!cfg) return;
+    var scentHost = document.querySelector('[data-scent-options]');
+    var oilHost = document.querySelector('[data-oil-options]');
+
+    function build(host, options, field) {
+      if (!host) return;
+      host.textContent = '';
+      options.forEach(function (opt) {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'chip';
+        btn.textContent = opt.label;
+        btn.setAttribute('data-custom-' + field, opt.id);
+        btn.addEventListener('click', function () {
+          var same = custom[field] === opt.id;
+          setCustom(field, same ? '' : opt.id);
+          Array.prototype.forEach.call(host.querySelectorAll('.chip'), function (c) {
+            c.classList.toggle('is-selected', c.getAttribute('data-custom-' + field) === custom[field]);
+          });
+        });
+        host.appendChild(btn);
+      });
+    }
+
+    build(scentHost, cfg.scentOptions || [], 'scent');
+    build(oilHost, cfg.oilAdditions || [], 'oil');
+    renderCustomSummary();
   }
 
   function checkout() {
@@ -1279,6 +1351,7 @@
     loadCartFromUrl();
     restoreCart();
     renderProducts();
+    renderCustomPickers();
     renderPaymentCards();
     renderTrust();
     renderCalculator();
