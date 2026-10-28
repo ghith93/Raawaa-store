@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "wrangler": "^4.154.0"
+  },
+  "name": "rawaa-store",
+  "private": true,
+  "description": "RAWAA | رواء — متجر سيروم ثابت. أدوات النشر والتحقق فقط.",
+  "scripts": {
+    "build": "bash scripts/build-deploy.sh",
+    "deploy": "bash scripts/deploy-cloudflare.sh",
+    "check": "node scripts/check-site.mjs"
+  }
+}

@@ -1,0 +1,7 @@
+# ملفات داخل مجلد الأصول لا تُرفع (نفس صيغة .gitignore)
+.git/
+.github/
+scripts/
+docs/
+*.md
+wrangler.jsonc

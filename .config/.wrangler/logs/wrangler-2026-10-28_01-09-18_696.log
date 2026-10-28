@@ -1,0 +1,16 @@
+
+--- 2026-10-28T01:09:18.876Z debug
+🪵  Writing logs to "/home/user/.config/.wrangler/logs/wrangler-2026-10-28_01-09-18_696.log"
+---
+
+--- 2026-10-28T01:09:18.875Z debug
+.env file not found at "/tmp/.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-10-28T01:09:18.876Z debug
+.env file not found at "/tmp/.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-10-28T01:09:18.877Z log
+4.154.0
+---
