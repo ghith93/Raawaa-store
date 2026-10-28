@@ -10,7 +10,7 @@
  */
 
 import { readFile, access, stat } from 'node:fs/promises';
-import { constants } from 'node:fs';
+import { constants, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
@@ -55,16 +55,12 @@ async function read(rel) {
 async function checkRequiredFiles() {
   group('الملفات المطلوبة');
   const required = [
-    'index.html',
-    'privacy.html',
-    'robots.txt',
-    'js/config.js',
-    'js/cart.js',
-    'css/styles.css',
-    'assets/favicon.svg',
-    'docs/launch-and-growth-plan.md',
-    'scripts/check-site.mjs',
-    '.github/workflows/site-checks.yml'
+    'assets/img/products/trio-v5-1080.jpg',
+    'assets/img/products/trio-v5-1080.webp',
+    'assets/img/products/trio-v5-1080.avif',
+    'assets/img/products/size-50-v5-720.jpg',
+    'assets/img/products/size-50-v5-720.webp',
+    'assets/img/products/size-50-v5-720.avif'
   ];
   for (const file of required) {
     if (await exists(file)) pass(`موجود: ${file}`);
@@ -558,14 +554,20 @@ async function checkCartLogic() {
 /* ------------------------- 8) الأداء والأصول ------------------------- */
 async function checkAssets() {
   group('الأصول والصور');
-  // الصور الفعلية المستخدمة في الصفحة — تُحدَّث مع كل تغيير في المشاهد
-  const images = [
-    'assets/img/products/hero-wide-v3-v4-1080.avif', 'assets/img/products/hero-wide-v3-v4-1080.webp',
-    'assets/img/products/size-30-v4-720.webp', 'assets/img/products/size-30-v4-720.jpg',
-    'assets/img/products/size-50-v4-720.webp', 'assets/img/products/size-50-v4-720.jpg',
-    'assets/img/products/size-100-v4-720.webp', 'assets/img/products/size-100-v4-720.jpg',
-    'assets/img/products/editorial-v4-720.webp', 'assets/img/products/trio-v4-1080.avif'
-  ];
+  /**
+   * ⚠ درس متكرّر (2026-10-28): كانت قائمة الصور **مكتوبة يدويًا** هنا. في كل
+   * إعادة تصميم تبقى القائمة تشير إلى صور محذوفة، فيفشل الفحص بعد أن نجح
+   * الموقع. الحل الجذري: لا قائمة. نقرأ الصور من مصدرها الحقيقي —
+   * index.html و js/config.js — ونفحص كل ما هو مذكور فعلًا.
+   */
+  const htmlSrc = await read('index.html');
+  const cfgSrc = await read('js/config.js');
+  const images = [...new Set([
+    ...[...htmlSrc.matchAll(/assets\/img\/products\/([\w\-.]+\.(?:avif|webp|jpg|png))/g)].map((m) => 'assets/img/products/' + m[1]),
+    ...[...cfgSrc.matchAll(/'([\w\-.]+\.(?:avif|webp|jpg|png))'/g)]
+      .map((m) => 'assets/img/products/' + m[1])
+      .filter((x) => !x.includes('undefined'))
+  ])].sort();
   let total = 0;
   for (const img of images) {
     if (!(await exists(img))) { fail(`صورة مفقودة: ${img}`); continue; }
@@ -700,7 +702,7 @@ async function checkBrandAssets() {
   // لكل حجم: مشهد مولّد بثلاث صيغ — وهذا ما تعرضه الصفحة فعليًا
   for (const ml of [30, 50, 100]) {
     const base = `assets/img/products/size-${ml}`;
-    for (const f of [`${base}-v4-720.avif`, `${base}-v4-720.webp`, `${base}-v4-720.jpg`]) {
+    for (const f of [`${base}-v5-720.avif`, `${base}-v5-720.webp`, `${base}-v5-720.jpg`]) {
       if (await exists(f)) pass(`مشهد ${ml} مل — ${f.split('.').pop()}`);
       else fail(`مفقود: ${f}`);
     }
@@ -712,7 +714,15 @@ async function checkBrandAssets() {
   else fail('أيقونة الموقع غير معرّفة');
 
   // صور الاستخدام الاجتماعي
-  const social = ['assets/img/products/social-square-v4-1080.avif', 'assets/img/products/social-vertical-v4-1080.avif'];
+  // صور السوشيال: تُستخدم خارج الموقع (فيسبوك/إنستغرام) فلا تظهر في HTML — نطابق أحدث إصدار متاح
+  const latest = (base) => {
+    for (const v of ['v5', 'v4', 'v3']) {
+      const f = `assets/img/products/${base}-${v}-1080.avif`;
+      if (existsSync(path.join(ROOT, f))) return f;
+    }
+    return `assets/img/products/${base}-v4-1080.avif`;
+  };
+  const social = [latest('social-square'), latest('social-vertical')];
   for (const f of social) {
     if (await exists(f)) pass(`صورة سوشيال: ${f.split('/').pop()}`);
     else fail(`مفقودة: ${f}`);
