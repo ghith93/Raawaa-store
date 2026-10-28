@@ -14,7 +14,7 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'v1793183694';
+const CACHE_VERSION = 'v1793185603';
 const RUNTIME = 'rawaa-runtime-v5';
 
 /** الأصول التي يجب أن تعمل بلا إنترنت */
@@ -32,13 +32,13 @@ const CORE = [
   './assets/icons/apple-touch-icon.png',
   './assets/icons/favicon-64.png',
   './assets/favicon.svg',
-  './assets/fonts/almarai-400.subset.woff2',
-  './assets/fonts/almarai-700.subset.woff2',
-  './assets/fonts/amiri-400.subset.woff2',
-  './assets/fonts/almarai-400-latin.subset.woff2',
-  './assets/fonts/almarai-700-latin.subset.woff2',
-  './assets/fonts/amiri-400-latin.subset.woff2',
+  // الخطوط — مولَّدة من ملفات حقيقية؛ لا أسماء ميتة (عطل 2026-10-28)
   './assets/fonts/cormorant-500-latin.subset.woff2',
+  './assets/fonts/plexar-400.subset.woff2',
+  './assets/fonts/plexar-500.subset.woff2',
+  './assets/fonts/plexar-700.subset.woff2',
+  './assets/fonts/plexar-bold-latin.subset.woff2',
+  './assets/fonts/plexar-latin.subset.woff2',
   // الهوية البصرية (الجيل الثاني)
   './assets/brand/logo-mark-v2.svg',
   './assets/brand/logo-primary-v2.svg',
@@ -113,7 +113,13 @@ self.addEventListener('fetch', (event) => {
         return res;
       })
       .catch(() =>
-        caches.match(req).then((hit) => hit || caches.match('./index.html'))
+        // ⚠ لا تُرجع index.html مكان صورة أو سكربت: هذا يجعل الزائر يرى
+        // "صورة لا تفتح" بدل خطأ واضح، ويخفي السبب. الرجوع للصفحة للتنقل فقط.
+        caches.match(req).then((hit) => {
+          if (hit) return hit;
+          if (req.mode === 'navigate') return caches.match('./index.html');
+          return Response.error();
+        })
       )
   );
 });

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>فحص الصور — رواء</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:16px;font-family:-apple-system,"Segoe UI",system-ui,sans-serif;background:#FBF8F3;color:#2E2A26;line-height:1.6}
+h1{font-size:1.15rem;margin:0 0 4px}
+.sub{font-size:.8rem;color:#8A7F72;margin:0 0 16px}
+.box{background:#fff;border:1px solid #E4DCD0;border-radius:12px;padding:12px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;gap:8px;font-size:.82rem;padding:5px 0;border-bottom:1px solid #F0EAE0}
+.row:last-child{border:0}
+.ok{color:#1E6B4F;font-weight:600}
+.bad{color:#B3261E;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+figure{margin:0;text-align:center}
+figure img{width:100%;height:64px;object-fit:cover;border-radius:6px;background:#EEE7DB;display:block}
+figcaption{font-size:.55rem;color:#8A7F72;word-break:break-all;margin-top:3px}
+button{width:100%;padding:12px;border:0;border-radius:10px;background:#2E2A26;color:#fff;font-size:.9rem;font-weight:600;margin-top:6px}
+pre{background:#2E2A26;color:#F3EDE4;padding:12px;border-radius:10px;font-size:.62rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all;direction:ltr;text-align:left}
+</style>
+</head>
+<body>
+<h1>فحص الصور على جهازك</h1>
+<p class="sub">افتح هذه الصفحة من نفس الجهاز الذي ترى فيه الصور معطوبة، ثم أرسل النتيجة.</p>
+
+<div class="box">
+  <div class="row"><span>المتصفح</span><span id="ua" style="font-size:.7rem;text-align:left;direction:ltr">—</span></div>
+  <div class="row"><span>دعم AVIF</span><span id="avif">—</span></div>
+  <div class="row"><span>دعم WebP</span><span id="webp">—</span></div>
+  <div class="row"><span>service worker نشِط</span><span id="sw">—</span></div>
+  <div class="row"><span>صور سليمة</span><span id="okc">—</span></div>
+  <div class="row"><span>صور معطوبة</span><span id="badc">—</span></div>
+</div>
+
+<div class="box">
+  <strong style="font-size:.82rem">الصور الحقيقية من مجلد الموقع:</strong>
+  <div class="grid" id="grid"></div>
+</div>
+
+<button type="button" onclick="copyReport()">انسخ التقرير</button>
+<pre id="out">جارٍ الفحص…</pre>
+
+<script>
+const BR = 'https://raawaa-store.pages.dev/';
+const SAMPLES = [
+  'assets/img/products/hero-wide-v3-v4-1080.avif',
+  'assets/img/products/trio-v4-1080.avif',
+  'assets/img/products/trio-v4-1080.webp',
+  'assets/img/products/size-30-v4-900.avif',
+  'assets/img/products/size-50-v4-720.jpg',
+  'assets/img/products/editorial-v4-900.webp'
+];
+
+document.getElementById('ua').textContent = navigator.userAgent.slice(0, 60);
+
+function testType(mime) {
+  const c = document.createElement('canvas');
+  c.width = c.height = 1;
+  return c.toDataURL(mime).indexOf('data:' + mime) === 0;
+}
+const avifOK = testType('image/avif');
+document.getElementById('avif').innerHTML = avifOK ? '<span class="ok">نعم</span>' : '<span class="bad">لا — سترى JPG</span>';
+document.getElementById('webp').innerHTML = testType('image/webp') ? '<span class="ok">نعم</span>' : '<span class="bad">لا</span>';
+
+navigator.serviceWorker.getRegistrations().then(rs => {
+  document.getElementById('sw').innerHTML = rs.length ? '<span class="ok">نعم (' + rs.length + ')</span>' : '<span>لا</span>';
+}).catch(()=>{});
+
+const results = [];
+let ok = 0, bad = 0;
+
+SAMPLES.forEach(src => {
+  const fig = document.createElement('figure');
+  const img = document.createElement('img');
+  img.src = BR + src;
+  img.alt = '';
+  fig.appendChild(img);
+  const cap = document.createElement('figcaption');
+  cap.textContent = src.split('/').pop();
+  fig.appendChild(cap);
+  document.getElementById('grid').appendChild(fig);
+});
+
+Promise.all(SAMPLES.map(src => new Promise(res => {
+  const img = new Image();
+  const t0 = Date.now();
+  img.onload = () => { ok++; res({src, status:'OK', w:img.naturalWidth, h:img.naturalHeight, ms:Date.now()-t0}); };
+  img.onerror = () => { bad++; res({src, status:'FAILED'}); };
+  img.src = BR + src + '?probe=' + Date.now();
+}))).then(rows => {
+  document.getElementById('okc').innerHTML = '<span class="ok">' + ok + '</span>';
+  document.getElementById('badc').innerHTML = bad ? '<span class="bad">' + bad + '</span>' : '<span class="ok">0</span>';
+
+  // فحص مباشر بلا وسيط
+  const fetches = [];
+  ['assets/img/products/trio-v4-1080.avif','assets/img/products/trio-v4-1080.jpg'].forEach(u => {
+    fetch(BR + u, {cache:'no-store'}).then(r => {
+      fetches.push(u.split('/').pop() + ' → HTTP ' + r.status + ' · ' + (r.headers.get('content-type')||'?'));
+    }).catch(e => fetches.push(u.split('/').pop() + ' → خطأ شبكة'));
+  });
+
+  setTimeout(() => {
+    const rep = {
+      time: new Date().toISOString(),
+      ua: navigator.userAgent,
+      avif: avifOK,
+      results: rows,
+      fetchChecks: fetches,
+      swCaches: 'انظر أعلاه'
+    };
+    document.getElementById('out').textContent = JSON.stringify(rep, null, 1);
+    window.__report = JSON.stringify(rep);
+  }, 1500);
+});
+
+function copyReport() {
+  const t = window.__report || document.getElementById('out').textContent;
+  navigator.clipboard.writeText(t).then(
+    () => alert('تم النسخ — ألصقه في المحادثة'),
+    () => alert('لم أستطع النسخ. اضغط مطوّلًا على النص واختر «نسخ».')
+  );
+}
+</script>
+</body>
+</html>
