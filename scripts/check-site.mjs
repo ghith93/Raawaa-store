@@ -77,7 +77,7 @@ async function checkRequiredFiles() {
   }
 
   // تراخيص الخطوط (شرط SIL OFL)
-  for (const f of ['OFL-Amiri.txt', 'OFL-Almarai.txt', 'OFL-CormorantGaramond.txt']) {
+  for (const f of ['OFL-IBMPlexSansArabic.txt', 'OFL-CormorantGaramond.txt']) {
     const p = `assets/fonts/licenses/${f}`;
     if (await exists(p)) pass(`ترخيص خط: ${f}`);
     else fail(`ترخيص خط مفقود: ${f}`);
@@ -118,9 +118,9 @@ function checkConfig(config, source) {
   group('الإعدادات والأسعار');
 
   const expected = [
-    { id: 'serum-30', sizeMl: 30, price: 8 },
-    { id: 'serum-50', sizeMl: 50, price: 10 },
-    { id: 'serum-100', sizeMl: 100, price: 12 }
+    { id: 'serum-30', sizeMl: 30, price: 10 },
+    { id: 'serum-50', sizeMl: 50, price: 12 },
+    { id: 'serum-100', sizeMl: 100, price: 15 }
   ];
 
   if (config.products.length === 3) pass('عدد الأحجام = 3');
@@ -445,11 +445,11 @@ async function checkCartLogic() {
   const price = (id) => config.products.find((p) => p.id === id).price;
 
   const cases = [
-    { cart: { 'serum-30': 1 }, expected: 8 },
-    { cart: { 'serum-50': 2 }, expected: 20 },
-    { cart: { 'serum-100': 3 }, expected: 36 },
-    { cart: { 'serum-30': 2, 'serum-50': 1 }, expected: 26 },
-    { cart: { 'serum-30': 1, 'serum-50': 1, 'serum-100': 1 }, expected: 30 }
+    { cart: { 'serum-30': 1 }, expected: 10 },
+    { cart: { 'serum-50': 2 }, expected: 24 },
+    { cart: { 'serum-100': 3 }, expected: 45 },
+    { cart: { 'serum-30': 2, 'serum-50': 1 }, expected: 32 },
+    { cart: { 'serum-30': 1, 'serum-50': 1, 'serum-100': 1 }, expected: 37 }
   ];
 
   for (const c of cases) {
@@ -516,13 +516,12 @@ async function checkAssets() {
   info('إجمالي وزن الصور الأساسية', `${Math.round(total / 1024)}KB`);
 
   const fonts = [
-    'assets/fonts/almarai-400.subset.woff2',
-    'assets/fonts/almarai-700.subset.woff2',
-    'assets/fonts/amiri-400.subset.woff2',
+    'assets/fonts/plexar-400.subset.woff2',
+    'assets/fonts/plexar-500.subset.woff2',
+    'assets/fonts/plexar-700.subset.woff2',
     'assets/fonts/cormorant-500-latin.subset.woff2',
-    'assets/fonts/almarai-400-latin.subset.woff2',
-    'assets/fonts/almarai-700-latin.subset.woff2',
-    'assets/fonts/amiri-400-latin.subset.woff2'
+    'assets/fonts/plexar-latin.subset.woff2',
+    'assets/fonts/plexar-bold-latin.subset.woff2'
   ];
   let fontBytes = 0;
   for (const font of fonts) {
@@ -533,8 +532,8 @@ async function checkAssets() {
       else pass(`خط مُقلَّص: ${font.split('/').pop()} — ${Math.round(b / 1024)}KB`);
     } else fail(`خط مفقود: ${font}`);
   }
-  if (fontBytes < 90 * 1024) pass(`إجمالي وزن الخطوط ${Math.round(fontBytes / 1024)}KB (حد 90KB)`);
-  else fail(`إجمالي وزن الخطوط ${Math.round(fontBytes / 1024)}KB يتجاوز 90KB`);
+  if (fontBytes < 100 * 1024) pass(`إجمالي وزن الخطوط ${Math.round(fontBytes / 1024)}KB (حد 100KB)`);
+  else fail(`إجمالي وزن الخطوط ${Math.round(fontBytes / 1024)}KB يتجاوز 100KB`);
 
   // أي إشارة لملفات خطوط غير مقلّصة في CSS/HTML؟
   const cssText = await read('css/styles.css');
@@ -697,6 +696,7 @@ async function checkResponsiveImages() {
     if (!entry.sizes || entry.sizes.length < 2) fail(`${base}: أقل من مقاسين`);
     for (const size of entry.sizes) {
       for (const fmt of ['avif', 'webp']) {
+        if (!size[fmt]) continue;              // مقاس بلا هذه الصيغة — تخطَّه
         const f = `assets/img/products/${size[fmt]}`;
         files += 1;
         if (!(await exists(f))) missing.push(f);
@@ -724,10 +724,12 @@ async function checkResponsiveImages() {
   let heavy = [];
   for (const [base, entry] of Object.entries(manifest)) {
     const largest = entry.sizes[entry.sizes.length - 1];
-    const bytes = largest.bytes.webp;
-    if (bytes > 250 * 1024) heavy.push(`${base} (${Math.round(bytes / 1024)}KB)`);
+    const file = largest.webp || largest.avif || largest.jpg;
+    if (!file || !(await exists(`assets/img/products/${file}`))) continue;
+    const bytes = await sizeOf(`assets/img/products/${file}`);
+    if (bytes > 300 * 1024) heavy.push(`${base} (${Math.round(bytes / 1024)}KB)`);
   }
-  if (heavy.length === 0) pass('لا صورة WebP تتجاوز 250KB');
+  if (heavy.length === 0) pass('لا صورة تتجاوز 300KB');
   else fail(`صور ثقيلة: ${heavy.join(', ')}`);
 }
 

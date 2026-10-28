@@ -56,7 +56,7 @@ def run(base: str) -> int:
         cards = page.locator(".product-card")
         check("ثلاث بطاقات منتجات معروضة", cards.count() == 3, f"العدد={cards.count()}")
         prices = page.locator(".product-price .amount").all_inner_texts()
-        check("الأسعار المعروضة $8 / $10 / $12", prices == ["$8", "$10", "$12"], str(prices))
+        check("الأسعار المعروضة $10 / $12 / $15", prices == ["$10", "$12", "$15"], str(prices))
         sizes = page.locator(".product-size").all_inner_texts()
         check("الأحجام 30/50/100 مل", sizes == ["30 مل", "50 مل", "100 مل"], str(sizes))
         check("اتجاه الصفحة RTL", page.evaluate("getComputedStyle(document.body).direction") == "rtl")
@@ -80,7 +80,7 @@ def run(base: str) -> int:
         # شريط السلة اللاصق (يُختبر في سياق الهاتف لاحقًا) وسعر الملليلتر
         per_ml = page.locator(".product-per-ml bdi").all_inner_texts()
         check("سعر الملليلتر محسوب لكل حجم",
-              per_ml == ["$0.27", "$0.20", "$0.12"], str(per_ml))
+              per_ml == ["$0.33", "$0.24", "$0.15"], str(per_ml))
 
         page.locator('[data-add-to-cart="serum-50"]').click()
         page.wait_for_timeout(80)
@@ -109,18 +109,18 @@ def run(base: str) -> int:
         page.locator('[data-qty-increase="serum-30"]').click()
         page.wait_for_timeout(150)
 
-        # الافتراضي = شام كاش: خصم 10% = 3.80 → الإجمالي 34.20 وتوصيل مجاني
+        # الافتراضي = شام كاش: خصم 10% = 4.70 → الإجمالي 42.30 وتوصيل مجاني
         check("طريقة الدفع الافتراضية = شام كاش",
               page.evaluate("window.__RAWAA_TEST__.selectedMethod()") == "shamcash",
               str(page.evaluate("window.__RAWAA_TEST__.selectedMethod()")))
         total_text = page.locator("[data-cart-total]").inner_text()
-        check("الشام كاش: قيمة المنتجات $38 ← خصم 10% ← الإجمالي $34.20",
-              total_text == "$34.20", total_text)
+        check("الشام كاش: قيمة المنتجات $47 ← خصم 10% ← الإجمالي $42.30",
+              total_text == "$42.30", total_text)
         check("صف قيمة المنتجات يظهر القيمة الصحيحة",
-              page.locator("[data-cart-subtotal]").inner_text() == "$38",
+              page.locator("[data-cart-subtotal]").inner_text() == "$47",
               page.locator("[data-cart-subtotal]").inner_text())
-        check("صف الخصم يظهر − $3.80",
-              page.locator("[data-cart-discount]").inner_text() == "− $3.80",
+        check("صف الخصم يظهر − $4.70",
+              page.locator("[data-cart-discount]").inner_text() == "− $4.70",
               page.locator("[data-cart-discount]").inner_text())
         check("التوصيل يظهر «مجاني» مع الشام كاش",
               page.locator("[data-cart-delivery]").inner_text() == "مجاني",
@@ -130,7 +130,7 @@ def run(base: str) -> int:
         page.locator('[data-pay-select="cod"]').check()
         page.wait_for_timeout(200)
         cod_total = page.locator("[data-cart-total]").inner_text()
-        check("الدفع عند الاستلام: $38 + $2 توصيل = $40 بلا خصم", cod_total == "$40", cod_total)
+        check("الدفع عند الاستلام: $47 + $2 توصيل = $49 بلا خصم", cod_total == "$49", cod_total)
         check("صف الخصم مخفي مع الدفع عند الاستلام",
               not page.locator("[data-row-discount]").is_visible())
         check("رسوم التوصيل تظهر $2",
@@ -150,20 +150,20 @@ def run(base: str) -> int:
         check("باقي المحافظات + شام كاش: رسوم $4",
               page.locator("[data-cart-delivery]").inner_text() == "$4",
               page.locator("[data-cart-delivery]").inner_text())
-        check("الإجمالي مع محافظات وشام كاش ($38 − 10% + $4 = $38.20)",
-              page.locator("[data-cart-total]").inner_text() == "$38.20",
+        check("الإجمالي مع محافظات وشام كاش ($47 − 10% + $4 = $46.30)",
+              page.locator("[data-cart-total]").inner_text() == "$46.30",
               page.locator("[data-cart-total]").inner_text())
 
         page.locator('[data-pay-select="cod"]').check()
         page.wait_for_timeout(250)
-        check("محافظات + استلام: $38 + $4 = $42",
-              page.locator("[data-cart-total]").inner_text() == "$42",
+        check("محافظات + استلام: $47 + $4 = $51",
+              page.locator("[data-cart-total]").inner_text() == "$51",
               page.locator("[data-cart-total]").inner_text())
 
         page.locator('[data-zone-select="hama"]').check()
         page.wait_for_timeout(250)
-        check("حماة + استلام: $34 + $2 = $36",
-              page.locator("[data-cart-total]").inner_text() == "$40",
+        check("حماة + استلام: $47 + $2 = $49",
+              page.locator("[data-cart-total]").inner_text() == "$49",
               page.locator("[data-cart-total]").inner_text())
 
         # التحقق المستقل من المعادلة في JS
@@ -181,10 +181,10 @@ def run(base: str) -> int:
                 };
             }"""
         )
-        check("المعادلة: استلام/محافظات = 4200 سنتًا",
-              zone_pricing["codOther"] == 4200, json.dumps(zone_pricing))
-        check("المعادلة: شام كاش/محافظات = 3820 سنتًا وتوصيل 400",
-              zone_pricing["scOther"] == 3820 and zone_pricing["scDelivery"] == 400,
+        check("المعادلة: استلام/محافظات = 5100 سنتًا",
+              zone_pricing["codOther"] == 5100, json.dumps(zone_pricing))
+        check("المعادلة: شام كاش/محافظات = 4630 سنتًا وتوصيل 400",
+              zone_pricing["scOther"] == 4630 and zone_pricing["scDelivery"] == 400,
               json.dumps(zone_pricing))
 
         # نصوص طرق الدفع يجب أن تعكس المنطقة لا رقمًا ثابتًا (كانت تعرض $2 دائمًا)
@@ -241,14 +241,14 @@ def run(base: str) -> int:
                          disc: t.pricing().discountCents, del: t.pricing().deliveryCents };
             }"""
         )
-        check("المعادلة في JS: 3800 − 380 + 0 = 3420 سنتًا",
-              pricing == {"sc": 3420, "sub": 3800, "disc": 380, "del": 0}, json.dumps(pricing))
+        check("المعادلة في JS: 4700 − 470 + 0 = 4230 سنتًا",
+              pricing == {"sc": 4230, "sub": 4700, "disc": 470, "del": 0}, json.dumps(pricing))
 
         page.locator('[data-qty-decrease="serum-30"]').click()
         page.wait_for_timeout(150)
         # 8+10+12 = 30 − 3.00 = 27
-        check("بعد تقليل الكمية: $30 − 10% = $27",
-              page.locator("[data-cart-total]").inner_text() == "$27",
+        check("بعد تقليل الكمية: $33.30",
+              page.locator("[data-cart-total]").inner_text() == "$33.30",
               page.locator("[data-cart-total]").inner_text())
 
         # زر التقليل معطّل عند 1
@@ -294,7 +294,7 @@ def run(base: str) -> int:
                 "الرسالة تحتوي 50 مل": "50 مل" in decoded,
                 "الرسالة تحتوي 100 مل": "100 مل" in decoded,
                 "الرسالة تحتوي الكميات (×)": "×" in decoded,
-                "الرسالة تحتوي أسعار الوحدات": "$8" in decoded and "$10" in decoded and "$12" in decoded,
+                "الرسالة تحتوي أسعار الوحدات": "$10" in decoded and "$12" in decoded and "$15" in decoded,
                 "الرسالة تحتوي المجموع المرجعي": "المجموع المرجعي" in decoded,
                 "الرسالة تحتوي قيمة المنتجات قبل الخصم": "قيمة المنتجات:" in decoded,
                 "الرسالة تذكر طريقة الدفع المختارة": "طريقة الدفع المطلوبة:" in decoded,
@@ -369,8 +369,8 @@ def run(base: str) -> int:
         op.wait_for_timeout(300)
         op.locator("[data-cart-open]").first.click()
         op.wait_for_timeout(350)
-        check("الحساب مع ?offer=cod: $12 + $2 = $14",
-              op.locator("[data-cart-total]").inner_text() == "$14",
+        check("الحساب مع ?offer=cod: $15 + $2 = $17",
+              op.locator("[data-cart-total]").inner_text() == "$17",
               op.locator("[data-cart-total]").inner_text())
         check("رابط مشاركة لكل طريقة دفع", op.locator(".pay-share").count() >= 0)  # خارج السلة
 
@@ -411,8 +411,8 @@ def run(base: str) -> int:
               sp.locator("[data-cart-count]").inner_text())
         sp.locator("[data-cart-open]").first.click()
         sp.wait_for_timeout(500)
-        check("إجمالي السلة المشتركة صحيح ($20 − 10% = $18)",
-              sp.locator("[data-cart-total]").inner_text() == "$18",
+        check("إجمالي السلة المشتركة صحيح ($25 − 10% = $22.50)",
+              sp.locator("[data-cart-total]").inner_text() == "$22.50",
               sp.locator("[data-cart-total]").inner_text())
 
         # رابط سلة غير صالح يجب ألا يكسر الصفحة
@@ -446,8 +446,8 @@ def run(base: str) -> int:
         check("شريط السلة اللاصق يظهر على الهاتف بعد الإضافة", m.locator("[data-sticky-bar]").is_visible())
         check("الشريط يعرض عدد القطع", m.locator("[data-sticky-count]").inner_text() == "1",
               m.locator("[data-sticky-count]").inner_text())
-        check("الشريط يعرض الإجمالي المرجعي مع خصم شام كاش ($8 − 10% = $7.20)",
-              m.locator("[data-sticky-total]").inner_text() == "$7.20",
+        check("الشريط يعرض الإجمالي المرجعي مع خصم شام كاش ($10 − 10% = $9)",
+              m.locator("[data-sticky-total]").inner_text() == "$9",
               m.locator("[data-sticky-total]").inner_text())
         m.locator("[data-sticky-bar] button").click()
         m.wait_for_timeout(400)
@@ -512,8 +512,8 @@ def run(base: str) -> int:
         check("السلة تعمل بلا إنترنت", pw.locator("[data-cart-count]").inner_text() == "1")
         pw.locator("[data-cart-open]").first.click()
         pw.wait_for_timeout(500)
-        check("الحساب يعمل بلا إنترنت ($9 مع شام كاش)",
-              pw.locator("[data-cart-total]").inner_text() == "$9",
+        check("الحساب يعمل بلا إنترنت ($10.80 مع شام كاش)",
+              pw.locator("[data-cart-total]").inner_text() == "$10.80",
               pw.locator("[data-cart-total]").inner_text())
         pwa_ctx.set_offline(False)
         pwa_ctx.close()
@@ -622,7 +622,7 @@ def run(base: str) -> int:
         )
         check("كل صور المنتجات والمعرض لها alt", all(a and a.strip() for a in alts), str(alts[:3]))
         check("alt لا يدّعي صورة فوتوغرافية حقيقية",
-              all("تصور" in a or "تصميمي" in a or "مقربة" in a or "منظر" in a or "ظهر" in a or "الأحجام" in a
+              all(("توضيحي" in a or "للتصميم" in a) and ("مُصنَّع" in a or "مصنَّع" in a or "توفّره" in a)
                   for a in alts), str(alts[:3]))
 
         # الصور لا تتجاوز عرض الشاشة

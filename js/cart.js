@@ -410,11 +410,14 @@
     // تنبيه شفاف: تركيبة قد لا تغطي التكلفة
     if (el.marginNote && summary.count > 0 && summary.zone && summary.method) {
       var c = CONFIG.costing;
-      var costOfUnit = function (ml) { return (c ? c.fixedCost + c.perMl * ml : 0); };
+      // التكلفة ثابتة لكل عبوة بغضّ النظر عن الحجم (من المالك) — نأخذ الحد الأعلى
+      var costOfUnit = function () {
+        return c ? (c.unitCostMax || c.unitCostMin || 0) : 0;
+      };
       var worst = null;
       summary.entries.forEach(function (e) {
         var net = e.product.price * (1 - (summary.method.discountPercent || 0) / 100);
-        var profit = net - summary.delivery - costOfUnit(e.product.sizeMl);
+        var profit = net - summary.delivery - costOfUnit();
         if (profit <= 0 && (!worst || profit < worst.profit)) {
           worst = { size: e.product.sizeLabel, profit: profit };
         }
