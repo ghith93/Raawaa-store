@@ -14,7 +14,7 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const RUNTIME = 'rawaa-runtime-v4';
 
 /** الأصول التي يجب أن تعمل بلا إنترنت */
@@ -43,7 +43,7 @@ const CORE = [
   './assets/brand/logo-mark-v2.svg',
   './assets/brand/logo-primary-v2.svg',
   // الصور الجديدة المضغوطة (AVIF + WebP + JPG احتياطي)
-  './assets/img/products/hero-wide-1080.avif',
+  './assets/img/products/hero-wide-v3-1080.avif',
   './assets/img/products/trio-1080.avif',
   './assets/img/products/size-30-720.webp',
   './assets/img/products/size-50-720.webp',

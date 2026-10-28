@@ -237,64 +237,6 @@
     "fallback": "detail-label-720.jpg",
     "fallbackWidth": 720
   },
-  "hero-wide": {
-    "aspect": 2.0,
-    "sizes": [
-      {
-        "width": 480,
-        "height": 240,
-        "avif": "hero-wide-480.avif",
-        "webp": "hero-wide-480.webp",
-        "bytes": {
-          "avif": 2282,
-          "webp": 2810
-        }
-      },
-      {
-        "width": 720,
-        "height": 360,
-        "avif": "hero-wide-720.avif",
-        "webp": "hero-wide-720.webp",
-        "bytes": {
-          "avif": 3258,
-          "webp": 4564
-        }
-      },
-      {
-        "width": 1080,
-        "height": 540,
-        "avif": "hero-wide-1080.avif",
-        "webp": "hero-wide-1080.webp",
-        "bytes": {
-          "avif": 5198,
-          "webp": 7424
-        },
-        "jpg": "hero-wide-1080.jpg"
-      },
-      {
-        "width": 1400,
-        "height": 700,
-        "avif": "hero-wide-1400.avif",
-        "webp": "hero-wide-1400.webp",
-        "bytes": {
-          "avif": 7243,
-          "webp": 10290
-        }
-      },
-      {
-        "width": 1600,
-        "height": 800,
-        "avif": "hero-wide-1600.avif",
-        "webp": "hero-wide-1600.webp",
-        "bytes": {
-          "avif": 8161,
-          "webp": 12012
-        }
-      }
-    ],
-    "fallback": "hero-wide-1080.jpg",
-    "fallbackWidth": 1080
-  },
   "social-square": {
     "aspect": 1.0,
     "sizes": [
@@ -370,5 +312,63 @@
     ],
     "fallback": "social-vertical-720.jpg",
     "fallbackWidth": 720
+  },
+  "hero-wide-v3": {
+    "aspect": 2.0,
+    "sizes": [
+      {
+        "width": 480,
+        "height": 240,
+        "avif": "hero-wide-v3-480.avif",
+        "webp": "hero-wide-v3-480.webp",
+        "bytes": {
+          "avif": 2282,
+          "webp": 2810
+        }
+      },
+      {
+        "width": 720,
+        "height": 360,
+        "avif": "hero-wide-v3-720.avif",
+        "webp": "hero-wide-v3-720.webp",
+        "bytes": {
+          "avif": 3258,
+          "webp": 4564
+        }
+      },
+      {
+        "width": 1080,
+        "height": 540,
+        "avif": "hero-wide-v3-1080.avif",
+        "webp": "hero-wide-v3-1080.webp",
+        "bytes": {
+          "avif": 5198,
+          "webp": 7424
+        },
+        "jpg": "hero-wide-v3-1080.jpg"
+      },
+      {
+        "width": 1400,
+        "height": 700,
+        "avif": "hero-wide-v3-1400.avif",
+        "webp": "hero-wide-v3-1400.webp",
+        "bytes": {
+          "avif": 7243,
+          "webp": 10290
+        }
+      },
+      {
+        "width": 1600,
+        "height": 800,
+        "avif": "hero-wide-v3-1600.avif",
+        "webp": "hero-wide-v3-1600.webp",
+        "bytes": {
+          "avif": 8161,
+          "webp": 12012
+        }
+      }
+    ],
+    "fallback": "hero-wide-v3-1080.jpg",
+    "fallbackWidth": 1080
   }
 }

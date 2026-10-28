@@ -46,7 +46,7 @@
         sizeLabel: '30 مل',
         shortLabel: '30 مل — الحجم التجريبي',
         note: 'مناسب للتعرّف على المنتج أو للسفر.',
-        price: 6,
+        price: 8,
         image: {
           base: 'size-30',
           avif: ['size-30-480.avif', 'size-30-720.avif', 'size-30-900.avif'],
@@ -153,10 +153,10 @@
     imagery: {
       hero: {
         base: 'hero-wide',
-        avif: ['hero-wide-480.avif', 'hero-wide-720.avif', 'hero-wide-1080.avif', 'hero-wide-1400.avif', 'hero-wide-1600.avif'],
-        webp: ['hero-wide-480.webp', 'hero-wide-720.webp', 'hero-wide-1080.webp', 'hero-wide-1400.webp', 'hero-wide-1600.webp'],
+        avif: ['hero-wide-v3-480.avif', 'hero-wide-v3-720.avif', 'hero-wide-v3-1080.avif', 'hero-wide-v3-1400.avif', 'hero-wide-v3-1600.avif'],
+        webp: ['hero-wide-v3-480.webp', 'hero-wide-v3-720.webp', 'hero-wide-v3-1080.webp', 'hero-wide-v3-1400.webp', 'hero-wide-v3-1600.webp'],
         widths: [480, 720, 1080, 1400, 1600],
-        src: 'assets/img/products/hero-wide-1080.jpg',
+        src: 'assets/img/products/hero-wide-v3-1080.jpg',
         width: 1080,
         height: 540,
         alt: 'تصور تصميمي للأحجام الثلاثة لسيروم رواء على سطح فاتح بإضاءة ناعمة — وليست صورة منتج مُصنَّع'

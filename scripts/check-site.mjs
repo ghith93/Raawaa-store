@@ -118,7 +118,7 @@ function checkConfig(config, source) {
   group('الإعدادات والأسعار');
 
   const expected = [
-    { id: 'serum-30', sizeMl: 30, price: 6 },
+    { id: 'serum-30', sizeMl: 30, price: 8 },
     { id: 'serum-50', sizeMl: 50, price: 10 },
     { id: 'serum-100', sizeMl: 100, price: 12 }
   ];
@@ -445,11 +445,11 @@ async function checkCartLogic() {
   const price = (id) => config.products.find((p) => p.id === id).price;
 
   const cases = [
-    { cart: { 'serum-30': 1 }, expected: 6 },
+    { cart: { 'serum-30': 1 }, expected: 8 },
     { cart: { 'serum-50': 2 }, expected: 20 },
     { cart: { 'serum-100': 3 }, expected: 36 },
-    { cart: { 'serum-30': 2, 'serum-50': 1 }, expected: 22 },
-    { cart: { 'serum-30': 1, 'serum-50': 1, 'serum-100': 1 }, expected: 28 }
+    { cart: { 'serum-30': 2, 'serum-50': 1 }, expected: 26 },
+    { cart: { 'serum-30': 1, 'serum-50': 1, 'serum-100': 1 }, expected: 30 }
   ];
 
   for (const c of cases) {
@@ -498,7 +498,7 @@ async function checkAssets() {
   group('الأصول والصور');
   // الصور الفعلية المستخدمة في الصفحة — تُحدَّث مع كل تغيير في المشاهد
   const images = [
-    'assets/img/products/hero-wide-1080.avif', 'assets/img/products/hero-wide-1080.webp',
+    'assets/img/products/hero-wide-v3-1080.avif', 'assets/img/products/hero-wide-v3-1080.webp',
     'assets/img/products/size-30-720.webp', 'assets/img/products/size-30-720.jpg',
     'assets/img/products/size-50-720.webp', 'assets/img/products/size-50-720.jpg',
     'assets/img/products/size-100-720.webp', 'assets/img/products/size-100-720.jpg',
