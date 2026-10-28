@@ -22,6 +22,7 @@ const CORE = [
   './',
   './index.html',
   './privacy.html',
+  './404.html',
   './manifest.webmanifest',
   './css/styles.css',
   './js/config.js',

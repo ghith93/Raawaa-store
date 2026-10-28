@@ -1,13 +1,10 @@
 # RAWAA | رواء — robots.txt
-# الموقع غير منشور بعد. هذا الملف جاهز ليُقدَّم من جذر النطاق عند النشر.
-# خريطة الموقع بمسارات نسبية: حدِّث النطاق داخلها قبل النشر.
+# الموقع منشور على Cloudflare Workers.
 
 User-agent: *
 Allow: /
 
-# صفحات لا تُفهرَس (أدوات ووثائق، غير لازمة للنشر أصلًا)
-Disallow: /docs/
-Disallow: /scripts/
-Disallow: /.github/
+# مسارات لا تُفهرَس
+Disallow: /404.html
 
-Sitemap: https://ghith93.github.io/Raawaa-store/sitemap.xml
+Sitemap: https://rawaa-store.ghith-shikhkhaled.workers.dev/sitemap.xml

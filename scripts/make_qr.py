@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_URL = "https://ghith93.github.io/Raawaa-store/"
+DEFAULT_URL = "https://rawaa-store.ghith-shikhkhaled.workers.dev/"
 DARK = "#231F1B"
 IVORY = "#FBF8F3"
 

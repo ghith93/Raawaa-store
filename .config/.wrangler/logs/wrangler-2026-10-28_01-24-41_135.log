@@ -1,0 +1,1917 @@
+
+--- 2026-10-28T01:24:41.355Z debug
+🪵  Writing logs to "/home/user/.config/.wrangler/logs/wrangler-2026-10-28_01-24-41_135.log"
+---
+
+--- 2026-10-28T01:24:41.355Z debug
+.env file not found at "/home/user/.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-10-28T01:24:41.356Z debug
+.env file not found at "/home/user/.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-10-28T01:24:41.367Z log
+
+ ⛅️ wrangler 4.154.0
+────────────────────
+---
+
+--- 2026-10-28T01:24:41.373Z log
+
+Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
+---
+
+--- 2026-10-28T01:24:41.382Z debug
+Metrics dispatcher: Posting data {"deviceId":"6807db39-ddc0-4669-9164-e349e8c60dd9","event":"wrangler command started","timestamp":1793150681382,"properties":{"amplitude_session_id":1793150681372,"amplitude_event_id":0,"wranglerVersion":"4.154.0","wranglerMajorVersion":4,"wranglerMinorVersion":154,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1 SMP PREEMPT_DYNAMIC Wed Sep 30 12:40:02 UTC 2026","nodeVersion":22,"isFirstUsage":false,"configFileType":"jsonc","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":true,"agent":null,"argsUsed":["config"],"argsCombination":"config","sanitizedCommand":"deploy","sanitizedArgs":{"path":null},"currentAgentSkillsInstalled":null}}
+---
+
+--- 2026-10-28T01:24:41.517Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts
+---
+
+--- 2026-10-28T01:24:41.517Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:41.517Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:41.517Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:41.517Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-10-28T01:24:41.519Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/memberships
+---
+
+--- 2026-10-28T01:24:41.519Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:41.519Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:41.519Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:41.519Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-10-28T01:24:41.654Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-10-28T01:24:41.655Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:41.655Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:41.655Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-10-28T01:24:41.784Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-10-28T01:24:41.784Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:41.784Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:41.784Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-10-28T01:24:41.785Z debug
+Saving to cache: {"account":{"id":"1277e30c7a5bfac599ceb3c471328a24","name":"Ghith.shikhkhaled@gmail.com's Account"}}
+---
+
+--- 2026-10-28T01:24:41.819Z debug
+Starting verifyWorkerMatchesCITag() with tag: undefined, name: rawaa-store
+---
+
+--- 2026-10-28T01:24:41.819Z debug
+No WRANGLER_CI_MATCH_TAG variable provided, aborting verifyWorkerMatchesCITag()
+---
+
+--- 2026-10-28T01:24:41.819Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/1277e30c7a5bfac599ceb3c471328a24/workers/services/rawaa-store
+---
+
+--- 2026-10-28T01:24:41.819Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:41.820Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:41.820Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:41.820Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-10-28T01:24:42.350Z debug
+-- START CF API RESPONSE: Not Found 404
+---
+
+--- 2026-10-28T01:24:42.350Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.350Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.350Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-10-28T01:24:42.352Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/1277e30c7a5bfac599ceb3c471328a24/workers/subdomain
+---
+
+--- 2026-10-28T01:24:42.352Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.352Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.352Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.352Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-10-28T01:24:42.490Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-10-28T01:24:42.491Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.491Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.491Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-10-28T01:24:42.491Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/1277e30c7a5bfac599ceb3c471328a24/workers/scripts/rawaa-store/deployments
+---
+
+--- 2026-10-28T01:24:42.491Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.491Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.491Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.491Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-10-28T01:24:42.583Z debug
+-- START CF API RESPONSE: Not Found 404
+---
+
+--- 2026-10-28T01:24:42.583Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.583Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.583Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-10-28T01:24:42.585Z info
+🌀 Building list of assets...
+---
+
+--- 2026-10-28T01:24:42.589Z info
+✨ Read 124 files from the assets directory /home/user/dist/site
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/.nojekyll
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/_headers
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/assets
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/css
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/index.html
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/js
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/manifest.webmanifest
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/privacy.html
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/robots.txt
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/sitemap.xml
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/sw.js
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/js/cart.js
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/js/config.js
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/css/styles.css
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/assets/brand
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/assets/favicon.svg
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/assets/fonts
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/assets/icons
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/assets/img
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/assets/qr-site.png
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/assets/qr-site.svg
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/assets/img/products
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/assets/img/products/detail-label-480.avif
+---
+
+--- 2026-10-28T01:24:42.589Z debug
+/assets/img/products/detail-label-480.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/detail-label-720.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/detail-label-720.jpg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/detail-label-720.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/detail-label-900.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/detail-label-900.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/editorial-480.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/editorial-480.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/editorial-720.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/editorial-720.jpg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/editorial-720.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/editorial-900.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/editorial-900.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/hero-wide-1080.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/hero-wide-1080.jpg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/hero-wide-1080.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/hero-wide-1400.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/hero-wide-1400.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/hero-wide-1600.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/hero-wide-1600.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/hero-wide-480.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/hero-wide-480.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/hero-wide-720.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/hero-wide-720.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/manifest.json
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/og-image-1200.jpg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-100-480.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-100-480.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-100-720.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-100-720.jpg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-100-720.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-100-900.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-100-900.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-30-480.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-30-480.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-30-720.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-30-720.jpg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-30-720.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-30-900.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-30-900.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-50-480.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-50-480.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-50-720.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-50-720.jpg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-50-720.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-50-900.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/size-50-900.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-square-1080.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-square-1080.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-square-480.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-square-480.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-square-720.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-square-720.jpg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-square-720.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-vertical-1080.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-vertical-1080.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-vertical-480.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-vertical-480.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-vertical-720.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-vertical-720.jpg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/social-vertical-720.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/trio-1080.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/trio-1080.jpg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/trio-1080.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/trio-1400.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/trio-1400.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/trio-480.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/trio-480.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/trio-720.avif
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/img/products/trio-720.webp
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/icons/apple-touch-icon.png
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/icons/favicon-64.png
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/icons/icon-192.png
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/icons/icon-512.png
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/icons/icon-maskable-512.png
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/fonts/almarai-400-latin.subset.woff2
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/fonts/almarai-400.subset.woff2
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/fonts/almarai-700-latin.subset.woff2
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/fonts/almarai-700.subset.woff2
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/fonts/amiri-400-latin.subset.woff2
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/fonts/amiri-400.subset.woff2
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/fonts/cormorant-500-latin.subset.woff2
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/fonts/licenses
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/fonts/licenses/OFL-Almarai.txt
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/fonts/licenses/OFL-Amiri.txt
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/fonts/licenses/OFL-CormorantGaramond.txt
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/bottle-100ml.svg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/bottle-30ml.svg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/bottle-50ml.svg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/logo-mark-badge-v2.svg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/logo-mark-v2.svg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/logo-mark.png
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/logo-mark.svg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/logo-mono-ink-v2.svg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/logo-mono-ink.svg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/logo-mono-ivory-v2.svg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/logo-mono-ivory.svg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/logo-primary-v2.svg
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/logo-primary.png
+---
+
+--- 2026-10-28T01:24:42.590Z debug
+/assets/brand/logo-primary.svg
+---
+
+--- 2026-10-28T01:24:42.591Z debug
+/assets/brand/logo-stacked.svg
+---
+
+--- 2026-10-28T01:24:42.592Z debug
+Ignoring asset: _headers
+---
+
+--- 2026-10-28T01:24:42.609Z info
+🌀 Starting asset upload...
+---
+
+--- 2026-10-28T01:24:42.610Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/1277e30c7a5bfac599ceb3c471328a24/workers/scripts/rawaa-store/assets-upload-session
+---
+
+--- 2026-10-28T01:24:42.610Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.610Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.610Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:42.610Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-10-28T01:24:44.337Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-10-28T01:24:44.338Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.338Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.338Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-10-28T01:24:44.339Z info
+🌀 Found 114 new or modified static assets to upload. Proceeding with upload...
+---
+
+--- 2026-10-28T01:24:44.339Z info
++ /.nojekyll
+---
+
+--- 2026-10-28T01:24:44.340Z info
++ /assets/brand/logo-mono-ivory-v2.svg
+---
+
+--- 2026-10-28T01:24:44.340Z info
++ /sitemap.xml
+---
+
+--- 2026-10-28T01:24:44.340Z info
++ /assets/img/products/size-30-480.avif
+---
+
+--- 2026-10-28T01:24:44.340Z info
++ /assets/img/products/social-square-480.avif
+---
+
+--- 2026-10-28T01:24:44.340Z info
++ /assets/img/products/hero-wide-480.avif
+---
+
+--- 2026-10-28T01:24:44.340Z info
++ /assets/img/products/editorial-480.avif
+---
+
+--- 2026-10-28T01:24:44.340Z info
++ /assets/img/products/hero-wide-480.webp
+---
+
+--- 2026-10-28T01:24:44.340Z info
++ /assets/img/products/social-square-720.avif
+---
+
+--- 2026-10-28T01:24:44.340Z info
++ /assets/img/products/trio-480.avif
+---
+
+--- 2026-10-28T01:24:44.340Z info
++ /assets/icons/favicon-64.png
+---
+
+--- 2026-10-28T01:24:44.340Z info
++ /assets/fonts/almarai-700-latin.subset.woff2
+---
+
+--- 2026-10-28T01:24:44.340Z info
++ /assets/img/products/size-30-900.avif
+---
+
+--- 2026-10-28T01:24:44.340Z info
++ /assets/img/products/size-100-720.webp
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/img/products/size-50-900.avif
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/fonts/licenses/OFL-Amiri.txt
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/img/products/social-vertical-720.avif
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/qr-site.png
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/img/products/editorial-720.webp
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/img/products/size-50-900.webp
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/img/products/trio-720.webp
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/icons/icon-maskable-512.png
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/img/products/social-square-1080.webp
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/img/products/editorial-900.webp
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/img/products/trio-1080.avif
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /privacy.html
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/brand/logo-mono-ivory.svg
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/img/products/trio-1400.avif
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /js/config.js
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/img/products/social-vertical-1080.webp
+---
+
+--- 2026-10-28T01:24:44.341Z info
++ /assets/img/products/trio-1400.webp
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/img/products/size-30-720.jpg
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/img/products/social-square-720.jpg
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/brand/bottle-50ml.svg
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/icons/icon-512.png
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/fonts/amiri-400.subset.woff2
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /index.html
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/img/products/og-image-1200.jpg
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/brand/logo-mark-v2.svg
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /robots.txt
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/favicon.svg
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/brand/logo-mark.svg
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/img/products/size-50-480.avif
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/img/products/size-30-480.webp
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/img/products/size-50-480.webp
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/img/products/size-30-720.avif
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/img/products/size-50-720.avif
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/img/products/hero-wide-720.avif
+---
+
+--- 2026-10-28T01:24:44.342Z info
++ /assets/fonts/almarai-400-latin.subset.woff2
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/trio-480.webp
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/size-30-720.webp
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/size-50-720.webp
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /sw.js
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/fonts/licenses/OFL-Almarai.txt
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/trio-720.avif
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/hero-wide-1080.avif
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/size-30-900.webp
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/size-100-900.webp
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/social-vertical-720.webp
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/hero-wide-1080.webp
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/fonts/almarai-400.subset.woff2
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/fonts/almarai-700.subset.woff2
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/hero-wide-1600.avif
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/icons/icon-192.png
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/brand/logo-primary.svg
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/trio-1080.webp
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/qr-site.svg
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/hero-wide-1600.webp
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/detail-label-900.avif
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/brand/logo-stacked.svg
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/size-50-720.jpg
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/brand/bottle-100ml.svg
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/img/products/social-vertical-720.jpg
+---
+
+--- 2026-10-28T01:24:44.343Z info
++ /assets/brand/logo-mark.png
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/trio-1080.jpg
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /js/cart.js
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/brand/logo-mono-ink-v2.svg
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/brand/logo-mark-badge-v2.svg
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /manifest.webmanifest
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/size-100-480.avif
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/brand/logo-primary-v2.svg
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/size-100-480.webp
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/social-square-480.webp
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/size-100-720.avif
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/social-vertical-480.avif
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/editorial-480.webp
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/editorial-720.avif
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/social-vertical-480.webp
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/social-square-720.webp
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/size-100-900.avif
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/fonts/licenses/OFL-CormorantGaramond.txt
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/hero-wide-720.webp
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/social-square-1080.avif
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/editorial-900.avif
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/detail-label-480.webp
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/detail-label-480.avif
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/hero-wide-1400.avif
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/social-vertical-1080.avif
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/fonts/cormorant-500-latin.subset.woff2
+---
+
+--- 2026-10-28T01:24:44.344Z info
++ /assets/img/products/manifest.json
+---
+
+--- 2026-10-28T01:24:44.344Z info
+   (truncating changed assets log, set `WRANGLER_LOG=debug` environment variable to see full diff)
+---
+
+--- 2026-10-28T01:24:44.371Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/1277e30c7a5bfac599ceb3c471328a24/workers/assets/upload?base64=true
+---
+
+--- 2026-10-28T01:24:44.371Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.371Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.371Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.376Z debug
+BODY: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.376Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-10-28T01:24:44.380Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/1277e30c7a5bfac599ceb3c471328a24/workers/assets/upload?base64=true
+---
+
+--- 2026-10-28T01:24:44.380Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.380Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.380Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.384Z debug
+BODY: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.384Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-10-28T01:24:44.388Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/1277e30c7a5bfac599ceb3c471328a24/workers/assets/upload?base64=true
+---
+
+--- 2026-10-28T01:24:44.388Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.388Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.388Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.392Z debug
+BODY: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:44.392Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-10-28T01:24:45.328Z debug
+-- START CF API RESPONSE: Created 201
+---
+
+--- 2026-10-28T01:24:45.328Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.328Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.328Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-10-28T01:24:45.329Z info
+Uploaded 38 of 114 assets
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/brand/logo-mark-v2.svg
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /robots.txt
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/favicon.svg
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/brand/logo-mark.svg
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/size-50-480.avif
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/size-30-480.webp
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/size-50-480.webp
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/size-30-720.avif
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/size-50-720.avif
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/hero-wide-720.avif
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/fonts/almarai-400-latin.subset.woff2
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/trio-480.webp
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/size-30-720.webp
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/size-50-720.webp
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /sw.js
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/fonts/licenses/OFL-Almarai.txt
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/trio-720.avif
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/hero-wide-1080.avif
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/size-30-900.webp
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/size-100-900.webp
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/social-vertical-720.webp
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/hero-wide-1080.webp
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/fonts/almarai-400.subset.woff2
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/fonts/almarai-700.subset.woff2
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/hero-wide-1600.avif
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/icons/icon-192.png
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/brand/logo-primary.svg
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/trio-1080.webp
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/qr-site.svg
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/hero-wide-1600.webp
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/detail-label-900.avif
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/brand/logo-stacked.svg
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/size-50-720.jpg
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/brand/bottle-100ml.svg
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/social-vertical-720.jpg
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/brand/logo-mark.png
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /assets/img/products/trio-1080.jpg
+---
+
+--- 2026-10-28T01:24:45.329Z debug
+✨ /js/cart.js
+---
+
+--- 2026-10-28T01:24:45.368Z debug
+-- START CF API RESPONSE: Created 201
+---
+
+--- 2026-10-28T01:24:45.368Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.368Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.368Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-10-28T01:24:45.368Z info
+Uploaded 76 of 114 assets
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/brand/logo-mono-ink-v2.svg
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/brand/logo-mark-badge-v2.svg
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /manifest.webmanifest
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/size-100-480.avif
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/brand/logo-primary-v2.svg
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/size-100-480.webp
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/social-square-480.webp
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/size-100-720.avif
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/social-vertical-480.avif
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/editorial-480.webp
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/editorial-720.avif
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/social-vertical-480.webp
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/social-square-720.webp
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/size-100-900.avif
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/fonts/licenses/OFL-CormorantGaramond.txt
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/hero-wide-720.webp
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/social-square-1080.avif
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/editorial-900.avif
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/detail-label-480.webp
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/detail-label-480.avif
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/hero-wide-1400.avif
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/social-vertical-1080.avif
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/fonts/cormorant-500-latin.subset.woff2
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/manifest.json
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/icons/apple-touch-icon.png
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/brand/logo-mono-ink.svg
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/hero-wide-1400.webp
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/detail-label-720.webp
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/detail-label-720.avif
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/fonts/amiri-400-latin.subset.woff2
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/detail-label-900.webp
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/size-100-720.jpg
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/brand/bottle-30ml.svg
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/editorial-720.jpg
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/hero-wide-1080.jpg
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /css/styles.css
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/img/products/detail-label-720.jpg
+---
+
+--- 2026-10-28T01:24:45.369Z debug
+✨ /assets/brand/logo-primary.png
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+-- START CF API RESPONSE: Created 201
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-10-28T01:24:45.380Z info
+Uploaded 114 of 114 assets
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /.nojekyll
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/brand/logo-mono-ivory-v2.svg
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /sitemap.xml
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/size-30-480.avif
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/social-square-480.avif
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/hero-wide-480.avif
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/editorial-480.avif
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/hero-wide-480.webp
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/social-square-720.avif
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/trio-480.avif
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/icons/favicon-64.png
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/fonts/almarai-700-latin.subset.woff2
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/size-30-900.avif
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/size-100-720.webp
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/size-50-900.avif
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/fonts/licenses/OFL-Amiri.txt
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/social-vertical-720.avif
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/qr-site.png
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/editorial-720.webp
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/size-50-900.webp
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/trio-720.webp
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/icons/icon-maskable-512.png
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/social-square-1080.webp
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/editorial-900.webp
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/trio-1080.avif
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /privacy.html
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/brand/logo-mono-ivory.svg
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/trio-1400.avif
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /js/config.js
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/social-vertical-1080.webp
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/trio-1400.webp
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/size-30-720.jpg
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/social-square-720.jpg
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/brand/bottle-50ml.svg
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/icons/icon-512.png
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/fonts/amiri-400.subset.woff2
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /index.html
+---
+
+--- 2026-10-28T01:24:45.380Z debug
+✨ /assets/img/products/og-image-1200.jpg
+---
+
+--- 2026-10-28T01:24:45.380Z log
+✨ Success! Uploaded 114 files (1.03 sec)
+
+---
+
+--- 2026-10-28T01:24:45.385Z log
+Total Upload: 0.31 KiB / gzip: 0.22 KiB
+---
+
+--- 2026-10-28T01:24:45.385Z debug
+skipping provisioning on assets-only project
+---
+
+--- 2026-10-28T01:24:45.386Z debug
+-- START CF API REQUEST: PUT https://api.cloudflare.com/client/v4/accounts/1277e30c7a5bfac599ceb3c471328a24/workers/scripts/rawaa-store
+---
+
+--- 2026-10-28T01:24:45.386Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.386Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.386Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.386Z debug
+BODY: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.386Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-10-28T01:24:45.807Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-10-28T01:24:45.808Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.808Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.808Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-10-28T01:24:45.810Z log
+Uploaded rawaa-store (3.32 sec)
+---
+
+--- 2026-10-28T01:24:45.811Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/1277e30c7a5bfac599ceb3c471328a24/workers/workers/rawaa-store
+---
+
+--- 2026-10-28T01:24:45.811Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.811Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.811Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:45.811Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-10-28T01:24:46.034Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-10-28T01:24:46.034Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:46.034Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:46.034Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-10-28T01:24:46.034Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/1277e30c7a5bfac599ceb3c471328a24/workers/scripts/rawaa-store/subdomain
+---
+
+--- 2026-10-28T01:24:46.034Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:46.034Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:46.034Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:46.034Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-10-28T01:24:46.185Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-10-28T01:24:46.185Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:46.185Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-10-28T01:24:46.185Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-10-28T01:24:46.186Z log
+Deployed rawaa-store triggers (0.38 sec)
+---
+
+--- 2026-10-28T01:24:46.186Z log
+  https://rawaa-store.ghith-shikhkhaled.workers.dev
+---
+
+--- 2026-10-28T01:24:46.186Z log
+Current Version ID: d6c2bb67-cb61-4946-a0a3-aeb60d8349cb
+---
+
+--- 2026-10-28T01:24:46.188Z debug
+Metrics dispatcher: Posting data {"deviceId":"a57571ac-221e-4f82-874c-d535a8fc0a99","event":"deploy worker script","timestamp":1793150686188,"properties":{"amplitude_session_id":1793150686186,"amplitude_event_id":0,"wranglerVersion":"4.154.0","wranglerMajorVersion":4,"wranglerMinorVersion":154,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1 SMP PREEMPT_DYNAMIC Wed Sep 30 12:40:02 UTC 2026","nodeVersion":22,"isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":null,"category":"Workers","os":"linux:x64","usesTypeScript":false,"durationMs":4399,"sourceMapSize":491,"assetUploadDurationMs":1035,"assetUploadIsBulk":true,"assetUploadFileCount":114,"assetUploadTotalBytes":1135985,"currentAgentSkillsInstalled":null}}
+---
+
+--- 2026-10-28T01:24:46.189Z log
+
+Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
+---
+
+--- 2026-10-28T01:24:46.191Z debug
+Metrics dispatcher: Posting data {"deviceId":"a57571ac-221e-4f82-874c-d535a8fc0a99","event":"wrangler command completed","timestamp":1793150686191,"properties":{"amplitude_session_id":1793150681372,"amplitude_event_id":1,"wranglerVersion":"4.154.0","wranglerMajorVersion":4,"wranglerMinorVersion":154,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1 SMP PREEMPT_DYNAMIC Wed Sep 30 12:40:02 UTC 2026","nodeVersion":22,"isFirstUsage":false,"configFileType":"jsonc","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":true,"agent":null,"argsUsed":["config"],"argsCombination":"config","sanitizedCommand":"deploy","sanitizedArgs":{"path":null},"durationMs":4833,"currentAgentSkillsInstalled":null}}
+---
