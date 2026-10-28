@@ -63,11 +63,14 @@ jobs:
             if(fs.existsSync(f)) src+=fs.readFileSync(f,'utf8');
           for(const f of fs.readdirSync('js').filter(x=>x.endsWith('.js')))
             src+=fs.readFileSync(path.join('js',f),'utf8');
+          src+=fs.readFileSync('css/styles.css','utf8');   // الخطوط تُشار إليها من CSS
           const dead=[];
+          const ALLOW=[/^social-/,/^og-image/];
           const walk=d=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){
             const p=path.join(d,e.name);
             if(e.isDirectory()){if(!['source'].includes(e.name))walk(p);continue}
             if(!/\.(svg|png|jpg|webp|avif|woff2)$/.test(e.name))continue;
+            if(/^(social-|og-image)/.test(e.name))continue;  // تُستخدم خارج الموقع
             if(!src.includes(e.name))dead.push(p);
           }};
           walk('assets');
