@@ -12,3 +12,13 @@ __pycache__/
 .pytest_cache/
 __pycache__/
 *.pyc
+
+# مخرجات التوليد عالية الدقة — تُعاد بأمر واحد (python3 scripts/make_product_imagery.py)
+# نحفظ فقط النسخ المحسّنة للويب في assets/img/products
+assets/img/design-raw/*.png
+
+# حزم البناء — تُعاد بـ (bash scripts/build-bundles.sh)، لا تُحفظ في التاريخ
+dist/
+
+# لقطات تقارير مؤقتة
+docs/screenshots/*.png

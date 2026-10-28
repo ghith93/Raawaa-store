@@ -53,46 +53,46 @@
   "weights": {
     "iPhone SE": {
       "requests": 5,
-      "total_kb": 247.2,
+      "total_kb": 227.8,
       "by_type_kb": {
-        "document": 32.1,
+        "document": 37.6,
+        "image": 18.2,
+        "stylesheet": 37.4,
         "font": 76.6,
-        "image": 55.8,
-        "stylesheet": 35.9,
-        "script": 46.8
+        "script": 58.0
       }
     },
     "iPhone 14": {
       "requests": 5,
-      "total_kb": 272.5,
+      "total_kb": 229.8,
       "by_type_kb": {
-        "document": 32.1,
+        "document": 37.6,
         "font": 76.6,
-        "image": 81.0,
-        "stylesheet": 35.9,
-        "script": 46.8
+        "stylesheet": 37.4,
+        "image": 20.2,
+        "script": 58.0
       }
     },
     "iPad": {
       "requests": 5,
-      "total_kb": 302.7,
+      "total_kb": 248.9,
       "by_type_kb": {
-        "document": 32.1,
+        "document": 37.6,
         "font": 76.6,
-        "stylesheet": 35.9,
-        "script": 46.8,
-        "image": 111.3
+        "stylesheet": 37.4,
+        "image": 39.3,
+        "script": 58.0
       }
     },
     "سطح المكتب": {
       "requests": 5,
-      "total_kb": 369.0,
+      "total_kb": 267.2,
       "by_type_kb": {
-        "document": 32.1,
+        "document": 37.6,
+        "image": 57.6,
+        "stylesheet": 37.4,
         "font": 76.6,
-        "image": 177.6,
-        "stylesheet": 35.9,
-        "script": 46.8
+        "script": 58.0
       }
     }
   }

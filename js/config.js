@@ -12,7 +12,7 @@
       arabicName: 'رواء',
       tagline: 'عناية هادئة بالشعر',
       shortDescription: 'سيروم شعر نسائي بأحجام ثلاثة، بطلب مباشر عبر واتساب.',
-      city: 'الرقة',
+      city: 'حماة',
       country: 'سوريا'
     },
 
@@ -55,7 +55,7 @@
           src: 'assets/img/products/size-30-720.jpg',
           width: 720,
           height: 720,
-          alt: 'تصور تصميمي لعبوة سيروم رواء بحجم 30 مل على حافة حجرية — ليس صورة منتج مُصنَّع'
+          alt: 'تصور تصميمي لعبوة سيروم رواء 30 مل — زجاج كهرماني وملصق عاجي باسم RAWAA ورواء، وليست صورة منتج مُصنَّع'
         }
       },
       {
@@ -75,7 +75,7 @@
           src: 'assets/img/products/size-50-720.jpg',
           width: 720,
           height: 720,
-          alt: 'تصور تصميمي لعبوة سيروم رواء بحجم 50 مل على حافة حجرية — ليس صورة منتج مُصنَّع'
+          alt: 'تصور تصميمي لعبوة سيروم رواء 50 مل — زجاج كهرماني وغطاء قطّارة أسود وملصق عاجي، وليست صورة منتج مُصنَّع'
         }
       },
       {
@@ -95,7 +95,7 @@
           src: 'assets/img/products/size-100-720.jpg',
           width: 720,
           height: 720,
-          alt: 'تصور تصميمي لعبوة سيروم رواء بحجم 100 مل على حافة حجرية — ليس صورة منتج مُصنَّع'
+          alt: 'تصور تصميمي لعبوة سيروم رواء 100 مل — أكبر أحجام العلامة، وليست صورة منتج مُصنَّع'
         }
       }
     ],
@@ -106,18 +106,32 @@
      * ويظهر أثرها بالتفصيل في رسالة واتساب — لا يُخصم شيء تلقائيًا على أي بوابة.
      * `available: false` تعني أن الخيار معروض للمعلومة دون إمكانية اختياره.
      */
+    /**
+     * مناطق التوصيل — الأرقام من صاحب المشروع:
+     *   حماة (المدينة الأم): 2 دولار
+     *   باقي المحافظات:      4 دولارات
+     * التوصيل المجاني مع شام كاش يسري داخل حماة فقط.
+     */
+    delivery: {
+      defaultZone: 'hama',
+      zones: [
+        { id: 'hama', label: 'حماة', fee: 2, freeWithShamCash: true },
+        { id: 'other', label: 'باقي المحافظات', fee: 4, freeWithShamCash: false }
+      ],
+      note: 'التوصيل المجاني مع شام كاش داخل حماة فقط. خارج حماة تُضاف رسوم التوصيل حتى مع شام كاش.'
+    },
+
     payment: {
       title: 'طريقة الدفع',
-      freeDeliveryNote: 'التوصيل المجاني يسري داخل الرقة على الطلبات المدفوعة عبر شام كاش.',
+      freeDeliveryNote: 'التوصيل المجاني مع شام كاش يسري داخل حماة فقط؛ باقي المحافظات عليها رسوم توصيل 4 دولارات.',
       methods: [
         {
           id: 'shamcash',
           label: 'شام كاش',
           short: 'شام كاش',
-          description: 'خصم 10% على قيمة المنتجات + توصيل مجاني.',
+          description: 'خصم 10% على قيمة المنتجات + توصيل مجاني داخل حماة.',
           discountPercent: 10,
-          deliveryFee: 0,
-          freeDelivery: true,
+          freeDeliveryIn: ['hama'],
           requiresReceipt: true,
           available: true,
           confirmNote: 'يُرسَل إشعار التحويل على واتساب لتأكيد الدفع قبل تجهيز الطلب.'
@@ -126,10 +140,9 @@
           id: 'cod',
           label: 'الدفع عند الاستلام',
           short: 'الدفع عند الاستلام',
-          description: 'بلا خصم، ورسوم توصيل 2 دولار تُضاف إلى الإجمالي.',
+          description: 'بلا خصم، وتُضاف رسوم التوصيل: 2 دولار داخل حماة، 4 دولارات لباقي المحافظات.',
           discountPercent: 0,
-          deliveryFee: 2,
-          freeDelivery: false,
+          freeDeliveryIn: [],
           requiresReceipt: false,
           available: true,
           confirmNote: 'يُدفع المبلغ كاملًا عند استلام الطلب.'
@@ -140,33 +153,33 @@
     imagery: {
       hero: {
         base: 'hero-wide',
-        avif: ['hero-wide-480.avif', 'hero-wide-720.avif', 'hero-wide-1080.avif', 'hero-wide-1312.avif'],
-        webp: ['hero-wide-480.webp', 'hero-wide-720.webp', 'hero-wide-1080.webp', 'hero-wide-1312.webp'],
-        widths: [480, 720, 1080, 1312],
+        avif: ['hero-wide-480.avif', 'hero-wide-720.avif', 'hero-wide-1080.avif', 'hero-wide-1400.avif', 'hero-wide-1600.avif'],
+        webp: ['hero-wide-480.webp', 'hero-wide-720.webp', 'hero-wide-1080.webp', 'hero-wide-1400.webp', 'hero-wide-1600.webp'],
+        widths: [480, 720, 1080, 1400, 1600],
         src: 'assets/img/products/hero-wide-1080.jpg',
         width: 1080,
-        height: 672,
-        alt: 'تصور تصميمي لعبوة سيروم رواء على حافة حجرية بجانب قماش زيتوني وغصن زيتون'
+        height: 540,
+        alt: 'تصور تصميمي للأحجام الثلاثة لسيروم رواء على سطح فاتح بإضاءة ناعمة — وليست صورة منتج مُصنَّع'
       },
       trio: {
-        base: 'trio-wide',
-        avif: ['trio-wide-480.avif', 'trio-wide-720.avif', 'trio-wide-1080.avif', 'trio-wide-1312.avif'],
-        webp: ['trio-wide-480.webp', 'trio-wide-720.webp', 'trio-wide-1080.webp', 'trio-wide-1312.webp'],
-        widths: [480, 720, 1080, 1312],
-        src: 'assets/img/products/trio-wide-1080.jpg',
+        base: 'trio',
+        avif: ['trio-480.avif', 'trio-720.avif', 'trio-1080.avif', 'trio-1400.avif'],
+        webp: ['trio-480.webp', 'trio-720.webp', 'trio-1080.webp', 'trio-1400.webp'],
+        widths: [480, 720, 1080, 1400],
+        src: 'assets/img/products/trio-1080.jpg',
         width: 1080,
-        height: 672,
-        alt: 'الأحجام الثلاثة لسيروم رواء 30 و50 و100 مل — تصور تصميمي'
+        height: 810,
+        alt: 'الأحجام الثلاثة لسيروم رواء 30 و50 و100 مل بجانب بعضها — تصور تصميمي'
       },
       editorial: {
-        base: 'editorial-portrait',
-        avif: ['editorial-portrait-480.avif', 'editorial-portrait-720.avif', 'editorial-portrait-768.avif'],
-        webp: ['editorial-portrait-480.webp', 'editorial-portrait-720.webp', 'editorial-portrait-768.webp'],
-        widths: [480, 720, 768],
-        src: 'assets/img/products/editorial-portrait-720.jpg',
+        base: 'editorial',
+        avif: ['editorial-480.avif', 'editorial-720.avif', 'editorial-900.avif'],
+        webp: ['editorial-480.webp', 'editorial-720.webp', 'editorial-900.webp'],
+        widths: [480, 720, 900],
+        src: 'assets/img/products/editorial-720.jpg',
         width: 720,
-        height: 1290,
-        alt: 'صورة تحريرية لعبوة سيروم رواء بين قماش كتاني وغصن زيتون'
+        height: 1029,
+        alt: 'صورة تحريرية لعبوة سيروم رواء بإضاءة جانبية ناعمة — تصور تصميمي'
       },
       detail: {
         base: 'detail-label',
@@ -176,8 +189,23 @@
         src: 'assets/img/products/detail-label-720.jpg',
         width: 720,
         height: 720,
-        alt: 'مقربة من غطاء وملصق عبوة سيروم رواء'
+        alt: 'مقربة من ملصق عبوة رواء يظهر الاسم والشعار — تصور تصميمي'
       }
+    },
+
+
+    /**
+     * تكلفة الوحدة — من صاحب المشروع: 3.00 دولار تشمل السيروم والتغليف لحجم 100 مل.
+     * تفصيل التكلفة لكل حجم غير معروف بعد، فنستخدم توزيعًا تقديريًا:
+     * تكلفة ثابتة 1.20$ للتغليف + 0.018$ لكل ملليلتر.
+     * 🔴 يجب استبدالها بتكلفة المصنع الفعلية قبل التصنيع.
+     */
+    costing: {
+      source: 'owner-estimate',
+      cost100ml: 3.00,
+      fixedCost: 1.20,
+      perMl: 0.018,
+      note: 'تقديري — لم يُؤكَّد تفصيل التكلفة لكل حجم من المصنع.'
     },
 
     cart: {

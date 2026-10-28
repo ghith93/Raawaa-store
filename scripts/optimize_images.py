@@ -22,21 +22,18 @@ OUT = ROOT / "assets" / "img" / "products"
 
 # اسم الأصل: (العرض الأكبر المستهدف)
 PLAN = {
-    "hero-wide.png": 1600,
-    "trio-wide.png": 1400,
-    "wide-100.png": 1400,
+    # المشاهد الجديدة (الجيل الثاني) — تطابق أسماء الأسواق في config
+    "trio.png": 1400,
     "size-30.png": 900,
     "size-50.png": 900,
     "size-100.png": 900,
-    "editorial-portrait.png": 900,
+    "editorial.png": 900,
+    "detail-label.png": 900,
+    "hero-wide.png": 1600,
     "social-square.png": 1080,
     "social-vertical.png": 1080,
-    "detail-label.png": 900,
-    "side-50.png": 900,
-    "back-50.png": 900,
-}
+    }
 
-# عرض مخصص أصغر للهواتف
 WIDTHS = [480, 720, 1080, 1400, 1600]
 
 
@@ -50,17 +47,24 @@ def widths_for(max_w: int) -> list[int]:
     return sorted(ws)
 
 
+# ملفات تُحفظ كما هي ولا تُولَّد من design-raw (لا يجوز حذفها عند التنظيف)
+PRESERVED = {"og-image-1200.jpg"}
+
+
 def build() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     for old in OUT.glob("*"):
+        if old.name in PRESERVED:
+            continue
         old.unlink()
 
     manifest: dict[str, dict] = {}
 
+    missing = []
     for name, max_w in PLAN.items():
         src = RAW / name
         if not src.exists():
-            print(f"! missing raw: {name}")
+            missing.append(name)
             continue
         img = Image.open(src).convert("RGB")
         base = name.replace(".png", "")

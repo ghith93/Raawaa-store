@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 420"
+     width="1120" height="420" role="img" aria-label="RAWAA | رواء">
+  <g transform="translate(60,70)">
+    <g>
+      <rect x="0.0" y="0" width="7.199999999999999" height="96" fill="#231F1B"/>
+      <path d="M 7.199999999999999 0 L 36.9024 0
+               C 54.7584 0 59.519999999999996 13.440000000000001 59.519999999999996 26.880000000000003
+               C 59.519999999999996 42.24 51.1872 51.84 36.9024 51.84
+               L 7.199999999999999 51.84"
+            fill="none" stroke="#231F1B" stroke-width="7.199999999999999"/>
+      <path d="M 34.52159999999999 51.84 L 60.7104 96" stroke="#231F1B" stroke-width="7.199999999999999"/>
+    </g>
+<g>
+      <path d="M 87.3216 96 L 112.32 0 L 137.3184 96" fill="none" stroke="#231F1B" stroke-width="7.199999999999999"/>
+      <path d="M 98.0352 63.36 L 126.6048 63.36" stroke="#231F1B" stroke-width="5.76"/>
+    </g>
+<g>
+      <path d="M 165.12 0 L 179.4048 96 L 194.88 32.64 L 210.3552 96 L 224.64 0"
+            fill="none" stroke="#231F1B" stroke-width="7.199999999999999" stroke-linejoin="miter"/>
+    </g>
+<g>
+      <path d="M 252.4416 96 L 277.44 0 L 302.4384 96" fill="none" stroke="#231F1B" stroke-width="7.199999999999999"/>
+      <path d="M 263.1552 63.36 L 291.7248 63.36" stroke="#231F1B" stroke-width="5.76"/>
+    </g>
+<g>
+      <path d="M 335.0016 96 L 360.0 0 L 384.9984 96" fill="none" stroke="#231F1B" stroke-width="7.199999999999999"/>
+      <path d="M 345.7152 63.36 L 374.2848 63.36" stroke="#231F1B" stroke-width="5.76"/>
+    </g>
+  </g>
+  <!-- خط فاصل رقيق بلون ذهبي -->
+  <rect x="60" y="228" width="200" height="2" fill="#9A7B45"/>
+  <!-- الاسم العربي: مسار نصي حقيقي بخط Amiri مضمّن كمسار عند التصدير -->
+  <text x="60" y="352" font-family="Amiri, serif" font-size="118" fill="#231F1B"
+        direction="rtl" text-anchor="start">رواء</text>
+  <text x="330" y="352" font-family="Cormorant Garamond, serif" font-size="46"
+        fill="#9A7B45" letter-spacing="6">SERUM</text>
+</svg>

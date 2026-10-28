@@ -59,3 +59,30 @@ cd Raawaa-store && python3 -m http.server 8080
 | CI فشل في الإتاحة | axe-core تغيّر مساره | تحقق من `AXE_PATH` في سير العمل |
 | صور لا تظهر | مسار خاطئ بعد نقل ملف | `node scripts/check-site.mjs` يحدد الملف |
 | رسالة واتساب لا تُفتح | حاجب نوافذ منبثقة | يوجد رابط بديل داخل السلة |
+
+---
+
+## إضافة: ماذا تفعل عند فشل أو نقل
+
+### إذا فشل فحص على `main`
+1. ستجد Issue بعنوان **«⛔ فشل فحص على main»** أُنشئ تلقائيًا.
+2. افتح رابط التشغيل بداخله واقرأ الخطوة الفاشلة.
+3. أصلح السبب، أو ارجع للالتزام السابق:
+   `git revert HEAD` ثم ارفع.
+4. أغلق الـIssue بعد نجاح الفحوصات.
+
+### نقل الاستضافة إلى Cloudflare Pages (D-015)
+1. `python3 scripts/set-site-url.py https://<اسم-المشروع>.pages.dev/`
+   — يستبدل canonical وog:url وsitemap وrobots وQR في 20 موضعًا.
+2. ارفع: `python3 scripts/push-to-github.py "نقل العنوان"`
+3. تحقق: `python3 scripts/browser-test.py --base https://<المشروع>.pages.dev/`
+4. أوقف GitHub Pages: Settings → Pages → Source: **None** (لا تحذف).
+
+### إذا اختفت مصادر الصور عالية الدقة
+هذا سلوك مقصود — تُستبعد من المستودع لتوفير 20 MB. تُعاد بأمرين:
+`python3 scripts/make_product_imagery.py && python3 scripts/optimize_images.py`
+التفاصيل: `docs/REPRODUCE-IMAGERY.md`.
+
+### إذا فشل الرفع بسبب الشبكة
+`push-to-github.py` يعيد المحاولة تلقائيًا 3 مرات (1s → 2s → 4s) على الأخطاء
+العابرة فقط. إذا تكرر 401 أو 403 فالمشكلة في التوكن لا في الشبكة.

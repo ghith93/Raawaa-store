@@ -72,9 +72,9 @@ def tighten(img: Image.Image, pad_ratio: float = 0.10, bg=IVORY, dark=200) -> Im
 
 
 def main():
-    mark = ROOT / "assets" / "brand" / "logo-mark.svg"
+    mark = ROOT / "assets" / "brand" / "logo-mark-v2.svg"
     if not mark.is_file():
-        sys.exit("لوجو الأيقونة مفقود")
+        sys.exit("لوجو الأيقونة (v2) مفقود")
 
     produced = []
 

@@ -182,6 +182,10 @@ async function checkNoScatteredPrices() {
   for (const m of cfgSrc.matchAll(/(?:discountPercent|deliveryFee):\s*(\d+(?:\.\d+)?)/g)) {
     allowedNumbers.add(m[1]);
   }
+  // رسوم مناطق التوصيل مصدرها delivery.zones أيضاً
+  for (const m of cfgSrc.matchAll(/fee:\s*(\d+(?:\.\d+)?)/g)) {
+    allowedNumbers.add(m[1]);
+  }
 
   const pricePatterns = [/\$\s*(\d+(?:\.\d+)?)\b/, /\b(\d+(?:\.\d+)?)\s*\$/, /\b(\d+(?:\.\d+)?)\s*(?:دولار|USD)/i];
   const offenders = [];
@@ -492,12 +496,13 @@ async function checkCartLogic() {
 /* ------------------------- 8) الأداء والأصول ------------------------- */
 async function checkAssets() {
   group('الأصول والصور');
+  // الصور الفعلية المستخدمة في الصفحة — تُحدَّث مع كل تغيير في المشاهد
   const images = [
-    'assets/img/hero-720.webp', 'assets/img/hero-720.jpg',
-    'assets/img/serum-30-720.webp', 'assets/img/serum-30-720.jpg',
-    'assets/img/serum-50-720.webp', 'assets/img/serum-50-720.jpg',
-    'assets/img/serum-100-720.webp', 'assets/img/serum-100-720.jpg',
-    'assets/img/texture-1200.webp', 'assets/img/texture-1200.jpg'
+    'assets/img/products/hero-wide-1080.avif', 'assets/img/products/hero-wide-1080.webp',
+    'assets/img/products/size-30-720.webp', 'assets/img/products/size-30-720.jpg',
+    'assets/img/products/size-50-720.webp', 'assets/img/products/size-50-720.jpg',
+    'assets/img/products/size-100-720.webp', 'assets/img/products/size-100-720.jpg',
+    'assets/img/products/editorial-720.webp', 'assets/img/products/trio-1080.avif'
   ];
   let total = 0;
   for (const img of images) {
@@ -556,31 +561,87 @@ async function checkAssets() {
   info('أنماط سطرية في الصفحة', `${inlineStyles.length} حالة (مقصودة لضبط بسيط)`);
 }
 
+/* ------------------------- 8ب) الأمان ورؤوس الحماية ------------------------- */
+async function checkSecurity() {
+  group('الأمان');
+
+  const index = await read('index.html');
+  const privacy = await read('privacy.html');
+
+  // 1) CSP موجود في الصفحتين
+  for (const [name, html] of [['index.html', index], ['privacy.html', privacy]]) {
+    const m = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)"/);
+    if (!m) { fail(`${name}: سياسة CSP مفقودة`); continue; }
+    const csp = m[1];
+    const need = ["default-src 'self'", "object-src 'none'", "base-uri 'self'", "form-action 'self'"];
+    const missing = need.filter((n) => !csp.includes(n));
+    if (missing.length) fail(`${name}: CSP ناقص → ${missing.join(', ')}`);
+    else pass(`${name}: CSP مكتمل (${csp.split(';').length} توجيهًا)`);
+  }
+
+  // 2) frame-ancestors لا يعمل داخل meta — يجب ألا يكون موجودًا هناك
+  for (const [name, html] of [['index.html', index], ['privacy.html', privacy]]) {
+    const m = html.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)"/);
+    if (m && m[1].includes('frame-ancestors')) {
+      fail(`${name}: frame-ancestors داخل meta — يُتجاهل ويطلق تحذيرًا في وحدة التحكم`);
+    } else {
+      pass(`${name}: لا توجيهات مُتجاهلة داخل meta`);
+    }
+  }
+
+  // 3) _headers موجود ويحتوي رؤوسًا حقيقية
+  const headers = await read('_headers');
+  if (!headers) {
+    fail('_headers مفقود — رؤوس الأمان لن تُطبَّق عند النقل إلى Cloudflare');
+  } else {
+    for (const h of ['X-Content-Type-Options', 'X-Frame-Options', 'Referrer-Policy',
+                     'Permissions-Policy', 'Strict-Transport-Security', 'Content-Security-Policy']) {
+      if (headers.includes(h)) pass(`_headers: ${h}`);
+      else fail(`_headers: ${h} مفقود`);
+    }
+    if (headers.includes("frame-ancestors 'none'")) pass('frame-ancestors في مكانه الصحيح (رأس HTTP)');
+    else fail('frame-ancestors مفقود من _headers');
+  }
+
+  // 4) لا مداخل خطرة في الشيفرة
+  for (const f of ['js/config.js', 'js/cart.js']) {
+    const code = await read(f);
+    if (/\beval\s*\(|new\s+Function\s*\(|document\.write\s*\(/.test(code)) {
+      fail(`${f}: يحتوي eval/Function/document.write`);
+    } else {
+      pass(`${f}: خالٍ من التنفيذ الديناميكي`);
+    }
+  }
+
+  // 5) كل الروابط الخارجية تحمل rel="noopener"
+  const external = [...index.matchAll(/<a[^>]+href="https?:\/\/[^"]+"[^>]*>/g)].map((m) => m[0]);
+  const unsafe = external.filter((t) => t.includes('target="_blank"') && !t.includes('noopener'));
+  if (unsafe.length) fail(`${unsafe.length} رابط خارجي بلا noopener`);
+  else pass(`كل الروابط الخارجية آمنة (${external.length} رابطًا)`);
+}
+
 /* ------------------------- 9) حزمة الهوية والصور ------------------------- */
 async function checkBrandAssets() {
   group('حزمة الهوية والصور');
 
   const logos = [
-    'assets/brand/logo-primary.svg',
-    'assets/brand/logo-stacked.svg',
-    'assets/brand/logo-mark.svg',
-    'assets/brand/logo-mono-ink.svg',
-    'assets/brand/logo-mono-ivory.svg',
-    'assets/brand/brand-board.svg',
-    'assets/brand/logo-primary.png',
-    'assets/brand/logo-mark.png'
+    'assets/brand/logo-primary-v2.svg',
+    'assets/brand/logo-mark-v2.svg',
+    'assets/brand/logo-mark-badge-v2.svg',
+    'assets/brand/logo-mono-ink-v2.svg',
+    'assets/brand/logo-mono-ivory-v2.svg',
+    'assets/favicon.svg'
   ];
   for (const f of logos) {
     if (await exists(f)) pass(`موجود: ${f}`);
     else fail(`مفقود: ${f}`);
   }
 
+  // لكل حجم: مشهد مولّد بثلاث صيغ — وهذا ما تعرضه الصفحة فعليًا
   for (const ml of [30, 50, 100]) {
-    if (await exists(`assets/brand/bottle-${ml}ml.svg`)) pass(`عبوة متجهة ${ml} مل`);
-    else fail(`مفقودة: عبوة ${ml} مل`);
-    for (const side of ['front', 'back']) {
-      const f = `assets/img/design/label-${ml}ml-${side}.svg`;
-      if (await exists(f)) pass(`ملصق ${ml} مل — ${side}`);
+    const base = `assets/img/products/size-${ml}`;
+    for (const f of [`${base}-720.avif`, `${base}-720.webp`, `${base}-720.jpg`]) {
+      if (await exists(f)) pass(`مشهد ${ml} مل — ${f.split('.').pop()}`);
       else fail(`مفقود: ${f}`);
     }
   }
@@ -591,7 +652,7 @@ async function checkBrandAssets() {
   else fail('أيقونة الموقع غير معرّفة');
 
   // صور الاستخدام الاجتماعي
-  const social = ['assets/img/design-raw/social-square.png', 'assets/img/design-raw/social-vertical.png'];
+  const social = ['assets/img/products/social-square-1080.avif', 'assets/img/products/social-vertical-1080.avif'];
   for (const f of social) {
     if (await exists(f)) pass(`صورة سوشيال: ${f.split('/').pop()}`);
     else fail(`مفقودة: ${f}`);
@@ -871,6 +932,7 @@ try {
   await checkContentClaims();
   await checkCartLogic();
   await checkAssets();
+  await checkSecurity();
   await checkBrandAssets();
   await checkResponsiveImages();
   await checkWorkflow();

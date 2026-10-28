@@ -21,6 +21,27 @@
   });
   var selectedMethodId = availableMethods.length ? availableMethods[0].id : null;
 
+  /** منطقة التوصيل المختارة — الافتراضي من الإعدادات. */
+  var zones = (CONFIG && CONFIG.delivery && CONFIG.delivery.zones) || [];
+  var selectedZoneId = (CONFIG && CONFIG.delivery && CONFIG.delivery.defaultZone) || (zones[0] && zones[0].id) || null;
+
+  function activeZone() {
+    return zones.filter(function (z) { return z.id === selectedZoneId; })[0] || zones[0] || null;
+  }
+
+  /** هل التوصيل مجاني لهذه الطريقة في هذه المنطقة؟ */
+  function isFreeDelivery(method, zone) {
+    if (!method || !zone) return false;
+    return Array.isArray(method.freeDeliveryIn) && method.freeDeliveryIn.indexOf(zone.id) !== -1;
+  }
+
+  /** رسوم التوصيل الفعلية = 0 إن كانت مجانية، وإلا رسم المنطقة. */
+  function deliveryFeeFor(method, zone) {
+    if (!zone) return 0;
+    if (isFreeDelivery(method, zone)) return 0;
+    return zone.fee || 0;
+  }
+
   /* ------------------------------ أدوات مساعدة ------------------------------ */
 
   function money(value) {
@@ -153,7 +174,7 @@
     availableMethods.forEach(function (method) {
       var unitCents = toCents(product.price);
       var disc = Math.round(unitCents * (method.discountPercent || 0) / 100);
-      var del = toCents(method.deliveryFee || 0);
+      var del = toCents(deliveryFeeFor(method, activeZone()));
       var item = document.createElement('span');
       item.className = 'pay-preview-item';
       var label = document.createElement('span');
@@ -252,8 +273,9 @@
     });
 
     var method = activeMethod();
+    var zone = activeZone();
     var discountCents = method ? Math.round(subtotalCents * (method.discountPercent || 0) / 100) : 0;
-    var deliveryCents = (method && count > 0) ? toCents(method.deliveryFee || 0) : 0;
+    var deliveryCents = (method && count > 0) ? toCents(deliveryFeeFor(method, zone)) : 0;
     var totalCents = subtotalCents - discountCents + deliveryCents;
 
     return {
@@ -263,7 +285,9 @@
       discountCents: discountCents,
       deliveryCents: deliveryCents,
       totalCents: totalCents,
-      method: method
+      method: method,
+      zone: zone,
+      freeDelivery: isFreeDelivery(method, zone)
     };
   }
 
@@ -276,6 +300,8 @@
       count: p.count,
       entries: p.entries,
       method: p.method,
+      zone: p.zone,
+      freeDelivery: p.freeDelivery,
       subtotal: p.subtotalCents / 100,
       discount: p.discountCents / 100,
       delivery: p.deliveryCents / 100
@@ -311,6 +337,7 @@
     el.foot.hidden = isEmpty;
 
     if (!isEmpty) {
+      renderZones();
       renderPaymentMethods();
       renderSummary(summary);
     }
@@ -362,8 +389,12 @@
       }
     }
 
+    if (el.zoneLabel && summary.zone) {
+      el.zoneLabel.textContent = 'منطقة التوصيل: ' + summary.zone.label;
+    }
+
     if (el.deliveryRow) {
-      if (method && method.freeDelivery) {
+      if (summary.freeDelivery) {
         el.deliveryRow.hidden = false;
         if (el.deliveryValue) el.deliveryValue.textContent = 'مجاني';
       } else if (summary.delivery > 0) {
@@ -375,6 +406,29 @@
     }
 
     if (el.total) el.total.textContent = money(summary.amount);
+
+    // تنبيه شفاف: تركيبة قد لا تغطي التكلفة
+    if (el.marginNote && summary.count > 0 && summary.zone && summary.method) {
+      var c = CONFIG.costing;
+      var costOfUnit = function (ml) { return (c ? c.fixedCost + c.perMl * ml : 0); };
+      var worst = null;
+      summary.entries.forEach(function (e) {
+        var net = e.product.price * (1 - (summary.method.discountPercent || 0) / 100);
+        var profit = net - summary.delivery - costOfUnit(e.product.sizeMl);
+        if (profit <= 0 && (!worst || profit < worst.profit)) {
+          worst = { size: e.product.sizeLabel, profit: profit };
+        }
+      });
+      if (worst) {
+        el.marginNote.hidden = false;
+        el.marginNote.textContent =
+          'ملاحظة: الحجم ' + worst.size + ' في هذه المنطقة لا يغطي تكلفته مع هذه الطريقة. ' +
+          'يمكن اختيار «الدفع عند الاستلام»، أو طلب حجم أكبر، أو إضافة حجم آخر — ' +
+          'وسنؤكد لك السعر النهائي في المحادثة.';
+      } else {
+        el.marginNote.hidden = true;
+      }
+    }
 
     if (el.totalNote) {
       el.totalNote.textContent = method
@@ -420,9 +474,11 @@
       } else {
         points.push('بلا خصم');
       }
-      points.push(method.freeDelivery
-        ? 'توصيل <strong>مجاني</strong>'
-        : 'رسوم توصيل <strong>' + money(method.deliveryFee) + '</strong> تُضاف إلى الإجمالي');
+      var z = activeZone();
+      points.push(isFreeDelivery(method, z)
+        ? 'توصيل <strong>مجاني</strong> داخل ' + (z ? z.label : 'حماة')
+        : 'رسوم توصيل <strong>' + money(deliveryFeeFor(method, z)) + '</strong> (' +
+          (z ? z.label : '') + ') تُضاف إلى الإجمالي');
       points.push(method.requiresReceipt
         ? 'إرسال إشعار التحويل على واتساب لتأكيد الدفع'
         : 'تدفعين المبلغ كاملًا عند استلام الطلب');
@@ -438,14 +494,14 @@
       // مثال محسوب من نفس معادلة السلة
       var unitCents = toCents(sample.price);
       var discountCents = Math.round(unitCents * (method.discountPercent || 0) / 100);
-      var deliveryCents = toCents(method.deliveryFee || 0);
+      var deliveryCents = toCents(deliveryFeeFor(method, activeZone()));
       var finalCents = unitCents - discountCents + deliveryCents;
 
       var example = document.createElement('p');
       example.className = 'pay-example';
       example.innerHTML = 'مثال: سيروم ' + sample.sizeLabel + ' بسعر ' +
         money(sample.price) + ' ← تدفعين <strong>' + money(finalCents / 100) + '</strong>' +
-        (method.freeDelivery ? ' مع توصيل مجاني.' : ' شامل التوصيل.');
+        (isFreeDelivery(method, activeZone()) ? ' مع توصيل مجاني.' : ' شامل التوصيل.');
       card.appendChild(example);
 
       // رابط مشاركة العرض نفسه (للمنشورات والإعلانات)
@@ -460,7 +516,79 @@
     });
   }
 
+  /** أزرار اختيار منطقة التوصيل — تُبنى من CONFIG.delivery.zones. */
+  function renderZones() {
+    if (!el.zones) return;
+    el.zones.textContent = '';
+
+    var legend = document.createElement('legend');
+    legend.className = 'pay-legend';
+    legend.textContent = 'منطقة التوصيل';
+    el.zones.appendChild(legend);
+
+    zones.forEach(function (zone) {
+      var label = document.createElement('label');
+      label.className = 'zone-option';
+
+      var input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'delivery-zone';
+      input.value = zone.id;
+      input.checked = zone.id === selectedZoneId;
+      input.dataset.zoneSelect = zone.id;
+
+      var txt = document.createElement('span');
+      txt.className = 'zone-text';
+      var name = document.createElement('span');
+      name.className = 'zone-name';
+      name.textContent = zone.label;
+      var fee = document.createElement('span');
+      fee.className = 'zone-fee';
+      if (zone.fee > 0) {
+        fee.appendChild(document.createTextNode('توصيل '));
+        var bdi = document.createElement('bdi');
+        bdi.textContent = money(zone.fee);
+        fee.appendChild(bdi);
+      } else {
+        fee.textContent = 'توصيل مجاني';
+      }
+      txt.appendChild(name);
+      txt.appendChild(fee);
+
+      label.appendChild(input);
+      label.appendChild(txt);
+      el.zones.appendChild(label);
+    });
+  }
+
+  function setZone(id) {
+    if (!zones.some(function (z) { return z.id === id; })) return;
+    selectedZoneId = id;
+    renderCart();
+    var z = activeZone();
+    if (z) announce('منطقة التوصيل: ' + z.label + '. الإجمالي المرجعي الآن ' + money(totals().amount) + '.');
+  }
+
   /** أزرار اختيار طريقة الدفع — تُبنى حرفيًا من CONFIG.payment.methods. */
+  /**
+   * وصف طريقة الدفع بحسب المنطقة المختارة فعليًا.
+   * النص الثابت في config.js يذكر المنطقتين معًا؛ هذا السطر يقول للعميل
+   * ما سيدفعه هو بالتحديد، فيقلّل المفاجأة عند التأكيد.
+   */
+  function methodDescription(method) {
+    var z = activeZone();
+    var zoneName = z ? z.label : 'حماة';
+
+    if ((method.discountPercent || 0) > 0) {
+      return isFreeDelivery(method, z)
+        ? 'خصم ' + method.discountPercent + '% على قيمة المنتجات + توصيل مجاني داخل ' + zoneName + '.'
+        : 'خصم ' + method.discountPercent + '% على قيمة المنتجات + توصيل ' +
+          money(deliveryFeeFor(method, z)) + ' إلى ' + zoneName + '.';
+    }
+    return 'بلا خصم، وتُضاف رسوم التوصيل: ' + money(deliveryFeeFor(method, z)) +
+      ' إلى ' + zoneName + '.';
+  }
+
   function renderPaymentMethods() {
     if (!el.payment) return;
     el.payment.textContent = '';
@@ -491,7 +619,7 @@
 
       var desc = document.createElement('span');
       desc.className = 'pay-desc';
-      desc.textContent = method.description;
+      desc.textContent = methodDescription(method);
 
       body.appendChild(title);
       body.appendChild(desc);
@@ -693,6 +821,10 @@
     lines.push('');
     lines.push('قيمة المنتجات: ' + money(p.subtotalCents / 100));
 
+    if (p.zone) {
+      lines.push('منطقة التوصيل: ' + p.zone.label);
+    }
+
     if (p.method) {
       if (p.discountCents > 0) {
         lines.push('خصم ' + p.method.short + ' (' + p.method.discountPercent + '%): − ' +
@@ -701,10 +833,10 @@
         lines.push('خصم: لا يوجد (طريقة ' + p.method.short + ').');
       }
 
-      if (p.method.freeDelivery) {
-        lines.push('التوصيل: مجاني (طريقة ' + p.method.short + ').');
+      if (p.freeDelivery) {
+        lines.push('التوصيل: مجاني (' + p.zone.label + ' مع ' + p.method.short + ').');
       } else {
-        lines.push('رسوم التوصيل: ' + money(p.deliveryCents / 100) + ' (طريقة ' + p.method.short + ').');
+        lines.push('رسوم التوصيل: ' + money(p.deliveryCents / 100) + ' (' + p.zone.label + ' مع ' + p.method.short + ').');
       }
 
       lines.push('طريقة الدفع المطلوبة: ' + p.method.label + '.');
@@ -991,6 +1123,9 @@
     el.deliveryValue = document.querySelector('[data-cart-delivery]');
     el.totalNote = document.querySelector('[data-cart-total-note]');
     el.shareBtn = document.querySelector('[data-cart-share]');
+    el.zones = document.querySelector('[data-delivery-zones]');
+    el.zoneLabel = document.querySelector('[data-zone-label]');
+    el.marginNote = document.querySelector('[data-margin-note]');
     el.stickyBar = document.querySelector('[data-sticky-bar]');
     el.stickyCount = document.querySelector('[data-sticky-count]');
     el.stickyTotal = document.querySelector('[data-sticky-total]');
@@ -1074,6 +1209,9 @@
 
     // طريقة الدفع: تغيير عبر حدث change على مستوى المستند
     document.addEventListener('change', function (event) {
+      var zoneInput = event.target.closest && event.target.closest('[data-zone-select]');
+      if (zoneInput) { setZone(zoneInput.getAttribute('data-zone-select')); return; }
+
       var input = event.target.closest && event.target.closest('[data-pay-select]');
       if (!input) return;
       setMethod(input.getAttribute('data-pay-select'));
@@ -1164,6 +1302,10 @@
     applyOfferFromUrl: applyOfferFromUrl,
     getMethod: function (id) { return getMethod(id); },
     methods: availableMethods,
+    zones: zones,
+    setZone: setZone,
+    selectedZone: function () { return selectedZoneId; },
+    deliveryFeeFor: deliveryFeeFor,
     selectedMethod: function () { return selectedMethodId; },
     cart: cart,
     MAX_QTY: MAX_QTY

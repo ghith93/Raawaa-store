@@ -14,8 +14,8 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'rawaa-v2';
-const RUNTIME = 'rawaa-runtime-v2';
+const CACHE_VERSION = 'v4';
+const RUNTIME = 'rawaa-runtime-v4';
 
 /** الأصول التي يجب أن تعمل بلا إنترنت */
 const CORE = [
@@ -37,7 +37,21 @@ const CORE = [
   './assets/fonts/almarai-400-latin.subset.woff2',
   './assets/fonts/almarai-700-latin.subset.woff2',
   './assets/fonts/amiri-400-latin.subset.woff2',
-  './assets/fonts/cormorant-500-latin.subset.woff2'
+  './assets/fonts/cormorant-500-latin.subset.woff2',
+  // الهوية البصرية (الجيل الثاني)
+  './assets/brand/logo-mark-v2.svg',
+  './assets/brand/logo-primary-v2.svg',
+  // الصور الجديدة المضغوطة (AVIF + WebP + JPG احتياطي)
+  './assets/img/products/hero-wide-1080.avif',
+  './assets/img/products/trio-1080.avif',
+  './assets/img/products/size-30-720.webp',
+  './assets/img/products/size-50-720.webp',
+  './assets/img/products/size-100-720.webp',
+  './assets/img/products/size-30-720.jpg',
+  './assets/img/products/size-50-720.jpg',
+  './assets/img/products/size-100-720.jpg',
+  './assets/img/products/editorial-720.jpg',
+  './assets/img/products/detail-label-720.jpg'
 ];
 
 self.addEventListener('install', (event) => {

@@ -1161,6 +1161,34 @@ bdi { unicode-bidi: isolate; }
 .pay-body { display: flex; flex-direction: column; gap: 2px; }
 .pay-title { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
 .pay-desc { font-size: 0.78rem; line-height: 1.7; color: var(--ink-soft); }
+.zone-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border: 1px solid var(--sand);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  cursor: pointer;
+}
+.zone-option:has(input:checked) { border-color: var(--olive); background: var(--cream); }
+.zone-option input[type="radio"] {
+  appearance: none; -webkit-appearance: none; flex: none;
+  width: 18px; height: 18px; border: 1.5px solid var(--taupe);
+  border-radius: 50%; background: var(--white); position: relative; cursor: pointer;
+}
+.zone-option input[type="radio"]:checked { border-color: var(--olive); }
+.zone-option input[type="radio"]:checked::after {
+  content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--olive);
+}
+.zone-text { display: flex; align-items: baseline; gap: 8px; flex: 1; }
+.zone-name { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
+.zone-fee {
+  font-size: 0.76rem; color: var(--taupe); margin-inline-start: auto;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.zone-inline { font-size: 0.74rem; color: var(--taupe); }
 .pay-note {
   margin: 6px 0 0;
   font-size: 0.74rem;
@@ -1199,6 +1227,17 @@ bdi { unicode-bidi: isolate; }
 }
 .sum-discount dt,
 .sum-discount dd { color: var(--olive); font-weight: 700; }
+.margin-note {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-inline-start: 3px solid var(--gold);
+  background: var(--cream);
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+.margin-note[hidden] { display: none; }
 .cart-total-note {
   margin: 6px 0 var(--space-4);
   font-size: 0.74rem;

@@ -17,6 +17,7 @@ import os
 import subprocess
 import sys
 import urllib.error
+import time
 import urllib.request
 from pathlib import Path
 
@@ -32,25 +33,53 @@ if not TOKEN:
 EXCLUDE_PREFIXES = ("dist/",)
 
 
+# أخطاء عابرة تستحق إعادة المحاولة — 4xx الأخرى (401/403/404/422) نهائية
+RETRY_STATUS = {429, 500, 502, 503, 504}
+MAX_ATTEMPTS = 4
+
+
 def api(method, path, data=None):
+    """طلب API واحد مع إعادة محاولة أسّية على الأخطاء العابرة فقط.
+
+    لا نعيد المحاولة أبدًا على 401/403/404/422 — تكرارها لا يغيّر النتيجة
+    ويُهدر الحصة. التراجع: 1s → 2s → 4s (بحد أقصى 3 محاولات إضافية).
+    """
     url = "https://api.github.com" + path
     body = json.dumps(data).encode() if data is not None else None
-    req = urllib.request.Request(url, data=body, method=method)
-    req.add_header("Authorization", "Bearer " + TOKEN)
-    req.add_header("Accept", "application/vnd.github+json")
-    req.add_header("X-GitHub-Api-Version", "2022-11-28")
-    if body:
-        req.add_header("Content-Type", "application/json")
-    try:
-        with urllib.request.urlopen(req, timeout=120) as r:
-            txt = r.read().decode()
-            return r.status, (json.loads(txt) if txt.strip() else {})
-    except urllib.error.HTTPError as e:
-        txt = e.read().decode()
+    last = (0, {"raw": "لم تُنفَّذ أي محاولة"})
+
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        req = urllib.request.Request(url, data=body, method=method)
+        req.add_header("Authorization", "Bearer " + TOKEN)
+        req.add_header("Accept", "application/vnd.github+json")
+        req.add_header("X-GitHub-Api-Version", "2022-11-28")
+        if body:
+            req.add_header("Content-Type", "application/json")
         try:
-            return e.code, json.loads(txt)
-        except Exception:
-            return e.code, {"raw": txt[:300]}
+            with urllib.request.urlopen(req, timeout=120) as r:
+                txt = r.read().decode()
+                return r.status, (json.loads(txt) if txt.strip() else {})
+        except urllib.error.HTTPError as e:
+            txt = e.read().decode()
+            try:
+                parsed = json.loads(txt)
+            except Exception:
+                parsed = {"raw": txt[:300]}
+            last = (e.code, parsed)
+            if e.code not in RETRY_STATUS or attempt == MAX_ATTEMPTS:
+                return last
+            wait = 2 ** (attempt - 1)
+            print(f"  ↻ {e.code} على {method} {path[:60]} — إعادة بعد {wait}s "
+                  f"({attempt}/{MAX_ATTEMPTS})", file=sys.stderr)
+            time.sleep(wait)
+        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            last = (0, {"raw": f"شبكة: {e}"})
+            if attempt == MAX_ATTEMPTS:
+                return last
+            wait = 2 ** (attempt - 1)
+            print(f"  ↻ شبكة — إعادة بعد {wait}s ({attempt}/{MAX_ATTEMPTS})", file=sys.stderr)
+            time.sleep(wait)
+    return last
 
 
 def main():
@@ -61,6 +90,13 @@ def main():
                              capture_output=True, text=True).stdout.split()
     files = [f for f in tracked
              if not f.startswith(EXCLUDE_PREFIXES) and (ROOT / f).is_file()]
+
+    # GitHub يرفض أي ملف > 100 MB عبر الواجهة — نتحقق محليًا قبل إهدار الحصة
+    too_big = [(f, (ROOT / f).stat().st_size) for f in files
+               if (ROOT / f).stat().st_size > 95 * 1024 * 1024]
+    if too_big:
+        sys.exit("✗ ملفات تتجاوز حد GitHub (95MB):\n  " +
+                 "\n  ".join(f"{n} — {b/1024/1024:.1f}MB" for n, b in too_big))
 
     untracked = [l[3:] for l in subprocess.run(
         ["git", "status", "--porcelain"], cwd=ROOT,

@@ -137,9 +137,100 @@ def run(base: str) -> int:
               page.locator("[data-cart-delivery]").inner_text() == "$2",
               page.locator("[data-cart-delivery]").inner_text())
 
-        # العودة إلى الشام كاش
+        # --- مناطق التوصيل: الأرقام من المالك (حماة $2 / باقي المحافظات $4) ---
         page.locator('[data-pay-select="shamcash"]').check()
         page.wait_for_timeout(200)
+        page.locator('[data-zone-select="hama"]').check()
+        page.wait_for_timeout(250)
+        check("حماة + شام كاش: توصيل مجاني", page.locator("[data-cart-delivery]").inner_text() == "مجاني",
+              page.locator("[data-cart-delivery]").inner_text())
+
+        page.locator('[data-zone-select="other"]').check()
+        page.wait_for_timeout(250)
+        check("باقي المحافظات + شام كاش: رسوم $4",
+              page.locator("[data-cart-delivery]").inner_text() == "$4",
+              page.locator("[data-cart-delivery]").inner_text())
+        check("الإجمالي مع محافظات وشام كاش ($34 − 10% + $4 = $34.60)",
+              page.locator("[data-cart-total]").inner_text() == "$34.60",
+              page.locator("[data-cart-total]").inner_text())
+
+        page.locator('[data-pay-select="cod"]').check()
+        page.wait_for_timeout(250)
+        check("محافظات + استلام: $34 + $4 = $38",
+              page.locator("[data-cart-total]").inner_text() == "$38",
+              page.locator("[data-cart-total]").inner_text())
+
+        page.locator('[data-zone-select="hama"]').check()
+        page.wait_for_timeout(250)
+        check("حماة + استلام: $34 + $2 = $36",
+              page.locator("[data-cart-total]").inner_text() == "$36",
+              page.locator("[data-cart-total]").inner_text())
+
+        # التحقق المستقل من المعادلة في JS
+        zone_pricing = page.evaluate(
+            """() => {
+                const t = window.__RAWAA_TEST__;
+                t.setZone('other');
+                const a = t.pricing();
+                t.setMethod('shamcash');
+                const b = t.pricing();
+                return {
+                  codOther: a.totalCents,
+                  scOther: b.totalCents,
+                  scDelivery: b.deliveryCents
+                };
+            }"""
+        )
+        check("المعادلة: استلام/محافظات = 3800 سنتًا",
+              zone_pricing["codOther"] == 3800, json.dumps(zone_pricing))
+        check("المعادلة: شام كاش/محافظات = 3460 سنتًا وتوصيل 400",
+              zone_pricing["scOther"] == 3460 and zone_pricing["scDelivery"] == 400,
+              json.dumps(zone_pricing))
+
+        # نصوص طرق الدفع يجب أن تعكس المنطقة لا رقمًا ثابتًا (كانت تعرض $2 دائمًا)
+        page.locator('[data-zone-select="other"]').check()
+        page.locator('[data-pay-select="shamcash"]').check()
+        page.wait_for_timeout(300)
+        sc_text = " ".join(page.locator(".pay-desc").all_inner_texts())
+        check("شام كاش + محافظات: النص يذكر عدم المجانية",
+              "مجاني" not in sc_text or "داخل حماة" in sc_text,
+              sc_text[:90].replace("\n", " "))
+
+        page.locator('[data-pay-select="cod"]').check()
+        page.wait_for_timeout(300)
+        cod_text = " ".join(page.locator(".pay-desc").all_inner_texts())
+        check("الدفع عند الاستلام يعرض رسم المنطقة ($4) لا $2",
+              "$4" in cod_text, cod_text[:120].replace("\n", " "))
+
+        page.locator('[data-zone-select="hama"]').check()
+        page.wait_for_timeout(300)
+        cod_hama = " ".join(page.locator(".pay-desc").all_inner_texts())
+        check("الدفع عند الاستلام داخل حماة يعرض $2",
+              "$2" in cod_hama, cod_hama[:120].replace("\n", " "))
+
+        # تنبيه الهامش: 30 مل + شام كاش + محافظات = خسارة
+        page.locator('[data-pay-select="shamcash"]').check()
+        page.locator('[data-zone-select="other"]').check()
+        page.wait_for_timeout(300)
+        page.evaluate("window.__RAWAA_TEST__.removeItem('serum-50'); window.__RAWAA_TEST__.removeItem('serum-100');")
+        page.wait_for_timeout(200)
+        page.evaluate("window.__RAWAA_TEST__.changeQty('serum-30', -9);")
+        page.wait_for_timeout(300)
+        margin_now = page.locator("[data-margin-note]").is_visible()
+        check("تنبيه الهامش يظهر في التركيبة الخاسرة (30 مل · شام كاش · محافظات)",
+              margin_now is True, f"ظاهر={margin_now}")
+
+        # العودة إلى الحالة الأصلية: حذف 30 مل + استعادة 50 و100 مل
+        page.evaluate("""() => {
+            const t = window.__RAWAA_TEST__;
+            t.addToCart('serum-50');
+            t.addToCart('serum-100');
+            t.changeQty('serum-30', 1);
+        }""")
+        page.wait_for_timeout(300)
+        page.locator('[data-zone-select="hama"]').check()
+        page.locator('[data-pay-select="shamcash"]').check()
+        page.wait_for_timeout(250)
 
         # تحقق مستقل من المعادلة في JS (لا يعتمد على نص الواجهة)
         pricing = page.evaluate(
@@ -208,6 +299,7 @@ def run(base: str) -> int:
                 "الرسالة تذكر طريقة الدفع المختارة": "طريقة الدفع المطلوبة:" in decoded,
                 "الرسالة تذكر الخصم أو غيابه": ("خصم" in decoded),
                 "الرسالة تذكر التوصيل": ("التوصيل" in decoded),
+                "الرسالة تذكر منطقة التوصيل": ("منطقة التوصيل:" in decoded),
                 "الرسالة تطلب تأكيد التوفّر": "توفّر" in decoded or "التوفر" in decoded,
                 "الرسالة تطلب تأكيد السعر النهائي": "السعر النهائي" in decoded,
                 "الرسالة تطلب تأكيد رسوم التوصيل": "رسوم التوصيل" in decoded,
