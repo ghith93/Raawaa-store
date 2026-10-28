@@ -1,5 +1,17 @@
 # تحويل أسماء الصور القديمة (بلا لاحقة إصدار) إلى الجديدة.
-# الغرض: إن بقي متصفح يحمل اسمًا قديمًا، يحصل على الصورة الحالية بدل خطأ 404.
-/assets/img/products/trio-:width.avif    /assets/img/products/trio-v4-:width.avif    301
-/assets/img/products/trio-:width.webp    /assets/img/products/trio-v4-:width.webp    301
-/assets/img/products/trio-:width.jpg     /assets/img/products/trio-v4-:width.jpg     301
+#
+# ⚠ تحذير مُتعلَّم: قاعدة `/trio-:width.avif` كانت تلطش `/trio-v4-1080.avif` نفسها
+#    لأن `:width` تقبل أي نص، فتحوّلها إلى `trio-v4-v4-…` → 404. لهذا القواعد الآن
+#    **بأرقام صريحة** لا بنمط مفتوح. لا تستخدم `:width` هنا أبدًا.
+/assets/img/products/trio-480.avif     /assets/img/products/trio-v4-480.avif     301
+/assets/img/products/trio-720.avif     /assets/img/products/trio-v4-720.avif     301
+/assets/img/products/trio-1080.avif    /assets/img/products/trio-v4-1080.avif    301
+/assets/img/products/trio-1400.avif    /assets/img/products/trio-v4-1400.avif    301
+/assets/img/products/trio-480.webp     /assets/img/products/trio-v4-480.webp     301
+/assets/img/products/trio-720.webp     /assets/img/products/trio-v4-720.webp     301
+/assets/img/products/trio-1080.webp    /assets/img/products/trio-v4-1080.webp    301
+/assets/img/products/trio-1400.webp    /assets/img/products/trio-v4-1400.webp    301
+/assets/img/products/trio-480.jpg      /assets/img/products/trio-v4-480.jpg      301
+/assets/img/products/trio-720.jpg      /assets/img/products/trio-v4-720.jpg      301
+/assets/img/products/trio-1080.jpg     /assets/img/products/trio-v4-1080.jpg     301
+/assets/img/products/trio-1400.jpg     /assets/img/products/trio-v4-1400.jpg     301

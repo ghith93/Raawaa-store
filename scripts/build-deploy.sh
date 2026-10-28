@@ -30,14 +30,9 @@ rm -rf "$OUT/assets/img/design-raw" "$OUT/assets/img/design-raw-reference.png" 2
 # ملفات المصدر الخام للصور لا تُنشر — فقط المشتقات المُحسَّنة
 rm -rf "$OUT/assets/img/source" 2>/dev/null || true
 
-# احذف الخطوط غير المرجعية من @font-face — 325 KB كان يُنشر بلا سبب
-for f in assets/fonts/*.woff2; do
-  b=$(basename "$f")
-  case " almarai-400-latin.subset.woff2 almarai-400.subset.woff2 almarai-700-latin.subset.woff2 almarai-700.subset.woff2 amiri-400-latin.subset.woff2 amiri-400.subset.woff2 cormorant-500-latin.subset.woff2 " in
-    *" $b "*) ;;
-    *) rm -f "$OUT/assets/fonts/$b" ;;
-  esac
-done
+# ملاحظة: كانت هنا قائمة أسماء خطوط ثابتة (Almarai/Amiri) تحذف كل ملف لا يطابقها.
+# بعد استبدال الخط بـ IBM Plex صارت تحذف **كل الخطوط الجديدة** — وهو سبب اختفاء
+# الخط من الموقع الحيّ. أُزيلت؛ التصفية الفعلية تتم أدناه من CSS نفسه.
 find "$OUT" -name "*.map" -delete 2>/dev/null || true
 
 # لوحة الهوية: ملف مرجعي للمالك، لا يطلبه أي زائر (755 KB)
@@ -55,7 +50,13 @@ if fdir.is_dir():
     for f in fdir.glob("*.woff2"):
         if f.name not in used:
             f.unlink()
-print(f"  خطوط مُبقاة: {len(used)} · محذوفة: {len(list(fdir.glob('*.woff2')))} متبقٍ")
+remaining = list(fdir.glob("*.woff2"))
+missing = [u for u in used if not (fdir / u).exists()]
+if missing:
+    raise SystemExit(f"✗ خطوط مطلوبة في CSS غير موجودة: {missing}")
+if len(remaining) < 5:
+    raise SystemExit(f"✗ عدد الخطوط المنشورة {len(remaining)} — أقل من المتوقع (5)")
+print(f"  خطوط مُبقاة: {len(remaining)} · مطلوبة: {len(used)}")
 PYEOF
 
 # 4) تقرير

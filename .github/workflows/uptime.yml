@@ -68,6 +68,18 @@ jobs:
       - name: اختبار وظيفي كامل على الموقع المنشور
         run: python scripts/browser-test.py --base https://raawaa-store.pages.dev
 
+  assets:
+    name: كل الأصول تُفتح على الموقع الحيّ
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: تدقيق الأصول
+        run: node scripts/asset-audit.mjs
+
   content-check:
     name: تحقق من المحتوى الحيّ (أسعار + خط)
     runs-on: ubuntu-latest
