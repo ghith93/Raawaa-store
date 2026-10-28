@@ -86,7 +86,16 @@
 
 ## D-015 — 🔴 GitHub Pages يخالف شروط استخدامه لمتجر تجاري: نقل الاستضافة إلى Cloudflare Pages (2026-10-28)
 
-**الحالة:** قرار استراتيجي — **ينتظر تنفيذًا من المالك** (يحتاج إنشاء حساب وتفويض مستودع).
+**الحالة:** ✅ **مُنفَّذ بالكامل 2026-10-28.**
+
+**نتيجة التنفيذ:**
+- Cloudflare **لم تعد توجّه المشاريع الجديدة إلى Pages** — نصّت وثائقها: *"Start new projects with Workers"*.
+  الخطوات المكتوبة أعلاه كانت قديمة؛ الصحيح هو **Workers + Static Assets**.
+- نُشر عبر Wrangler 4.154 على `rawaa-store.ghith-shikhkhaled.workers.dev` — **بلا `main`**،
+  أي لا كود Worker يُنفَّذ ولا تُستهلك حصة الطلبات.
+- **GitHub Pages أُوقف** عبر `DELETE /repos/.../pages` → **204**، والتحقق → **404**.
+- كل الروابط (canonical، og:url، sitemap، robots، QR) نُقلت بأمر واحد عبر `set-site-url.py`.
+- الاختبارات على الموقع الجديد: **127/0** · `check-site.mjs`: **240/0**.
 
 ### المشكلة المكتشفة
 بنود GitHub الرسمية — *GitHub Terms for Additional Products and Features*، قسم Pages
