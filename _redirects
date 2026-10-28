@@ -1,0 +1,5 @@
+# تحويل أسماء الصور القديمة (بلا لاحقة إصدار) إلى الجديدة.
+# الغرض: إن بقي متصفح يحمل اسمًا قديمًا، يحصل على الصورة الحالية بدل خطأ 404.
+/assets/img/products/trio-:width.avif    /assets/img/products/trio-v4-:width.avif    301
+/assets/img/products/trio-:width.webp    /assets/img/products/trio-v4-:width.webp    301
+/assets/img/products/trio-:width.jpg     /assets/img/products/trio-v4-:width.jpg     301

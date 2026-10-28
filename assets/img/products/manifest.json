@@ -4,185 +4,185 @@
       {
         "width": 480,
         "height": 360,
-        "avif": "trio-480.avif",
-        "webp": "trio-480.webp"
+        "avif": "trio-v4-480.avif",
+        "webp": "trio-v4-480.webp"
       },
       {
         "width": 720,
         "height": 540,
-        "avif": "trio-720.avif",
-        "webp": "trio-720.webp"
+        "avif": "trio-v4-720.avif",
+        "webp": "trio-v4-720.webp"
       },
       {
         "width": 1080,
         "height": 810,
-        "avif": "trio-1080.avif",
-        "webp": "trio-1080.webp",
-        "jpg": "trio-1080.jpg"
+        "avif": "trio-v4-1080.avif",
+        "webp": "trio-v4-1080.webp",
+        "jpg": "trio-v4-1080.jpg"
       },
       {
         "width": 1400,
         "height": 1050,
-        "avif": "trio-1400.avif",
-        "webp": "trio-1400.webp"
+        "avif": "trio-v4-1400.avif",
+        "webp": "trio-v4-1400.webp"
       }
     ],
-    "fallback": "trio-1080.jpg"
+    "fallback": "trio-v4-1080.jpg"
   },
   "size-30": {
     "sizes": [
       {
         "width": 480,
         "height": 480,
-        "avif": "size-30-480.avif",
-        "webp": "size-30-480.webp"
+        "avif": "size-30-v4-480.avif",
+        "webp": "size-30-v4-480.webp"
       },
       {
         "width": 720,
         "height": 720,
-        "avif": "size-30-720.avif",
-        "webp": "size-30-720.webp",
-        "jpg": "size-30-720.jpg"
+        "avif": "size-30-v4-720.avif",
+        "webp": "size-30-v4-720.webp",
+        "jpg": "size-30-v4-720.jpg"
       },
       {
         "width": 900,
         "height": 900,
-        "avif": "size-30-900.avif",
-        "webp": "size-30-900.webp"
+        "avif": "size-30-v4-900.avif",
+        "webp": "size-30-v4-900.webp"
       }
     ],
-    "fallback": "size-30-720.jpg"
+    "fallback": "size-30-v4-720.jpg"
   },
   "size-50": {
     "sizes": [
       {
         "width": 480,
         "height": 480,
-        "avif": "size-50-480.avif",
-        "webp": "size-50-480.webp"
+        "avif": "size-50-v4-480.avif",
+        "webp": "size-50-v4-480.webp"
       },
       {
         "width": 720,
         "height": 720,
-        "avif": "size-50-720.avif",
-        "webp": "size-50-720.webp",
-        "jpg": "size-50-720.jpg"
+        "avif": "size-50-v4-720.avif",
+        "webp": "size-50-v4-720.webp",
+        "jpg": "size-50-v4-720.jpg"
       },
       {
         "width": 900,
         "height": 900,
-        "avif": "size-50-900.avif",
-        "webp": "size-50-900.webp"
+        "avif": "size-50-v4-900.avif",
+        "webp": "size-50-v4-900.webp"
       }
     ],
-    "fallback": "size-50-720.jpg"
+    "fallback": "size-50-v4-720.jpg"
   },
   "size-100": {
     "sizes": [
       {
         "width": 480,
         "height": 480,
-        "avif": "size-100-480.avif",
-        "webp": "size-100-480.webp"
+        "avif": "size-100-v4-480.avif",
+        "webp": "size-100-v4-480.webp"
       },
       {
         "width": 720,
         "height": 720,
-        "avif": "size-100-720.avif",
-        "webp": "size-100-720.webp",
-        "jpg": "size-100-720.jpg"
+        "avif": "size-100-v4-720.avif",
+        "webp": "size-100-v4-720.webp",
+        "jpg": "size-100-v4-720.jpg"
       },
       {
         "width": 900,
         "height": 900,
-        "avif": "size-100-900.avif",
-        "webp": "size-100-900.webp"
+        "avif": "size-100-v4-900.avif",
+        "webp": "size-100-v4-900.webp"
       }
     ],
-    "fallback": "size-100-720.jpg"
+    "fallback": "size-100-v4-720.jpg"
   },
   "editorial": {
     "sizes": [
       {
         "width": 480,
         "height": 686,
-        "avif": "editorial-480.avif",
-        "webp": "editorial-480.webp"
+        "avif": "editorial-v4-480.avif",
+        "webp": "editorial-v4-480.webp"
       },
       {
         "width": 720,
         "height": 1029,
-        "avif": "editorial-720.avif",
-        "webp": "editorial-720.webp",
-        "jpg": "editorial-720.jpg"
+        "avif": "editorial-v4-720.avif",
+        "webp": "editorial-v4-720.webp",
+        "jpg": "editorial-v4-720.jpg"
       },
       {
         "width": 900,
         "height": 1286,
-        "avif": "editorial-900.avif",
-        "webp": "editorial-900.webp"
+        "avif": "editorial-v4-900.avif",
+        "webp": "editorial-v4-900.webp"
       }
     ],
-    "fallback": "editorial-720.jpg"
+    "fallback": "editorial-v4-720.jpg"
   },
   "detail-label": {
     "sizes": [
       {
         "width": 480,
         "height": 480,
-        "avif": "detail-label-480.avif",
-        "webp": "detail-label-480.webp"
+        "avif": "detail-label-v4-480.avif",
+        "webp": "detail-label-v4-480.webp"
       },
       {
         "width": 720,
         "height": 720,
-        "avif": "detail-label-720.avif",
-        "webp": "detail-label-720.webp",
-        "jpg": "detail-label-720.jpg"
+        "avif": "detail-label-v4-720.avif",
+        "webp": "detail-label-v4-720.webp",
+        "jpg": "detail-label-v4-720.jpg"
       },
       {
         "width": 900,
         "height": 900,
-        "avif": "detail-label-900.avif",
-        "webp": "detail-label-900.webp"
+        "avif": "detail-label-v4-900.avif",
+        "webp": "detail-label-v4-900.webp"
       }
     ],
-    "fallback": "detail-label-720.jpg"
+    "fallback": "detail-label-v4-720.jpg"
   },
   "hero-wide-v3": {
     "sizes": [
       {
         "width": 480,
         "height": 240,
-        "avif": "hero-wide-v3-480.avif",
-        "webp": "hero-wide-v3-480.webp"
+        "avif": "hero-wide-v3-v4-480.avif",
+        "webp": "hero-wide-v3-v4-480.webp"
       },
       {
         "width": 720,
         "height": 360,
-        "avif": "hero-wide-v3-720.avif",
-        "webp": "hero-wide-v3-720.webp"
+        "avif": "hero-wide-v3-v4-720.avif",
+        "webp": "hero-wide-v3-v4-720.webp"
       },
       {
         "width": 1080,
         "height": 540,
-        "avif": "hero-wide-v3-1080.avif",
-        "webp": "hero-wide-v3-1080.webp",
-        "jpg": "hero-wide-v3-1080.jpg"
+        "avif": "hero-wide-v3-v4-1080.avif",
+        "webp": "hero-wide-v3-v4-1080.webp",
+        "jpg": "hero-wide-v3-v4-1080.jpg"
       },
       {
         "width": 1400,
         "height": 700,
-        "avif": "hero-wide-v3-1400.avif",
-        "webp": "hero-wide-v3-1400.webp"
+        "avif": "hero-wide-v3-v4-1400.avif",
+        "webp": "hero-wide-v3-v4-1400.webp"
       },
       {
         "width": 1600,
         "height": 800,
-        "avif": "hero-wide-v3-1600.avif",
-        "webp": "hero-wide-v3-1600.webp"
+        "avif": "hero-wide-v3-v4-1600.avif",
+        "webp": "hero-wide-v3-v4-1600.webp"
       }
     ],
-    "fallback": "hero-wide-v3-1080.jpg"
+    "fallback": "hero-wide-v3-v4-1080.jpg"
   }
 }

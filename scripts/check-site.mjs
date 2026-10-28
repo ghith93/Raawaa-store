@@ -498,11 +498,11 @@ async function checkAssets() {
   group('الأصول والصور');
   // الصور الفعلية المستخدمة في الصفحة — تُحدَّث مع كل تغيير في المشاهد
   const images = [
-    'assets/img/products/hero-wide-v3-1080.avif', 'assets/img/products/hero-wide-v3-1080.webp',
-    'assets/img/products/size-30-720.webp', 'assets/img/products/size-30-720.jpg',
-    'assets/img/products/size-50-720.webp', 'assets/img/products/size-50-720.jpg',
-    'assets/img/products/size-100-720.webp', 'assets/img/products/size-100-720.jpg',
-    'assets/img/products/editorial-720.webp', 'assets/img/products/trio-1080.avif'
+    'assets/img/products/hero-wide-v3-v4-1080.avif', 'assets/img/products/hero-wide-v3-v4-1080.webp',
+    'assets/img/products/size-30-v4-720.webp', 'assets/img/products/size-30-v4-720.jpg',
+    'assets/img/products/size-50-v4-720.webp', 'assets/img/products/size-50-v4-720.jpg',
+    'assets/img/products/size-100-v4-720.webp', 'assets/img/products/size-100-v4-720.jpg',
+    'assets/img/products/editorial-v4-720.webp', 'assets/img/products/trio-v4-1080.avif'
   ];
   let total = 0;
   for (const img of images) {
@@ -639,7 +639,7 @@ async function checkBrandAssets() {
   // لكل حجم: مشهد مولّد بثلاث صيغ — وهذا ما تعرضه الصفحة فعليًا
   for (const ml of [30, 50, 100]) {
     const base = `assets/img/products/size-${ml}`;
-    for (const f of [`${base}-720.avif`, `${base}-720.webp`, `${base}-720.jpg`]) {
+    for (const f of [`${base}-v4-720.avif`, `${base}-v4-720.webp`, `${base}-v4-720.jpg`]) {
       if (await exists(f)) pass(`مشهد ${ml} مل — ${f.split('.').pop()}`);
       else fail(`مفقود: ${f}`);
     }
@@ -651,7 +651,7 @@ async function checkBrandAssets() {
   else fail('أيقونة الموقع غير معرّفة');
 
   // صور الاستخدام الاجتماعي
-  const social = ['assets/img/products/social-square-1080.avif', 'assets/img/products/social-vertical-1080.avif'];
+  const social = ['assets/img/products/social-square-v4-1080.avif', 'assets/img/products/social-vertical-v4-1080.avif'];
   for (const f of social) {
     if (await exists(f)) pass(`صورة سوشيال: ${f.split('/').pop()}`);
     else fail(`مفقودة: ${f}`);

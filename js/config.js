@@ -49,10 +49,10 @@
         price: 10,
         image: {
           base: 'size-30',
-          avif: ['size-30-480.avif', 'size-30-720.avif', 'size-30-900.avif'],
-          webp: ['size-30-480.webp', 'size-30-720.webp', 'size-30-900.webp'],
+          avif: ['size-30-v4-480.avif', 'size-30-v4-720.avif', 'size-30-v4-900.avif'],
+          webp: ['size-30-v4-480.webp', 'size-30-v4-720.webp', 'size-30-v4-900.webp'],
           widths: [480, 720, 900],
-          src: 'assets/img/products/size-30-720.jpg',
+          src: 'assets/img/products/size-30-v4-720.jpg',
           width: 720,
           height: 720,
           alt: 'صورة توضيحية لعبوة سيروم رواء 30 مل — زجاج كهرماني وملصق عاجي باسم RAWAA ورواء، وليست صورة منتج مُصنَّع'
@@ -69,10 +69,10 @@
         badge: 'الأكثر اختيارًا',
         image: {
           base: 'size-50',
-          avif: ['size-50-480.avif', 'size-50-720.avif', 'size-50-900.avif'],
-          webp: ['size-50-480.webp', 'size-50-720.webp', 'size-50-900.webp'],
+          avif: ['size-50-v4-480.avif', 'size-50-v4-720.avif', 'size-50-v4-900.avif'],
+          webp: ['size-50-v4-480.webp', 'size-50-v4-720.webp', 'size-50-v4-900.webp'],
           widths: [480, 720, 900],
-          src: 'assets/img/products/size-50-720.jpg',
+          src: 'assets/img/products/size-50-v4-720.jpg',
           width: 720,
           height: 720,
           alt: 'صورة توضيحية لعبوة سيروم رواء 50 مل — زجاج كهرماني وغطاء قطّارة أسود وملصق عاجي، وليست صورة منتج مُصنَّع'
@@ -89,10 +89,10 @@
         badge: 'أفضل قيمة',
         image: {
           base: 'size-100',
-          avif: ['size-100-480.avif', 'size-100-720.avif', 'size-100-900.avif'],
-          webp: ['size-100-480.webp', 'size-100-720.webp', 'size-100-900.webp'],
+          avif: ['size-100-v4-480.avif', 'size-100-v4-720.avif', 'size-100-v4-900.avif'],
+          webp: ['size-100-v4-480.webp', 'size-100-v4-720.webp', 'size-100-v4-900.webp'],
           widths: [480, 720, 900],
-          src: 'assets/img/products/size-100-720.jpg',
+          src: 'assets/img/products/size-100-v4-720.jpg',
           width: 720,
           height: 720,
           alt: 'صورة توضيحية لعبوة سيروم رواء 100 مل — أكبر أحجام العلامة، وليست صورة منتج مُصنَّع'
@@ -172,40 +172,40 @@
     imagery: {
       hero: {
         base: 'hero-wide',
-        avif: ['hero-wide-v3-480.avif', 'hero-wide-v3-720.avif', 'hero-wide-v3-1080.avif', 'hero-wide-v3-1400.avif', 'hero-wide-v3-1600.avif'],
-        webp: ['hero-wide-v3-480.webp', 'hero-wide-v3-720.webp', 'hero-wide-v3-1080.webp', 'hero-wide-v3-1400.webp', 'hero-wide-v3-1600.webp'],
+        avif: ['hero-wide-v3-v4-480.avif', 'hero-wide-v3-v4-720.avif', 'hero-wide-v3-v4-1080.avif', 'hero-wide-v3-v4-1400.avif', 'hero-wide-v3-v4-1600.avif'],
+        webp: ['hero-wide-v3-v4-480.webp', 'hero-wide-v3-v4-720.webp', 'hero-wide-v3-v4-1080.webp', 'hero-wide-v3-v4-1400.webp', 'hero-wide-v3-v4-1600.webp'],
         widths: [480, 720, 1080, 1400, 1600],
-        src: 'assets/img/products/hero-wide-v3-1080.jpg',
+        src: 'assets/img/products/hero-wide-v3-v4-1080.jpg',
         width: 1080,
         height: 540,
         alt: 'صورة توضيحية للأحجام الثلاثة لسيروم رواء على سطح فاتح بإضاءة ناعمة — وليست صورة منتج مُصنَّع'
       },
       trio: {
         base: 'trio',
-        avif: ['trio-480.avif', 'trio-720.avif', 'trio-1080.avif', 'trio-1400.avif'],
-        webp: ['trio-480.webp', 'trio-720.webp', 'trio-1080.webp', 'trio-1400.webp'],
+        avif: ['trio-v4-480.avif', 'trio-v4-720.avif', 'trio-v4-1080.avif', 'trio-v4-1400.avif'],
+        webp: ['trio-v4-480.webp', 'trio-v4-720.webp', 'trio-v4-1080.webp', 'trio-v4-1400.webp'],
         widths: [480, 720, 1080, 1400],
-        src: 'assets/img/products/trio-1080.jpg',
+        src: 'assets/img/products/trio-v4-1080.jpg',
         width: 1080,
         height: 810,
         alt: 'الأحجام الثلاثة لسيروم رواء 30 و50 و100 مل بجانب بعضها — صورة توضيحية للتصميم'
       },
       editorial: {
         base: 'editorial',
-        avif: ['editorial-480.avif', 'editorial-720.avif', 'editorial-900.avif'],
-        webp: ['editorial-480.webp', 'editorial-720.webp', 'editorial-900.webp'],
+        avif: ['editorial-v4-480.avif', 'editorial-v4-720.avif', 'editorial-v4-900.avif'],
+        webp: ['editorial-v4-480.webp', 'editorial-v4-720.webp', 'editorial-v4-900.webp'],
         widths: [480, 720, 900],
-        src: 'assets/img/products/editorial-720.jpg',
+        src: 'assets/img/products/editorial-v4-720.jpg',
         width: 720,
         height: 1029,
         alt: 'صورة تحريرية لعبوة سيروم رواء بإضاءة جانبية ناعمة — صورة توضيحية للتصميم'
       },
       detail: {
         base: 'detail-label',
-        avif: ['detail-label-480.avif', 'detail-label-720.avif', 'detail-label-900.avif'],
-        webp: ['detail-label-480.webp', 'detail-label-720.webp', 'detail-label-900.webp'],
+        avif: ['detail-label-v4-480.avif', 'detail-label-v4-720.avif', 'detail-label-v4-900.avif'],
+        webp: ['detail-label-v4-480.webp', 'detail-label-v4-720.webp', 'detail-label-v4-900.webp'],
         widths: [480, 720, 900],
-        src: 'assets/img/products/detail-label-720.jpg',
+        src: 'assets/img/products/detail-label-v4-720.jpg',
         width: 720,
         height: 720,
         alt: 'مقربة من ملصق عبوة رواء يظهر الاسم والشعار — صورة توضيحية للتصميم'

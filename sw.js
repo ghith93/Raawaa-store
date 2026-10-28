@@ -14,7 +14,7 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const RUNTIME = 'rawaa-runtime-v5';
 
 /** الأصول التي يجب أن تعمل بلا إنترنت */
@@ -43,16 +43,16 @@ const CORE = [
   './assets/brand/logo-mark-v2.svg',
   './assets/brand/logo-primary-v2.svg',
   // الصور الجديدة المضغوطة (AVIF + WebP + JPG احتياطي)
-  './assets/img/products/hero-wide-v3-1080.avif',
-  './assets/img/products/trio-1080.avif',
-  './assets/img/products/size-30-720.webp',
-  './assets/img/products/size-50-720.webp',
-  './assets/img/products/size-100-720.webp',
-  './assets/img/products/size-30-720.jpg',
-  './assets/img/products/size-50-720.jpg',
-  './assets/img/products/size-100-720.jpg',
-  './assets/img/products/editorial-720.jpg',
-  './assets/img/products/detail-label-720.jpg'
+  './assets/img/products/hero-wide-v3-v4-1080.avif',
+  './assets/img/products/trio-v4-1080.avif',
+  './assets/img/products/size-30-v4-720.webp',
+  './assets/img/products/size-50-v4-720.webp',
+  './assets/img/products/size-100-v4-720.webp',
+  './assets/img/products/size-30-v4-720.jpg',
+  './assets/img/products/size-50-v4-720.jpg',
+  './assets/img/products/size-100-v4-720.jpg',
+  './assets/img/products/editorial-v4-720.jpg',
+  './assets/img/products/detail-label-v4-720.jpg'
 ];
 
 self.addEventListener('install', (event) => {
@@ -82,19 +82,22 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // الصور والخطوط والأيقونات: من الذاكرة أولًا (أسرع، ولا تتغيّر)
+  // الصور والخطوط والأيقونات: من الذاكرة للعرض الفوري، **مع تحديث في الخلفية**
+  // سابقًا كانت Cache-First بلا تحديث، فبقي الزائر يرى صورًا استُبدلت منذ أسابيع.
+  // الآن: stale-while-revalidate — عرض فوري + تحديث صامت + النسخة الجديدة في الزيارة التالية.
   if (/\.(avif|webp|jpe?g|png|svg|woff2?)$/i.test(url.pathname)) {
     event.respondWith(
-      caches.match(req).then((hit) => {
-        if (hit) return hit;
-        return fetch(req).then((res) => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(RUNTIME).then((c) => c.put(req, copy));
-          }
-          return res;
-        }).catch(() => hit);
-      })
+      caches.open(RUNTIME).then((cache) =>
+        cache.match(req).then((hit) => {
+          const network = fetch(req)
+            .then((res) => {
+              if (res && res.ok) cache.put(req, res.clone());
+              return res;
+            })
+            .catch(() => hit);
+          return hit || network;
+        })
+      )
     );
     return;
   }

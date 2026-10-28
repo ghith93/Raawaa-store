@@ -1523,3 +1523,92 @@ bdi { unicode-bidi: isolate; }
 .calc-total-row dt { font-weight: 700; color: var(--ink, #2A2622); }
 .calc-total-row dd { font-size: 1.35rem; }
 .calc-note { margin: .55rem 0 0; font-size: .85rem; line-height: 1.65; color: var(--ink-soft, #4A443C); }
+
+/* ==========================================================================
+   إصلاحات الاحترافية — 2026-10-28
+   المشاكل المُصلَحة: فراغات هائلة بين الأقسام، عناوين بكلمة يتيمة،
+   صفوف ميزات مزدحمة على سطح المكتب، حبيبات ميزات موزّعة بلا شبكة.
+   ========================================================================== */
+
+/* 1) إيقاع رأسي منتظم: كان padding الأقسام كبيرًا جدًا فيترك فراغًا يشبه الخطأ */
+.section { padding-block: clamp(2.6rem, 6vw, 4.5rem); }
+.section + .section { padding-top: clamp(2.2rem, 5vw, 3.6rem); }
+
+/* 2) العناوين: منع الكلمة اليتيمة في سطر أخير (شائع جدًا في العربية) */
+h1, h2, h3 {
+  text-wrap: balance;
+  max-width: 34ch;
+}
+h1 { max-width: 22ch; }
+.section-head .section-title, .section-head h2 { max-width: 30ch; }
+
+/* 3) صف الميزات تحت الصورة البطلة: كان 4 عناصر في سطر واحد مزدحمًا */
+.fact-list, .hero-facts, [class*="facts"] {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem 1.4rem;
+  margin-block: 1.1rem;
+}
+.fact-list li, .hero-facts li, [class*="facts"] li {
+  flex: 0 1 auto;
+  font-size: .86rem;
+  line-height: 1.6;
+}
+
+/* 4) شبكة الميزات: كانت حبيبات مبعثرة بلا شبكة */
+.feat-grid, .features, [class*="feat"] {
+  display: grid;
+  gap: .75rem 2rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 700px) {
+  .feat-grid, .features, [class*="feat"] { grid-template-columns: 1fr 1fr; }
+}
+
+/* 5) الصورة البطلة على سطح المكتب: ارتفاع محكوم حتى لا تلتهم الشاشة */
+@media (min-width: 1000px) {
+  .hero-figure picture, .hero-figure img {
+    max-height: 62vh;
+    object-fit: cover;
+    width: 100%;
+  }
+}
+
+/* 6) المعرض: 4 صور في صف واحد على سطح المكتب بخلايا متساوية وتباعد منتظم */
+@media (min-width: 1000px) {
+  .gallery, .gallery-grid, [class*="gallery"] {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+  }
+  .gallery figure, .gallery-grid figure { margin: 0; }
+}
+
+/* 7) ارتفاع أدنى محترم لأزرار اللمس (44px) — معيار Apple */
+button, .btn, select, input[type="number"], a.btn { min-height: 44px; }
+
+/* 8) كل النصوص العربية: تباعد أسطر أدنى يمنع تلاصق التشكيل */
+p, li, dd, dt { line-height: 1.85; }
+
+/* 9) إزالة الفراغ المزدوج بين القسم البطل وأول قسم (88px + 72px = حفرة بصرية) */
+.hero, [class*="hero"]:not(figure) { padding-bottom: clamp(1.6rem, 3vw, 2.4rem); }
+.hero + .section, .hero + section { padding-top: clamp(1.8rem, 3.5vw, 2.8rem); }
+
+/* 10) بطاقة مواصفات التصميم: كانت مستطيلًا أبيض باهتًا — اجعلها حاضرة */
+[class*="spec"], .spec-card, .design-specs {
+  background: var(--cream);
+  border: 1px solid var(--sand-deep);
+  border-radius: 14px;
+  padding: 1.4rem 1.5rem;
+}
+[class*="spec"] dl, .spec-card dl { margin: 0; }
+[class*="spec"] dt, .spec-card dt {
+  font-weight: 700;
+  font-size: .82rem;
+  letter-spacing: .02em;
+  color: var(--olive, #7A7A5C);
+  margin-top: .9rem;
+}
+[class*="spec"] dt:first-child, .spec-card dt:first-child { margin-top: 0; }
+[class*="spec"] dd, .spec-card dd { margin: .2rem 0 0; font-size: .95rem; }

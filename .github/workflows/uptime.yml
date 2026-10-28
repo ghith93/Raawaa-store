@@ -33,7 +33,7 @@ jobs:
           for path in "" "privacy.html" "manifest.webmanifest" "sw.js" \
                       "css/styles.css" "js/config.js" "js/cart.js" \
                       "assets/icons/apple-touch-icon.png" \
-                      "assets/img/products/hero-wide-720.avif" \
+                      "assets/img/products/hero-wide-v3-v4-720.avif" \
                       "sitemap.xml" "robots.txt"; do
             CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 25 --retry 3 --retry-delay 5 "$BASE/$path")
             if [ "$CODE" != "200" ]; then
@@ -67,6 +67,31 @@ jobs:
 
       - name: اختبار وظيفي كامل على الموقع المنشور
         run: python scripts/browser-test.py --base https://raawaa-store.pages.dev
+
+  content-check:
+    name: تحقق من المحتوى الحيّ (أسعار + خط)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: الأسعار الحيّة مطابقة للإعداد
+        run: |
+          BODY=$(curl -s --max-time 20 https://raawaa-store.pages.dev/js/config.js)
+          FAIL=0
+          for pair in "price: 10:30" "price: 12:50" "price: 15:100"; do
+            NEEDLE="${pair%:*}"
+            if echo "$BODY" | grep -qF "$NEEDLE"; then echo "✓ $pair"; else echo "✗ سعر مفقود: $pair"; FAIL=1; fi
+          done
+          exit $FAIL
+      - name: الخط الجديد منشور فعلًا
+        run: |
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" https://raawaa-store.pages.dev/assets/fonts/plexar-400.subset.woff2)
+          echo "plexar-400 → $CODE"; [ "$CODE" = "200" ]
+      - name: لا مراجع لصور قديمة في HTML المنشور
+        run: |
+          HTML=$(curl -s --max-time 20 https://raawaa-store.pages.dev/)
+          OLD=$(echo "$HTML" | grep -oE 'products/[a-z0-9-]+-[0-9]+\.(avif|webp|jpg)' | grep -v 'v4' || true)
+          if [ -n "$OLD" ]; then echo "✗ مراجع قديمة:"; echo "$OLD"; exit 1; fi
+          echo "✓ كل مراجع الصور تحمل لاحقة v4"
 
   quality:
     name: أبواب الجودة (axe + Lighthouse)
