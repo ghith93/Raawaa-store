@@ -197,7 +197,7 @@
 
 ## ✅ النقل إلى Cloudflare Workers — 2026-10-28 (مكتمل)
 
-**الموقع الحيّ الجديد:** https://raawaa-store.ghith-shikhkhaled.workers.dev
+**الموقع الحيّ الجديد:** https://raawaa-store.pages.dev
 **GitHub Pages:** ⛔ **موقوف** (DELETE → 204 · التحقق → 404)
 
 ### لماذا Workers لا Pages
@@ -252,7 +252,7 @@ Cloudflare لم تعد توجّه المشاريع الجديدة إلى Pages،
 
 ## تحديث الاسم — 2026-10-28
 
-**العنوان النهائي:** https://raawaa-store.ghith-shikhkhaled.workers.dev
+**العنوان النهائي:** https://raawaa-store.pages.dev
 
 | البند | القرار |
 |-------|--------|
@@ -280,3 +280,41 @@ Cloudflare لم تعد توجّه المشاريع الجديدة إلى Pages،
 2. **نطاق مدفوع** (`raawaa.luxe` ≈ 16$/سنة) — يخالف ميزانية الصفر، ويحتاج موافقتك الصريحة.
 
 الأداة `scripts/set-cf-subdomain.py` جاهزة إن قررت لاحقًا أن مشاريع `gaiooth` لم تعد مهمة.
+
+---
+
+## العنوان النهائي — 2026-10-28 (Cloudflare Pages)
+
+**الموقع:** https://raawaa-store.pages.dev
+
+| البند | النتيجة |
+|-------|---------|
+| الطلب | «نفّذ المجاني» — نطاق بلا اسم المالك، بلا دفع |
+| الحل | **Cloudflare Pages** — علبة `*.pages.dev` مجانية بلا اسم الحساب |
+| لماذا أفضل من eu.org | فوري (ثوانٍ) لا مراجعة بشرية (أيام–أسابيع)، ولا خطوة من المالك |
+| لماذا أفضل من workers.dev | اسم الحساب `ghith-shikhkhaled` لا يظهر في العنوان |
+| الثمن | صفر — Pages مجاني دائمًا للاستخدام التجاري |
+
+### التحقق على العنوان الجديد
+
+| الفحص | النتيجة |
+|-------|---------|
+| الصفحة الرئيسية | **200** · 0.13s |
+| `/privacy.html` | **200** (بلا تحويل 307 هذه المرة) |
+| صفحة 404 | **404** حقيقي |
+| `browser-test.py` | **127 / 0** |
+| `check-site.mjs` | **240 / 0** |
+| رؤوس الأمان الستة | **كلها مطبّقة** عبر `_headers` |
+| canonical · sitemap · robots · QR | كلها على `raawaa-store.pages.dev` |
+
+### ملاحظة تشغيلية
+
+Wrangler يحذّر: `wrangler.jsonc` بلا `pages_build_output_dir` فيتجاهله وينشر.
+هذا **مقصود** — الملف مهيّأ لـWorkers Static Assets، والنشر على Pages
+يجري بالأمر الصريح `wrangler pages deploy dist/site`.
+
+### المصير
+
+- Workers `raawaa-store`: **يبقى** نسخة احتياطية (اسمه لا يظهر في أي رابط الآن)
+- `rawaa.eu.org`: النطاق أُنشئ في Cloudflare وحالته `pending` — يبقى خيارًا
+  لاحقًا عندما يكتمل، ويُربط بـ**Pages** لا Workers

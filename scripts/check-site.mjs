@@ -666,7 +666,7 @@ async function checkBrandAssets() {
     // الصورة قد تكون رابطًا مطلقًا على النطاق المنشور أو مسارًا نسبيًا محليًا
     const raw = og[1];
     // أصل الموقع المنشور — بدّله عند الانتقال إلى نطاق خاص
-    const SITE_BASE = 'https://raawaa-store.ghith-shikhkhaled.workers.dev/';
+    const SITE_BASE = 'https://raawaa-store.pages.dev/';
     let localPath;
     if (raw.startsWith(SITE_BASE)) localPath = raw.slice(SITE_BASE.length);
     else if (raw.startsWith('http')) localPath = raw.replace(/^https?:\/\/[^/]+\//, '');

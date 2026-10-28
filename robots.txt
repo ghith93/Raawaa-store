@@ -7,4 +7,4 @@ Allow: /
 # مسارات لا تُفهرَس
 Disallow: /404.html
 
-Sitemap: https://raawaa-store.ghith-shikhkhaled.workers.dev/sitemap.xml
+Sitemap: https://raawaa-store.pages.dev/sitemap.xml

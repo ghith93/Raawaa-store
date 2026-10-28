@@ -16,36 +16,12 @@ RAWAA — تجهيز نطاق مخصص على Cloudflare وربطه بالموق
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import subprocess
 import sys
-import urllib.error
-import urllib.request
 
-TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN")
-ACCOUNT_ID = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "1277e30c7a5bfac599ceb3c471328a24")
-WORKER = os.environ.get("RAWAA_WORKER", "raawaa-store")
-BASE = "https://api.cloudflare.com/client/v4"
-
-if not TOKEN:
-    sys.exit("✗ CLOUDFLARE_API_TOKEN غير مضبوط")
-
-
-def api(path, method="GET", data=None):
-    body = json.dumps(data).encode() if data is not None else None
-    req = urllib.request.Request(BASE + path, data=body, method=method)
-    req.add_header("Authorization", "Bearer " + TOKEN)
-    req.add_header("Content-Type", "application/json")
-    try:
-        with urllib.request.urlopen(req, timeout=45) as r:
-            b = r.read().decode()
-            return r.status, (json.loads(b) if b.strip() else {})
-    except urllib.error.HTTPError as e:
-        try:
-            return e.code, json.loads(e.read().decode())
-        except Exception:
-            return e.code, {}
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from cf_api import api, err, ACCOUNT_ID, WORKER  # noqa: E402
 
 
 def find_zone(domain):
@@ -68,14 +44,14 @@ def stage_zone(domain):
         if st != 200:
             errs = d.get("errors") or [{}]
             code = errs[0].get("code")
-            msg = errs[0].get("message", str(d))
+            msg = err(d)
             print("✗ تعذّر إنشاء النطاق: %s" % msg)
             if code == 0 and "zone.create" in msg:
                 print()
-                print("الحل: التوكن الحالي لا يملك صلاحية إنشاء النطاقات.")
-                print("أضف إلى التوكن في dash.cloudflare.com/profile/api-tokens:")
-                print("   Zone → Zone → Edit")
-                print("أو أضف النطاق يدويًا من: dash.cloudflare.com → Add a site")
+                print("الحل: المصادقة الحالية لا تملك صلاحية إنشاء النطاقات.")
+                print("استخدم المفتاح العام الكامل:")
+                print("   export CLOUDFLARE_EMAIL=... CLOUDFLARE_API_KEY=...")
+                print("أو أضف الصلاحية للتوكن من: dash.cloudflare.com/profile/api-tokens")
             return 1
         z = d["result"]
 
@@ -131,8 +107,7 @@ def stage_attach(domain):
         "zone_id": z["id"],
     })
     if st not in (200, 201):
-        errs = d.get("errors") or [{}]
-        print("✗ تعذّر الربط: %s" % errs[0].get("message", str(d)))
+        print("✗ تعذّر الربط: %s" % err(d))
         return 1
     print("✓ رُبط %s بالعامل %s" % (host, WORKER))
     print("العنوان: https://%s" % host)
