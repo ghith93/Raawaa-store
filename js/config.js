@@ -171,14 +171,14 @@
 
     imagery: {
       hero: {
-        base: 'hero-wide',
-        avif: ['hero-wide-v5-480.avif', 'hero-wide-v5-720.avif', 'hero-wide-v5-1080.avif', 'hero-wide-v5-1400.avif', 'hero-wide-v5-1440.avif'],
-        webp: ['hero-wide-v5-480.webp', 'hero-wide-v5-720.webp', 'hero-wide-v5-1080.webp', 'hero-wide-v5-1400.webp', 'hero-wide-v5-1440.webp'],
-        widths: [480, 720, 1080, 1400, 1600],
-        src: 'assets/img/products/hero-wide-v5-1080.jpg',
-        width: 1440,
-        height: 720,
-        alt: 'صورة توضيحية للأحجام الثلاثة لسيروم رواء على سطح فاتح بإضاءة ناعمة — وليست صورة منتج مُصنَّع'
+        base: 'trio',
+        avif: ['trio-v5-480.avif', 'trio-v5-720.avif', 'trio-v5-1080.avif', 'trio-v5-1195.avif'],
+        webp: ['trio-v5-480.webp', 'trio-v5-720.webp', 'trio-v5-1080.webp', 'trio-v5-1195.webp'],
+        widths: [480, 720, 1080, 1195],
+        src: 'assets/img/products/trio-v5-1080.jpg',
+        width: 1195,
+        height: 896,
+        alt: 'الأحجام الثلاثة لسيروم زيوت رواء 30 و50 و100 مل — تصميم مقترح، ليست صورة منتج مُصنَّع'
       },
       trio: {
         base: 'trio',

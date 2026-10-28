@@ -280,8 +280,22 @@ async function checkLinks() {
       if (/^(https?:|mailto:|tel:|data:|#)/.test(ref)) continue;
       localRefs.add(ref.split('#')[0]);
     }
+    /**
+     * ⚠ درس مُكلِّف (2026-10-28): كان الفحص يأخذ **أول رابط فقط** من كل srcset.
+     * فمرّ محليًا srcset يشير إلى ملفات محذوفة، وفشل النشر في CI.
+     * الآن: كل مرشّح في srcset يُفحص، وكذلك كل صورة في js/config.js.
+     */
     for (const m of html.matchAll(/srcset="([^"]+)"/g)) {
-      localRefs.add(m[1].split(' ')[0]);
+      for (const candidate of m[1].split(',')) {
+        const url = candidate.trim().split(/\s+/)[0];
+        if (url) localRefs.add(url);
+      }
+    }
+    for (const m of html.matchAll(/imagesrcset="([^"]+)"/g)) {
+      for (const candidate of m[1].split(',')) {
+        const url = candidate.trim().split(/\s+/)[0];
+        if (url) localRefs.add(url);
+      }
     }
 
     for (const ref of localRefs) {
@@ -290,6 +304,19 @@ async function checkLinks() {
       const rel = path.normalize(path.join(base, ref));
       if (await exists(rel)) pass(`${page} → ${ref}`);
       else fail(`${page} → ${ref} (ملف مفقود)`);
+    }
+
+    // صور js/config.js — المصدر الذي يُبنى منه كل شيء في الواجهة
+    if (page === 'index.html') {
+      const cfg = await read('js/config.js');
+      const cfgRefs = new Set();
+      for (const m of cfg.matchAll(/'([\w.\-]+\.(?:avif|webp|jpg|png))'/g)) {
+        cfgRefs.add('assets/img/products/' + m[1]);
+      }
+      for (const ref of cfgRefs) {
+        if (await exists(path.normalize(ref))) pass(`config.js → ${ref.split('/').pop()}`);
+        else fail(`config.js → ${ref} (ملف مفقود)`);
+      }
     }
 
     // روابط الأقسام الداخلية
