@@ -3,9 +3,10 @@
   "viewports": {
     "iPhone SE": {
       "violations": [],
-      "passes": 43,
+      "passes": 47,
       "incomplete": [
-        "aria-valid-attr-value"
+        "aria-valid-attr-value",
+        "color-contrast"
       ]
     },
     "iPhone SE — السلة مفتوحة": {
@@ -15,9 +16,10 @@
     },
     "iPhone 14": {
       "violations": [],
-      "passes": 43,
+      "passes": 47,
       "incomplete": [
-        "aria-valid-attr-value"
+        "aria-valid-attr-value",
+        "color-contrast"
       ]
     },
     "iPhone 14 — السلة مفتوحة": {
@@ -27,9 +29,10 @@
     },
     "iPad": {
       "violations": [],
-      "passes": 43,
+      "passes": 47,
       "incomplete": [
-        "aria-valid-attr-value"
+        "aria-valid-attr-value",
+        "color-contrast"
       ]
     },
     "iPad — السلة مفتوحة": {
@@ -39,9 +42,10 @@
     },
     "سطح المكتب": {
       "violations": [],
-      "passes": 43,
+      "passes": 47,
       "incomplete": [
-        "aria-valid-attr-value"
+        "aria-valid-attr-value",
+        "color-contrast"
       ]
     },
     "سطح المكتب — السلة مفتوحة": {
@@ -53,46 +57,46 @@
   "weights": {
     "iPhone SE": {
       "requests": 5,
-      "total_kb": 227.8,
+      "total_kb": 313.5,
       "by_type_kb": {
-        "document": 37.6,
-        "image": 18.2,
-        "stylesheet": 37.4,
-        "font": 76.6,
-        "script": 58.0
+        "document": 51.9,
+        "image": 44.2,
+        "stylesheet": 49.9,
+        "font": 66.6,
+        "script": 100.9
       }
     },
     "iPhone 14": {
       "requests": 5,
-      "total_kb": 229.8,
+      "total_kb": 313.5,
       "by_type_kb": {
-        "document": 37.6,
-        "font": 76.6,
-        "stylesheet": 37.4,
-        "image": 20.2,
-        "script": 58.0
+        "document": 51.9,
+        "stylesheet": 49.9,
+        "image": 44.2,
+        "font": 66.6,
+        "script": 100.9
       }
     },
     "iPad": {
       "requests": 5,
-      "total_kb": 248.9,
+      "total_kb": 434.5,
       "by_type_kb": {
-        "document": 37.6,
-        "font": 76.6,
-        "stylesheet": 37.4,
-        "image": 39.3,
-        "script": 58.0
+        "document": 51.9,
+        "stylesheet": 49.9,
+        "image": 165.2,
+        "font": 66.6,
+        "script": 100.9
       }
     },
     "سطح المكتب": {
       "requests": 5,
-      "total_kb": 267.2,
+      "total_kb": 389.2,
       "by_type_kb": {
-        "document": 37.6,
-        "image": 57.6,
-        "stylesheet": 37.4,
-        "font": 76.6,
-        "script": 58.0
+        "document": 51.9,
+        "image": 119.9,
+        "stylesheet": 49.9,
+        "font": 66.6,
+        "script": 100.9
       }
     }
   }

@@ -2559,6 +2559,8 @@ div[id="custom"] {
 .formula-rows { margin: 0; }
 .formula-row {
   position: relative;
+  /* النسبة تأتي أولًا في DOM (dd قبل dt لشرعية <dl>) لكن موضعها البصري
+     يبقى كما كان: الاسم يمينًا والنسبة يسارًا، عبر تحديد الأعمدة صراحةً. */
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.15rem 0.6rem;
@@ -2567,6 +2569,8 @@ div[id="custom"] {
 }
 .formula-row:last-child { border-bottom: 0; padding-bottom: 0.2rem; }
 .formula-inci-name {
+  grid-column: 1;
+  grid-row: 1;
   margin: 0;
   font-family: var(--font-latin, Georgia, serif);
   font-size: 0.82rem;
@@ -2574,6 +2578,11 @@ div[id="custom"] {
   line-height: 1.4;
   color: var(--ink, #2E2A26);
   word-break: break-word;
+}
+.formula-detail {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  margin: 0;
 }
 .formula-why {
   grid-column: 1 / -1;
@@ -2584,6 +2593,8 @@ div[id="custom"] {
   color: var(--ink-soft, #4A443C);
 }
 .formula-pct {
+  grid-column: 2;
+  grid-row: 1;
   margin: 0;
   font-size: 0.95rem;
   font-weight: 700;

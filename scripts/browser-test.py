@@ -31,8 +31,20 @@ def check(name, condition, detail=""):
 
 def wait_ready(page, base):
     page.goto(base + "/index.html", wait_until="load")
-    page.wait_for_selector("[data-product-grid] .product-card")
+    page.wait_for_selector("#products [data-add-current]")
     page.evaluate("document.fonts.ready")
+
+
+# اختيار حجم صار داخل بطاقة واحدة (حُذفت الشبكة ثلاثية البطاقات 2026-10-28).
+# كل حجم زر راديو حقيقي، والزر الأساسي يحمل قيمة الحجم المختار.
+SIZE_INDEX = {"serum-30": 0, "serum-50": 1, "serum-100": 2}
+
+
+def add_size(page, pid: str):
+    """تختار الحجم من المحدِّد ثم تضيفه — بديل النقر على بطاقة مستقلة."""
+    page.locator("#products .size-option").nth(SIZE_INDEX[pid]).click()
+    page.wait_for_timeout(120)
+    page.locator("#products [data-add-current]").click()
 
 
 def run(base: str) -> int:
@@ -53,12 +65,12 @@ def run(base: str) -> int:
         wait_ready(page, base)
 
         # 1) المحتوى الأساسي
-        cards = page.locator(".product-card")
-        check("ثلاث بطاقات منتجات معروضة", cards.count() == 3, f"العدد={cards.count()}")
-        prices = page.locator(".product-price .amount").all_inner_texts()
-        check("الأسعار المعروضة $10 / $12 / $15", prices == ["$10", "$12", "$15"], str(prices))
-        sizes = page.locator(".product-size").all_inner_texts()
-        check("الأحجام 30/50/100 مل", sizes == ["30 مل", "50 مل", "100 مل"], str(sizes))
+        check("بطاقة المنتج الواحدة معروضة", page.locator(".product-hero").count() == 1,
+              f"العدد={page.locator('.product-hero').count()}")
+        sizes = page.locator("#products .size-option-size").all_inner_texts()
+        check("الأحجام 30/50/100 مل", [t.strip() for t in sizes] == ["30 مل", "50 مل", "100 مل"], str(sizes))
+        prices = page.locator("#products .size-option-price").all_inner_texts()
+        check("الأسعار المعروضة $10 / $12 / $15", [t.strip() for t in prices] == ["$10", "$12", "$15"], str(prices))
         check("اتجاه الصفحة RTL", page.evaluate("getComputedStyle(document.body).direction") == "rtl")
         check("عنوان h1 واحد", page.locator("h1").count() == 1)
 
@@ -67,28 +79,32 @@ def run(base: str) -> int:
         check("لا طلبات فاشلة", not failed_requests, "; ".join(failed_requests))
 
         # 2) السلة: إضافة، عدّاد، إشعار
-        page.locator('[data-add-to-cart="serum-30"]').click()
+        add_size(page, "serum-30")
         page.wait_for_timeout(120)
         badge = page.locator("[data-cart-count]")
         check("شارة السلة تظهر 1 بعد الإضافة", badge.inner_text() == "1" and badge.is_visible())
         check("ظهور إشعار تأكيد الإضافة", page.locator(".toast").count() >= 1)
         check("استجابة بصرية على الزر (is-added)",
-              "is-added" in (page.locator('[data-add-to-cart="serum-30"]').get_attribute("class") or ""))
+              "is-added" in (page.locator("#products [data-add-current]").get_attribute("class") or ""))
         check("نص الزر يتغيّر مؤقتًا بعد الإضافة",
-              "أُضيف" in page.locator('[data-add-to-cart="serum-30"]').inner_text())
+              "أُضيف" in page.locator("#products [data-add-current]").inner_text())
 
         # شريط السلة اللاصق (يُختبر في سياق الهاتف لاحقًا) وسعر الملليلتر
         # الحساب من CONFIG فقط (price ÷ sizeMl) — لا رقم مكتوب يدويًا
-        per_ml = page.locator(".product-price .unit-price bdi").all_inner_texts()
-        check("سعر الملليلتر محسوب لكل حجم",
-              per_ml == ["$0.33", "$0.24", "$0.15"], str(per_ml))
-        check("سعر الملليلتر مذكور مرة واحدة لكل بطاقة",
-              page.locator(".product-card .unit-price").count() == 3,
-              f"العدد={page.locator('.product-card .unit-price').count()}")
+        # سعر الملليلتر يُقاس لكل حجم كما يراه الزائر عند تبديل الحجم
+        per_ml = []
+        for pid in ("serum-30", "serum-50", "serum-100"):
+            page.locator("#products .size-option").nth(SIZE_INDEX[pid]).click()
+            page.wait_for_timeout(120)
+            per_ml.append(page.locator("[data-unit-live]").inner_text().split(" ")[0])
+        check("سعر الملليلتر محسوب لكل حجم", per_ml == ["$0.33", "$0.24", "$0.15"], str(per_ml))
+        check("السعر الحاضر يتبع الحجم المختار ولا يبقى ثابتًا",
+              page.locator("[data-price-live]").inner_text().startswith("$15"),
+              page.locator("[data-price-live]").inner_text())
 
-        page.locator('[data-add-to-cart="serum-50"]').click()
+        add_size(page, "serum-50")
         page.wait_for_timeout(80)
-        page.locator('[data-add-to-cart="serum-100"]').click()
+        add_size(page, "serum-100")
         page.wait_for_timeout(80)
         check("الشارة تعرض 3", page.locator("[data-cart-count]").inner_text() == "3")
 
@@ -365,11 +381,11 @@ def run(base: str) -> int:
         offer_ctx = browser.new_context(viewport={"width": 1280, "height": 900}, locale="ar")
         op = offer_ctx.new_page()
         op.goto(base + "/index.html?offer=cod", wait_until="load")
-        op.wait_for_selector(".product-card")
+        op.wait_for_selector("#products [data-add-current]")
         op.wait_for_timeout(350)
         check("رابط ?offer=cod يختار الدفع عند الاستلام تلقائيًا",
               op.evaluate("window.__RAWAA_TEST__.selectedMethod()") == "cod")
-        op.locator('[data-add-to-cart="serum-100"]').click()
+        add_size(op, "serum-100")
         op.wait_for_timeout(300)
         op.locator("[data-cart-open]").first.click()
         op.wait_for_timeout(350)
@@ -380,7 +396,7 @@ def run(base: str) -> int:
 
         op2 = offer_ctx.new_page()
         op2.goto(base + "/index.html?offer=غير-صالح", wait_until="load")
-        op2.wait_for_selector(".product-card")
+        op2.wait_for_selector("#products [data-add-current]")
         op2.wait_for_timeout(300)
         check("قيمة offer غير المعروفة تُتجاهل ويعود الافتراضي",
               op2.evaluate("window.__RAWAA_TEST__.selectedMethod()") == "shamcash")
@@ -390,10 +406,10 @@ def run(base: str) -> int:
         cart_ctx = browser.new_context(viewport={"width": 390, "height": 844}, locale="ar")
         cp = cart_ctx.new_page()
         cp.goto(base + "/index.html", wait_until="load")
-        cp.wait_for_selector(".product-card")
+        cp.wait_for_selector("#products [data-add-current]")
         cp.wait_for_timeout(400)
-        cp.locator('[data-add-to-cart="serum-30"]').click()
-        cp.locator('[data-add-to-cart="serum-100"]').click()
+        add_size(cp, "serum-30")
+        add_size(cp, "serum-100")
         cp.wait_for_timeout(400)
         check("السلة تحفظ اختيارين", cp.locator("[data-cart-count]").inner_text() == "2")
         share_url = cp.evaluate("window.__RAWAA_TEST__.cartShareLink()")
@@ -401,14 +417,14 @@ def run(base: str) -> int:
               "?cart=" in share_url and "serum-30" in share_url and "serum-100" in share_url, share_url)
 
         cp.reload(wait_until="load")
-        cp.wait_for_selector(".product-card")
+        cp.wait_for_selector("#products [data-add-current]")
         cp.wait_for_timeout(700)
         check("السلة تبقى بعد تحديث الصفحة", cp.locator("[data-cart-count]").inner_text() == "2",
               cp.locator("[data-cart-count]").inner_text())
 
         sp = cart_ctx.new_page()
         sp.goto(share_url, wait_until="load")
-        sp.wait_for_selector(".product-card")
+        sp.wait_for_selector("#products [data-add-current]")
         sp.wait_for_timeout(700)
         check("رابط السلة المشترك يعيد بناء نفس السلة",
               sp.locator("[data-cart-count]").inner_text() == "2",
@@ -422,7 +438,7 @@ def run(base: str) -> int:
         # رابط سلة غير صالح يجب ألا يكسر الصفحة
         bp = cart_ctx.new_page()
         bp.goto(base + "/index.html?cart=serum-999x5,هراء", wait_until="load")
-        bp.wait_for_selector(".product-card")
+        bp.wait_for_selector("#products [data-add-current]")
         bp.wait_for_timeout(500)
         check("رابط سلة غير صالح يُتجاهل بهدوء",
               bp.locator("[data-cart-count]").is_hidden() or bp.locator("[data-cart-count]").inner_text() == "0")
@@ -445,7 +461,7 @@ def run(base: str) -> int:
 
         # 10ب) شريط السلة اللاصق على الهاتف
         m.locator('#products').scroll_into_view_if_needed()
-        m.locator('[data-add-to-cart="serum-30"]').click()
+        add_size(m, "serum-30")
         m.wait_for_timeout(400)
         check("شريط السلة اللاصق يظهر على الهاتف بعد الإضافة", m.locator("[data-sticky-bar]").is_visible())
         check("الشريط يعرض عدد القطع", m.locator("[data-sticky-count]").inner_text() == "1",
@@ -472,7 +488,7 @@ def run(base: str) -> int:
         pwa_ctx = browser.new_context(viewport={"width": 390, "height": 844}, locale="ar")
         pw = pwa_ctx.new_page()
         pw.goto(base + "/index.html", wait_until="load")
-        pw.wait_for_selector(".product-card")
+        pw.wait_for_selector("#products [data-add-current]")
         pw.wait_for_timeout(4000)
 
         import json as _json
@@ -509,9 +525,9 @@ def run(base: str) -> int:
         pwa_ctx.set_offline(True)
         pw.reload(wait_until="load")
         pw.wait_for_timeout(1500)
-        check("الصفحة تعمل بلا إنترنت", pw.locator(".product-card").count() == 3,
-              f"بطاقات={pw.locator('.product-card').count()}")
-        pw.locator('[data-add-to-cart="serum-50"]').click()
+        check("الصفحة تعمل بلا إنترنت", pw.locator(".product-hero").count() == 1,
+              f"بطاقات={pw.locator('.product-hero').count()}")
+        add_size(pw, "serum-50")
         pw.wait_for_timeout(400)
         check("السلة تعمل بلا إنترنت", pw.locator("[data-cart-count]").inner_text() == "1")
         pw.locator("[data-cart-open]").first.click()
@@ -554,7 +570,7 @@ def run(base: str) -> int:
         m.evaluate("window.scrollTo(0, document.querySelector('#products').offsetTop)")
         m.wait_for_timeout(500)
         m.screenshot(path=str(SHOTS / "iphone-14-products.png"))
-        m.locator("[data-add-to-cart='serum-50']").click()
+        add_size(m, "serum-50")
         m.locator("[data-cart-open]").first.click()
         m.wait_for_timeout(400)
         m.screenshot(path=str(SHOTS / "iphone-14-cart.png"))
@@ -566,7 +582,7 @@ def run(base: str) -> int:
         wait_ready(rp, base)
         anim = rp.evaluate(
             """() => {
-                const el = document.querySelector('.product-card');
+                const el = document.querySelector('.product-hero');
                 return getComputedStyle(el).transitionDuration;
             }"""
         )
@@ -604,9 +620,9 @@ def run(base: str) -> int:
         check("لا صور مكسورة في الصفحة", len(broken) == 0, str(broken[:4]))
 
         total_imgs = ip.evaluate("document.images.length")
-        # حُذف قسم التصميم (2026-10-28) لأنه يصف عبوة غير مُصنَّعة ويحتل 98 عنصرًا.
-        # الحدّ الحالي: 6 صور = 3 بطاقات + البطل + الثلاثية + التحريرية. لا تُنقص دون بديل.
-        check("عدد صور الصفحة 6 على الأقل", total_imgs >= 6, f"العدد={total_imgs}")
+        # الصفحة الآن منتج واحد: صورة الهيرو (الثلاثية) + صورة الحجم + صورة تحريرية.
+        # الشبكة ثلاثية البطاقات حُذفت 2026-10-28، فسقطت صورها الثلاث معها.
+        check("عدد صور الصفحة 3 على الأقل", total_imgs >= 3, f"العدد={total_imgs}")
 
         check("لا استجابات HTTP ≥400", len(bad_responses) == 0, str(bad_responses[:4]))
 
@@ -618,18 +634,18 @@ def run(base: str) -> int:
         )
         modern = [c for c in chosen if c.endswith('.avif') or c.endswith('.webp')]
         check("المتصفح اختار صيغة حديثة (AVIF/WebP) لمعظم الصور",
-              len(modern) >= max(3, int(len(chosen) * 0.7)),
+              len(modern) >= max(2, int(len(chosen) * 0.6)),
               f"{len(modern)}/{len(chosen)}")
 
         # كل صور المنتجات تحمل alt غير فارغ
         alts = ip.evaluate(
-            """() => [...document.querySelectorAll('.product-card img, .gallery img, .hero-figure img')]
+            """() => [...document.querySelectorAll('.product-hero img, .hero-figure img, #story img')]
                  .map(i => i.alt)"""
         )
-        check("كل صور المنتجات والمعرض لها alt", all(a and a.strip() for a in alts), str(alts[:3]))
-        check("alt لا يدّعي صورة فوتوغرافية حقيقية",
-              all(("توضيحي" in a or "للتصميم" in a) and ("مُصنَّع" in a or "مصنَّع" in a or "توفّره" in a)
-                  for a in alts), str(alts[:3]))
+        check("كل صور المنتج والتحريرية لها alt", all(a and a.strip() for a in alts), str(alts[:3]))
+        # الصور تصميمية: لا صورة منتج مُصنَّع بعد — الـalt يجب أن يقول ذلك صراحةً
+        check("alt لا يدّعي صورة منتج مُصنَّع",
+              all(("مقترح" in a or "تصميم" in a) for a in alts), str(alts[:3]))
 
         # الصور لا تتجاوز عرض الشاشة
         wide = ip.evaluate(

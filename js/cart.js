@@ -1254,6 +1254,8 @@
         role.textContent = group.role;
         card.appendChild(role);
 
+        // <dl> شرعية: dt ثم dd فقط. الشرح والشريط داخل خلية <dd> ثانية،
+        // لأن <dl> لا يقبل <div> مباشرةً (مخالفة axe: definition-list).
         var rows = document.createElement('dl');
         rows.className = 'formula-rows';
         (group.items || []).forEach(function (item) {
@@ -1268,24 +1270,28 @@
           why.className = 'formula-why';
           why.textContent = item.why;
 
-          dt.appendChild(why);
+          var detail = document.createElement('dd');
+          detail.className = 'formula-detail';
+          detail.appendChild(why);
+
+          // شريط نسبي بصري — عرضه من الرقم نفسه
+          var bar = document.createElement('div');
+          bar.className = 'formula-bar';
+          bar.setAttribute('aria-hidden', 'true');
+          var fill = document.createElement('span');
+          fill.className = 'formula-bar-fill';
+          fill.style.width = Math.max(1.5, item.pct) + '%';
+          bar.appendChild(fill);
+          detail.appendChild(bar);
 
           var dd = document.createElement('dd');
           dd.className = 'formula-pct';
           dd.textContent = item.pct + '%';
 
-          row.appendChild(dt);
           row.appendChild(dd);
+          row.appendChild(dt);
+          row.appendChild(detail);
           rows.appendChild(row);
-
-          // شريط نسبي بصري — عرضه من الرقم نفسه
-          var bar = document.createElement('div');
-          bar.className = 'formula-bar';
-          var fill = document.createElement('span');
-          fill.style.width = Math.max(1.5, item.pct) + '%';
-          fill.className = 'formula-bar-fill';
-          bar.appendChild(fill);
-          row.appendChild(bar);
         });
         card.appendChild(rows);
         wrap.appendChild(card);

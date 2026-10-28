@@ -64,7 +64,7 @@ def run(base: str) -> int:
             page.on("response", lambda r: _account(r, transfer))
 
             page.goto(base + "/index.html", wait_until="load")
-            page.wait_for_selector(".product-card")
+            page.wait_for_selector("#products [data-add-current]")
             page.evaluate("document.fonts.ready")
             page.wait_for_timeout(900)
 
@@ -94,7 +94,9 @@ def run(base: str) -> int:
             findings[label] = result
 
             # نافذة السلة مفتوحة أيضًا
-            page.locator('[data-add-to-cart="serum-50"]').click()
+            page.locator("#products .size-option").nth(1).click()
+            page.wait_for_timeout(120)
+            page.locator("#products [data-add-current]").click()
             page.locator("[data-cart-open]").first.click()
             page.wait_for_timeout(350)
             cart_result = page.evaluate(
