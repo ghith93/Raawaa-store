@@ -352,7 +352,15 @@ async function checkContentClaims() {
   const index = await read('index.html');
   const privacy = await read('privacy.html');
   const config = await read('js/config.js');
-  const all = index + privacy + config;
+  /**
+   * نُزيل تعليقات الشيفرة قبل فحص الادعاءات.
+   * سبب الإصلاح (2026-10-28): تعليق يشرح «لا نستعمل مختبَر سريريًا» كان يُقرأ
+   * كادعاء، فيفشل الفحص بسبب نصّ لم تره زائنة قط. التعليقات ليست محتوى.
+   */
+  const stripComments = (src) => src
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+  const all = index + privacy + stripComments(config);
 
   /** الادعاء يُعدّ مخالفًا فقط إذا لم يسبقه نفي (لا / ولا / دون / بدون / غير). */
   const NEGATIONS = ['لا', 'ولا', 'دون', 'بدون', 'غير', 'بلا', 'لم'];
@@ -373,7 +381,13 @@ async function checkContentClaims() {
     [String.raw`نتائج?\s+مؤكدة`, 'ادعاء نتيجة مؤكدة'],
     [String.raw`قبل\s+و\s*بعد`, 'صور قبل وبعد'],
     [String.raw`تقييمات?\s+العملاء`, 'شهادات عملاء'],
-    [String.raw`شهادة\s+(?:جودة|اعتماد)`, 'شهادة غير موثقة']
+    [String.raw`شهادة\s+(?:جودة|اعتماد)`, 'شهادة غير موثقة'],
+    // حواجز أُضيفت مع ادّعاء «إعداد صيادلة» (2026-10-28):
+    // الفارق بين «تركيبة صيدلانية» و«منتج طبي» هو الفارق بين متجر ومخالفة.
+    [String.raw`مختبَر\s+سريريًا|اختبار\s+سريري`, 'ادعاء اختبار سريري'],
+    [String.raw`إشراف\s+طبي|إشراف\s+طبيب`, 'ادعاء إشراف طبي'],
+    [String.raw`معتمد\s+طبيًا|اعتماد\s+طبي|مرخّص\s+صحيًا`, 'ادعاء اعتماد صحي'],
+    [String.raw`آمن\s+تمامًا|بلا\s+أي\s+أعراض`, 'ادعاء سلامة مطلق']
   ];
 
   for (const [pattern, label] of forbidden) {
@@ -407,6 +421,13 @@ async function checkContentClaims() {
     pass(`كل نسبة مئوية معروضة معرّفة في config.js (${percentCount} إشارة، مسموح: ${[...allowedPercents].join('/') || '—'})`);
   } else {
     fail(`نسب مئوية غير موثقة: ${badPercents.join(' · ')}`);
+  }
+
+  // أصل الثقة الأساسي: إعداد صيادلة ومختصين. إن اختفى من الصفحة، فذلك قرار لا سهو.
+  if (/صيادل/.test(index) && /مختص/.test(index)) {
+    pass('أصل الثقة منشور: إعداد صيادلة ومختصين');
+  } else {
+    fail('اختفى ادّعاء إعداد الصيادلة والمختصين من الصفحة — إن كان مقصودًا فأزله من الفحص أيضًا');
   }
 
   const requiredDisclaimers = [

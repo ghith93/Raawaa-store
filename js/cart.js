@@ -1039,6 +1039,38 @@
     return lines.join('\n');
   }
 
+  /**
+   * قسم الصنعة — يُبنى من CONFIG.craft.
+   * السبب: أقوى رسالة ثقة في الصفحة يجب أن يكون مصدرها ملفًا واحدًا قابلًا للتعديل،
+   * لا HTML مكتوبًا يدويًا ينسى أحد تحديثه عند تغيّر المعلومة.
+   */
+  function renderCraft() {
+    var cfg = CONFIG.craft;
+    if (!cfg) return;
+    var host = document.querySelector('[data-craft]');
+    if (!host) return;
+
+    var list = host.querySelector('[data-craft-points]');
+    if (list) {
+      list.textContent = '';
+      (cfg.points || []).forEach(function (pt) {
+        var li = document.createElement('li');
+        li.className = 'craft-point';
+        var h = document.createElement('h3');
+        h.className = 'craft-point-title';
+        h.textContent = pt.title;
+        var b = document.createElement('p');
+        b.className = 'craft-point-body';
+        b.textContent = pt.body;
+        li.appendChild(h);
+        li.appendChild(b);
+        list.appendChild(li);
+      });
+    }
+    var sig = host.querySelector('[data-craft-signature]');
+    if (sig && cfg.signature) sig.textContent = cfg.signature;
+  }
+
   /** يبني قائمة اختيار العطر والزيت من CONFIG — لا خيارات مكتوبة يدويًا. */
   function renderCustomPickers() {
     var cfg = CONFIG.customization;
@@ -1356,6 +1388,7 @@
     restoreCart();
     renderProducts();
     renderCustomPickers();
+    renderCraft();
     renderPaymentCards();
     renderTrust();
     renderCalculator();

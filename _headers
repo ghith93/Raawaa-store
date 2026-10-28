@@ -19,3 +19,11 @@
   Cache-Control: public, max-age=0, must-revalidate
 /sw.js
   Cache-Control: no-cache
+
+# ✓ صحة الموقع — روابط خارجية فقط، بلا سكربتات ولا أنماط من أطراف ثالثة.
+# فائدة حقيقية: لو سُرِّب سكربت أو حُقن وسم في يوم، لا يستطيع هذا الرأس تحميل أي شيء خارجي.
+/js/*.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/js/config.js
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
