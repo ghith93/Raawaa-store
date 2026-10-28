@@ -1,0 +1,5 @@
+{
+  "entry": ["js/config.js", "js/cart.js", "sw.js"],
+  "project": ["js/*.js"],
+  "ignore": ["dist/**", "scripts/**", "assets/**"]
+}

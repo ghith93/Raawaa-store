@@ -1,0 +1,76 @@
+name: جودة الكود
+
+# فحص ثابت على كل دفع: أخطاء JS، صحة HTML، ملفات ميتة، JSON صالح.
+# الغرض: كشف الأخطاء قبل أن تصل للزبون، بلا تدخل بشري وبلا تكلفة.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: ESLint + html-validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: تثبيت أدوات الفحص
+        run: npm install --no-save eslint@9 html-validate@9
+
+      - name: ESLint — أخطاء JavaScript
+        run: |
+          npx eslint js/*.js sw.js --max-warnings 10
+
+      - name: html-validate — صحة HTML وإمكانية الوصول
+        run: npx html-validate index.html privacy.html 404.html
+
+      - name: صحة JSON-LD والمانيفست
+        run: |
+          node -e "
+          const fs=require('fs');
+          const html=fs.readFileSync('index.html','utf8');
+          const m=html.match(/<script type=\"application\/ld\+json\">([\s\S]*?)<\/script>/);
+          if(!m){console.error('لا JSON-LD');process.exit(1)}
+          const d=JSON.parse(m[1]);
+          const prod=(d['@graph']||[]).find(n=>n['@type']==='Product');
+          if(!prod){console.error('لا Product');process.exit(1)}
+          const low=prod.offers.lowPrice, high=prod.offers.highPrice;
+          console.log('الأسعار في JSON-LD:', low, '-', high);
+          const cfg=fs.readFileSync('js/config.js','utf8');
+          const prices=[...cfg.matchAll(/price:\s*(\d+)/g)].map(x=>+x[1]);
+          console.log('الأسعار في config.js:', prices.join(', '));
+          if(+low!==Math.min(...prices)||+high!==Math.max(...prices)){
+            console.error('✗ تناقض: JSON-LD لا يطابق config.js');process.exit(1)
+          }
+          console.log('✓ تطابق تام');
+          "
+
+      - name: لا ملفات ميتة (غير مُشار إليها)
+        run: |
+          node -e "
+          const fs=require('fs'),path=require('path');
+          let src='';
+          for(const f of ['index.html','privacy.html','404.html','sw.js','manifest.webmanifest'])
+            if(fs.existsSync(f)) src+=fs.readFileSync(f,'utf8');
+          for(const f of fs.readdirSync('js').filter(x=>x.endsWith('.js')))
+            src+=fs.readFileSync(path.join('js',f),'utf8');
+          const dead=[];
+          const walk=d=>{for(const e of fs.readdirSync(d,{withFileTypes:true})){
+            const p=path.join(d,e.name);
+            if(e.isDirectory()){if(!['source'].includes(e.name))walk(p);continue}
+            if(!/\.(svg|png|jpg|webp|avif|woff2)$/.test(e.name))continue;
+            if(!src.includes(e.name))dead.push(p);
+          }};
+          walk('assets');
+          if(dead.length){console.error('✗ ملفات غير مستخدمة:');dead.forEach(d=>console.error('  '+d));process.exit(1)}
+          console.log('✓ لا ملفات ميتة في assets');
+          "

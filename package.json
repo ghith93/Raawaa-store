@@ -1,6 +1,9 @@
 {
   "devDependencies": {
-    "wrangler": "^4.154.0"
+    "wrangler": "^4.154.0",
+    "eslint": "^9.39.5",
+    "html-validate": "^9.7.1",
+    "repomix": "^1.14.0"
   },
   "name": "rawaa-store",
   "private": true,
@@ -8,6 +11,11 @@
   "scripts": {
     "build": "bash scripts/build-deploy.sh",
     "deploy": "bash scripts/deploy-cloudflare.sh",
-    "check": "node scripts/check-site.mjs"
+    "check": "node scripts/check-site.mjs",
+    "lint": "eslint js/*.js sw.js",
+    "html": "html-validate index.html privacy.html 404.html",
+    "gates": "node scripts/check-site.mjs && eslint js/*.js sw.js && html-validate index.html privacy.html 404.html && python3 scripts/browser-test.py && python3 scripts/axe-audit.py",
+    "pack": "repomix",
+    "verify": "npm run gates && npm run build"
   }
 }

@@ -626,9 +626,8 @@ async function checkBrandAssets() {
   const logos = [
     'assets/brand/logo-primary-v2.svg',
     'assets/brand/logo-mark-v2.svg',
-    'assets/brand/logo-mark-badge-v2.svg',
-    'assets/brand/logo-mono-ink-v2.svg',
-    'assets/brand/logo-mono-ivory-v2.svg',
+    'assets/brand/logo-primary-v2.svg',
+    'assets/brand/logo-mark-v2.svg',
     'assets/favicon.svg'
   ];
   for (const f of logos) {

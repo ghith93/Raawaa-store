@@ -1,24 +1,7 @@
-# مخرجات بناء ثقيلة غير لازمة للنشر (يمكن إعادة توليدها بالأوامر في docs/run-and-deploy.md)
-assets/img/bottles/
-.cache/
 node_modules/
-__pycache__/
-*.pyc
-
-# ملفات بيئة محلية لا تخص المشروع — لا تُرفع أبدًا
-.npm/
-.local/
-.cache/
-.pytest_cache/
-__pycache__/
-*.pyc
-
-# مخرجات التوليد عالية الدقة — تُعاد بأمر واحد (python3 scripts/make_product_imagery.py)
-# نحفظ فقط النسخ المحسّنة للويب في assets/img/products
-assets/img/design-raw/*.png
-
-# حزم البناء — تُعاد بـ (bash scripts/build-bundles.sh)، لا تُحفظ في التاريخ
 dist/
-
-# لقطات تقارير مؤقتة
-docs/screenshots/*.png
+repomix-output.xml
+.cache/
+.npm/
+.wrangler/
+BENCHMARKS-lighthouse.json

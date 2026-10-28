@@ -1,0 +1,6 @@
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": { "filePath": "repomix-output.xml", "style": "xml", "compress": true },
+  "include": ["index.html", "privacy.html", "404.html", "js/*.js", "css/styles.css", "sw.js", "manifest.webmanifest", "_headers", "_redirects", "scripts/*.mjs", "scripts/*.py"],
+  "ignore": { "customPatterns": ["**/*.md", "dist/**", "node_modules/**", "assets/**"] }
+}
