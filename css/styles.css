@@ -2504,3 +2504,141 @@ div[id="custom"] {
     border-radius: 10px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   جدول التركيبة — أهم قسم في العلامة، فيُصمَّم كوثيقة لا كإعلان
+   الفكرة: النسبة تُقرأ بثلاث طرق معًا — رقم، شريط، ومجموع مجموعة.
+   ═══════════════════════════════════════════════════════════════════ */
+.formula-table {
+  margin-top: var(--space-6);
+  display: grid;
+  gap: var(--space-4);
+}
+@media (min-width: 900px) {
+  .formula-table { grid-template-columns: repeat(3, 1fr); align-items: start; }
+}
+
+.formula-group {
+  background: var(--surface, #FFFDFA);
+  border: 1px solid var(--line, #E4DCD0);
+  border-radius: 12px;
+  padding: 1.15rem 1.1rem 1.25rem;
+}
+.formula-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--line-soft, #F0EAE0);
+  margin-bottom: 0.7rem;
+}
+.formula-group-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.formula-group-pct {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #8A5F2E;
+  flex-shrink: 0;
+}
+.formula-group-role {
+  margin: 0 0 0.9rem;
+  font-size: 0.78rem;
+  line-height: 1.65;
+  color: var(--ink-soft, #4A443C);
+}
+
+.formula-rows { margin: 0; }
+.formula-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.15rem 0.6rem;
+  padding: 0.55rem 0 0.7rem;
+  border-bottom: 1px solid var(--line-soft, #F0EAE0);
+}
+.formula-row:last-child { border-bottom: 0; padding-bottom: 0.2rem; }
+.formula-inci-name {
+  margin: 0;
+  font-family: var(--font-latin, Georgia, serif);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink, #2E2A26);
+  word-break: break-word;
+}
+.formula-why {
+  grid-column: 1 / -1;
+  margin: 0.2rem 0 0;
+  font-family: var(--font-body, sans-serif);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--ink-soft, #4A443C);
+}
+.formula-pct {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: end;
+  color: var(--ink, #2E2A26);
+}
+/* الشريط: عرضه من الرقم، ومقياسه ثابت حتى تُقارن النِسب بالعين */
+.formula-bar {
+  grid-column: 1 / -1;
+  height: 3px;
+  margin-top: 0.45rem;
+  border-radius: 2px;
+  background: var(--line-soft, #F0EAE0);
+  overflow: hidden;
+}
+.formula-bar-fill {
+  display: block;
+  height: 100%;
+  background: #8A5F2E;
+  border-radius: 2px;
+}
+
+.formula-total {
+  margin: var(--space-4) 0 0;
+  font-size: 0.8rem;
+  color: var(--taupe, #6E6053);
+}
+
+/* صندوق الصدق — أجرأ ما في الصفحة، فيُعرض بهدوء */
+.formula-honesty {
+  margin-top: var(--space-6);
+  padding: 1.25rem 1.2rem 1.35rem;
+  border: 1px solid var(--line, #E4DCD0);
+  border-inline-start: 3px solid #8A5F2E;
+  border-radius: 10px;
+  background: var(--cream, #F7F2EA);
+}
+.formula-honesty h3 {
+  margin: 0 0 0.7rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.formula-honesty ul {
+  margin: 0;
+  padding-inline-start: 1.1rem;
+  display: grid;
+  gap: 0.55rem;
+}
+.formula-honesty li {
+  font-size: 0.82rem;
+  line-height: 1.75;
+  color: var(--ink-soft, #4A443C);
+}
+
+.formula-inci {
+  margin: var(--space-4) 0 0;
+  font-family: var(--font-latin, Georgia, serif);
+  font-size: 0.7rem;
+  line-height: 1.7;
+  color: var(--taupe, #6E6053);
+  word-break: break-word;
+}

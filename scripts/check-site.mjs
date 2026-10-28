@@ -427,6 +427,14 @@ async function checkContentClaims() {
   const cfgText = await read('js/config.js');
   const allowedPercents = new Set();
   for (const m of cfgText.matchAll(/discountPercent:\s*(\d+)/g)) allowedPercents.add(m[1]);
+  /**
+   * نِسب التركيبة — صارت موثّقة رسميًا (ورقة المصنع 2026-10-28).
+   * القاعدة باقية: لا نسبة في الصفحة إلا إذا كانت معرَّفة في config.js.
+   * الفرق أن المصدر الآن أوسع: formula.items[].pct + formula.declaredTotal + formula.groups[].total
+   */
+  for (const m of cfgText.matchAll(/pct:\s*([\d.]+)/g)) allowedPercents.add(String(parseFloat(m[1])));
+  for (const m of cfgText.matchAll(/total:\s*([\d.]+)/g)) allowedPercents.add(String(parseFloat(m[1])));
+  for (const m of cfgText.matchAll(/declaredTotal:\s*([\d.]+)/g)) allowedPercents.add(String(parseFloat(m[1])));
 
   /**
    * نفحص النسب **الظاهرة للزائرة** فقط: نُزيل الوسوم وترميز الروابط.
@@ -440,9 +448,11 @@ async function checkContentClaims() {
 
   const badPercents = [];
   let percentCount = 0;
-  for (const m of visible.matchAll(/([\d٠-٩]+)\s*(?:٪|%)/g)) {
+  // نُطابق 0.2 و40 و4.5 — والنِسب العربية تُحوَّل قبل المقارنة
+  for (const m of visible.matchAll(/([\d٠-٩]+(?:[.,][\d٠-٩]+)?)\s*(?:٪|%)/g)) {
     percentCount += 1;
-    if (!allowedPercents.has(m[1])) badPercents.push(m[0].trim());
+    const raw = m[1].replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(',', '.');
+    if (!allowedPercents.has(String(parseFloat(raw)))) badPercents.push(m[0].trim());
   }
   if (badPercents.length === 0) {
     pass(`كل نسبة مئوية معروضة معرّفة في config.js (${percentCount} إشارة، مسموح: ${[...allowedPercents].join('/') || '—'})`);

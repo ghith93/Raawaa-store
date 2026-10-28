@@ -1214,6 +1214,101 @@
     if (note) note.textContent = cfg.note || '';
   }
 
+  /**
+   * جدول التركيبة — يُبنى من CONFIG.formula.
+   * لا رقم مكتوب في HTML: إن تغيّرت ورقة المصنع، يتغيّر الجدول من مكان واحد.
+   */
+  function renderFormula() {
+    var f = CONFIG.formula;
+    var host = document.querySelector('[data-formula]');
+    if (!f || !f.published || !host) return;
+
+    var wrap = host.querySelector('[data-formula-groups]');
+    if (wrap) {
+      wrap.textContent = '';
+      (f.groups || []).forEach(function (group) {
+        var card = document.createElement('section');
+        card.className = 'formula-group';
+
+        var head = document.createElement('div');
+        head.className = 'formula-group-head';
+
+        var title = document.createElement('h3');
+        title.className = 'formula-group-title';
+        title.textContent = group.title;
+
+        var pct = document.createElement('span');
+        pct.className = 'formula-group-pct';
+        pct.textContent = group.total + '%';
+
+        head.appendChild(title);
+        head.appendChild(pct);
+        card.appendChild(head);
+
+        var role = document.createElement('p');
+        role.className = 'formula-group-role';
+        role.textContent = group.role;
+        card.appendChild(role);
+
+        var rows = document.createElement('dl');
+        rows.className = 'formula-rows';
+        (group.items || []).forEach(function (item) {
+          var row = document.createElement('div');
+          row.className = 'formula-row';
+
+          var dt = document.createElement('dt');
+          dt.className = 'formula-inci-name';
+          dt.textContent = item.inci;
+
+          var why = document.createElement('p');
+          why.className = 'formula-why';
+          why.textContent = item.why;
+
+          dt.appendChild(why);
+
+          var dd = document.createElement('dd');
+          dd.className = 'formula-pct';
+          dd.textContent = item.pct + '%';
+
+          row.appendChild(dt);
+          row.appendChild(dd);
+          rows.appendChild(row);
+
+          // شريط نسبي بصري — عرضه من الرقم نفسه
+          var bar = document.createElement('div');
+          bar.className = 'formula-bar';
+          var fill = document.createElement('span');
+          fill.style.width = Math.max(1.5, item.pct) + '%';
+          fill.className = 'formula-bar-fill';
+          bar.appendChild(fill);
+          row.appendChild(bar);
+        });
+        card.appendChild(rows);
+        wrap.appendChild(card);
+      });
+    }
+
+    var totalNode = host.querySelector('[data-formula-total]');
+    if (totalNode) {
+      var asOf = f.asOf ? ' · معتمدة بتاريخ ' + f.asOf : '';
+      totalNode.textContent = 'مجموع النِسب المعلنة: ' + f.declaredTotal +
+        '% (الفرق 0.4%)' + asOf + ' — النِسب بالوزن كما في ورقة المصنع.';
+    }
+
+    var list = host.querySelector('[data-formula-honesty]');
+    if (list) {
+      list.textContent = '';
+      (f.honesty || []).forEach(function (line) {
+        var li = document.createElement('li');
+        li.textContent = line;
+        list.appendChild(li);
+      });
+    }
+
+    var inci = host.querySelector('[data-formula-inci]');
+    if (inci) inci.textContent = 'قائمة INCI: ' + f.inciList;
+  }
+
   /** يبني قائمة اختيار العطر والزيت من CONFIG — لا خيارات مكتوبة يدويًا. */
   function renderCustomPickers() {
     var cfg = CONFIG.customization;
@@ -1538,6 +1633,7 @@
     renderProducts();
     renderSizePicker();
     renderRoutines();
+    renderFormula();
     renderCustomPickers();
     renderCraft();
     renderPaymentCards();
@@ -1709,7 +1805,7 @@
     } catch (err) {
       if (window.console && console.error) console.error('[RAWAA] تعذّر تهيئة الواجهة:', err);
       // إعادة المحاولة محصورة في الميزات المستقلة عن العنصر المفقود
-      [renderSizePicker, renderRoutines, renderCustomPickers, renderCraft, renderPaymentCards,
+      [renderSizePicker, renderRoutines, renderFormula, renderCustomPickers, renderCraft, renderPaymentCards,
        renderTrust, renderCalculator].forEach(function (fn) {
         try { fn(); } catch (e) { /* ميزة واحدة معطّلة لا تُسقط الباقي */ }
       });
