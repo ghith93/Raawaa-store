@@ -54,6 +54,13 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist/site --project-name=raawaa-store --branch=main
 
+      - name: تشخيص Cloudflare (بصلاحيات التوكن الحقيقية)
+        if: always()
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bash scripts/cloudflare-doctor.sh
+
       - name: التحقق من الموقع الحيّ بعد النشر
         run: |
           sleep 20
