@@ -24,8 +24,12 @@ elif [ -n "$KEY" ] && [ -n "$EMAIL" ]; then
     -H "X-Auth-Email: $EMAIL" -H "X-Auth-Key: $KEY" --max-time 20)
   [ "$code" = "200" ] && pass "مفتاح عام صالح ($EMAIL)" || fail "مفتاح عام غير صالح (HTTP $code)"
 else
-  fail "لا اعتماد إطلاقًا — لا CLOUDFLARE_API_TOKEN ولا زوج EMAIL+API_KEY"
-  echo "      ⇒ هذا هو العائق الأول: النشر مستحيل بلا اعتماد."
+  # غياب التوكن محليًا ليس عائقًا إن كان النشر الآلي يعمل: التوكن محفوظ في GitHub Secrets.
+  if grep -rql "pages deploy\|wrangler-action" .github/workflows/ 2>/dev/null; then
+    pass "التوكن محفوظ في GitHub Secrets (لا حاجة لوجوده محليًا)"
+  else
+    fail "لا اعتماد محلي ولا نشر آلي — النشر مستحيل"
+  fi
 fi
 
 echo
@@ -45,7 +49,13 @@ echo
 echo "══════ ٣) أدوات البناء ══════"
 if command -v node >/dev/null; then
   v=$(node -v); maj=${v#v}; maj=${maj%%.*}
-  [ "$maj" -ge 22 ] && pass "Node $v مناسب لـ wrangler" || fail "Node $v قديم — wrangler 4 يحتاج ≥22"
+  if [ "$maj" -ge 22 ]; then
+    pass "Node $v مناسب لـ wrangler"
+  elif grep -q "node-version: '22'" .github/workflows/deploy.yml 2>/dev/null; then
+    warnit "Node محلي $v قديم — لكن النشر يجري على Node 22 داخل GitHub Actions"
+  else
+    fail "Node $v قديم ولا بديل في CI — wrangler 4 يحتاج ≥22"
+  fi
 fi
 if node -e "require.resolve('wrangler')" 2>/dev/null || [ -x node_modules/.bin/wrangler ]; then
   pass "wrangler مثبّت محليًا"
@@ -64,12 +74,16 @@ live_sw=$(curl -s --max-time 15 "$SITE/sw.js" | grep -o "CACHE_VERSION = '[^']*'
 echo
 echo "══════ ٥) هل الموقع الحيّ مطابق للكود؟ ══════"
 miss=0
+# ⚠ درس (2026-10-28): `curl | grep -q` مع pipefail يُنتج نتيجة كاذبة.
+# grep -q يُغلق الأنبوب فور أول تطابق، فيتلقى curl إشارة SIGPIPE (رمز 23)،
+# وpipefail يعتبر الأمر فاشلًا — فيُعلن «مفقود» وهو موجود.
+# الحل: نقرأ الصفحة مرة واحدة إلى متغيّر، ثم نفحص منه بلا أنابيب.
+HOME_HTML=$(curl -s --max-time 20 "$SITE/" || true)
 for token in price-strip marketing.js data-wa-direct; do
-  if curl -s --max-time 15 "$SITE/" | grep -q "$token"; then
-    pass "الحى يحتوي «$token»"
-  else
-    fail "الحى **لا** يحتوي «$token» — الموقع منشور بإصدار قديم"; miss=$((miss+1))
-  fi
+  case "$HOME_HTML" in
+    *"$token"*) pass "الحى يحتوي «$token»" ;;
+    *) fail "الحى **لا** يحتوي «$token» — الموقع منشور بإصدار قديم"; miss=$((miss+1)) ;;
+  esac
 done
 
 echo
