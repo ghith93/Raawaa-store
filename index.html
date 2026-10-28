@@ -37,8 +37,7 @@
 <link rel="stylesheet" href="css/styles.css">
 <script src="js/config.js" defer></script>
 <script src="js/cart.js" defer></script>
-<script type="application/ld+json">
-{
+<script type="application/ld+json">{
   "@context": "https://schema.org",
   "@graph": [
     {
@@ -91,14 +90,71 @@
       "offers": {
         "@type": "AggregateOffer",
         "priceCurrency": "USD",
-        "lowPrice": "6",
-        "highPrice": "12",
+        "lowPrice": "10",
+        "highPrice": "15",
         "offerCount": "3",
         "availability": "https://schema.org/InStock",
         "seller": {
           "@id": "https://raawaa-store.pages.dev/#org"
+        },
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "رواء 30 مل",
+            "price": "10",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "url": "https://raawaa-store.pages.dev/#products",
+            "seller": {
+              "@id": "https://raawaa-store.pages.dev/#org"
+            }
+          },
+          {
+            "@type": "Offer",
+            "name": "رواء 50 مل",
+            "price": "12",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "url": "https://raawaa-store.pages.dev/#products",
+            "seller": {
+              "@id": "https://raawaa-store.pages.dev/#org"
+            }
+          },
+          {
+            "@type": "Offer",
+            "name": "رواء 100 مل",
+            "price": "15",
+            "priceCurrency": "USD",
+            "availability": "https://schema.org/InStock",
+            "url": "https://raawaa-store.pages.dev/#products",
+            "seller": {
+              "@id": "https://raawaa-store.pages.dev/#org"
+            }
+          }
+        ]
+      },
+      "material": "زجاج كهرماني",
+      "audience": {
+        "@type": "PeopleAudience",
+        "suggestedGender": "female"
+      },
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "الحجم",
+          "value": "30 / 50 / 100 مل"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "نوع المنتج",
+          "value": "سيروم للشعر وفروة الرأس"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "طريقة الطلب",
+          "value": "واتساب مباشر"
         }
-      }
+      ]
     },
     {
       "@type": "FAQPage",
@@ -139,8 +195,7 @@
       ]
     }
   ]
-}
-</script>
+}</script>
 </head>
 <body id="top">
 <a class="skip-link" href="#main">تخطَّ إلى المحتوى الرئيسي</a>
@@ -518,6 +573,56 @@
         </noscript>
       </div>
 
+
+
+      <!-- حاسبة التوصيل: يعرف الزائر من محافظته كم يدفع فعلًا قبل أن يبني السلة -->
+      <div class="calc-box" data-calc>
+        <div class="calc-head">
+          <p class="eyebrow">قبل أن تطلبي</p>
+          <h3>كم يصل طلبك إلى محافظتك؟</h3>
+          <p class="calc-lead">
+            اختاري محافظتك وطريقة الدفع لترى الإجمالي النهائي لحجم 50 مل — المبلغ كامل، بلا رسوم خفية.
+          </p>
+        </div>
+        <div class="calc-controls">
+          <label class="calc-field">
+            <span>المحافظة</span>
+            <select data-calc-gov aria-label="المحافظة">
+              <option value="hama">حماة</option>
+              <option value="other" selected>محافظة أخرى</option>
+            </select>
+          </label>
+          <label class="calc-field">
+            <span>طريقة الدفع</span>
+            <select data-calc-pay aria-label="طريقة الدفع">
+              <option value="shamcash">شام كاش</option>
+              <option value="cod" selected>الدفع عند الاستلام</option>
+            </select>
+          </label>
+        </div>
+        <dl class="calc-out">
+          <div><dt>قيمة المنتج</dt><dd data-calc-sub>—</dd></div>
+          <div><dt>الخصم</dt><dd data-calc-disc>—</dd></div>
+          <div><dt>التوصيل</dt><dd data-calc-deliv>—</dd></div>
+          <div class="calc-total-row"><dt>الإجمالي</dt><dd data-calc-total>—</dd></div>
+        </dl>
+        <p class="calc-note" data-calc-note></p>
+        <noscript>
+          <p class="pay-noscript">
+            حماة: التوصيل 2 دولار مع الدفع عند الاستلام، ومجاني مع شام كاش.
+            باقي المحافظات: 4 دولارات، وشام كاش يمنح خصم 10% على قيمة المنتجات.
+            الأسعار بالدولار، والحد النهائي يُثبَّت في المحادثة.
+          </p>
+        </noscript>
+      </div>
+
+      <!-- ما لا نقدّمه: يبني الثقة قبل الشراء -->
+      <div class="trust-grid" data-trust>
+        <noscript><p class="pay-noscript">
+          لا ندّعي نتيجة طبية أو مضمونة، ولا ننشر تقييمات قبل الحصول عليها من زبونات حقيقيات،
+          ولا نطلب دفعًا مسبقًا إلا بتحويل شام كاش واضح أو الدفع عند الاستلام.
+        </p></noscript>
+      </div>
       <p class="pay-fineprint">
         التوصيل المجاني مع شام كاش يسري داخل حماة فقط؛ باقي المحافظات عليها 4 دولارات. لا نضيف أي رسوم أخرى،
         ولا توجد ضرائب مضافة معروضة. تفاصيل التحويل وتأكيد الوصول تُرسَل في المحادثة نفسها.

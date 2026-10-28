@@ -440,6 +440,100 @@
     }
   }
 
+
+
+  /**
+   * حاسبة التوصيل — تعرض الإجمالي النهائي لحجم 50 مل بحسب المحافظة وطريقة الدفع.
+   * تستخدم نفس دوال التسعير المستخدمة في السلة، فلا يمكن أن يختلف الرقمان.
+   */
+  function renderCalculator() {
+    var box = document.querySelector('[data-calc]');
+    if (!box) return;
+
+    var govSel = box.querySelector('[data-calc-gov]');
+    var paySel = box.querySelector('[data-calc-pay]');
+    var outSub = box.querySelector('[data-calc-sub]');
+    var outDisc = box.querySelector('[data-calc-disc]');
+    var outDeliv = box.querySelector('[data-calc-deliv]');
+    var outTotal = box.querySelector('[data-calc-total]');
+    var outNote = box.querySelector('[data-calc-note]');
+    if (!govSel || !paySel) return;
+
+    var sample = CONFIG.products[1] || CONFIG.products[0];
+    if (!sample) return;
+
+    // املأ المحافظات من الإعدادات
+    if (govSel.options.length <= 2 && CONFIG.delivery && CONFIG.delivery.governorates) {
+      govSel.innerHTML = '';
+      CONFIG.delivery.governorates.forEach(function (name) {
+        var opt = document.createElement('option');
+        var isHama = name === 'حماة';
+        opt.value = isHama ? 'hama' : 'other';
+        opt.textContent = name;
+        if (isHama) opt.selected = true;
+        govSel.appendChild(opt);
+      });
+    }
+
+    function update() {
+      var zoneId = govSel.value;
+      var methodId = paySel.value;
+      var method = CONFIG.payment.methods.filter(function (m) { return m.id === methodId; })[0];
+      var zone = CONFIG.delivery.zones.filter(function (z) { return z.id === zoneId; })[0];
+      if (!method || !zone) return;
+
+      var subCents = toCents(sample.price);
+      var discCents = Math.round(subCents * (method.discountPercent || 0) / 100);
+      var delivCents = toCents(deliveryFeeFor(method, zone));
+      var totalCents = subCents - discCents + delivCents;
+
+      outSub.textContent = money(subCents / 100);
+      outDisc.textContent = discCents > 0
+        ? '− ' + money(discCents / 100) + ' (' + method.discountPercent + '%)'
+        : 'لا يوجد';
+      outDeliv.textContent = delivCents > 0 ? money(delivCents / 100) : 'مجاني';
+      outTotal.textContent = money(totalCents / 100);
+
+      var note = '';
+      if (methodId === 'shamcash' && zoneId !== 'hama') {
+        note = 'مع شام كاش خارج حماة: الخصم 10% يُطبَّق، والتوصيل 4 دولارات تبقى. المجاني داخل حماة فقط.';
+      } else if (methodId === 'shamcash') {
+        note = 'داخل حماة مع شام كاش: خصم 10% وتوصيل مجاني — أفضل سعر متاح.';
+      } else {
+        note = 'الدفع عند الاستلام: بلا خصم، وتُضاف رسوم التوصيل. المبلغ يُدفع كاملًا للمندوب.';
+      }
+      outNote.textContent = note;
+    }
+
+    govSel.addEventListener('change', update);
+    paySel.addEventListener('change', update);
+    update();
+  }
+
+  /**
+   * قسم «ما لا نقدّمه» — يُبنى من CONFIG.trust فقط.
+   * الغرض: نفي الادعاءات قبل أن يسأل الزبون، وهو أقوى وسيلة ثقة لمنتج جديد.
+   */
+  function renderTrust() {
+    var host = document.querySelector('[data-trust]');
+    if (!host || !CONFIG.trust || !CONFIG.trust.items) return;
+    if (host.querySelector('.trust-item')) return;   // لا تكرّر البناء
+
+    CONFIG.trust.items.forEach(function (text) {
+      var item = document.createElement('p');
+      item.className = 'trust-item';
+      var mark = document.createElement('span');
+      mark.className = 'trust-mark';
+      mark.setAttribute('aria-hidden', 'true');
+      mark.textContent = '—';
+      var body = document.createElement('span');
+      body.textContent = text;
+      item.appendChild(mark);
+      item.appendChild(body);
+      host.appendChild(item);
+    });
+  }
+
   /**
    * بطاقات شرح طرق الدفع في قسم الصفحة — تُبنى من CONFIG.payment فقط.
    * الأمثلة تُحسب من سعر الحجم الوسط، فلا يوجد أي رقم مكتوب يدويًا في HTML.
@@ -1143,6 +1237,8 @@
     restoreCart();
     renderProducts();
     renderPaymentCards();
+    renderTrust();
+    renderCalculator();
     renderCart();
 
     // سجل السنة الحالية
