@@ -1,3 +1,10 @@
+# حالة المشروع — رواء
+
+> **الجلسة القادمة: ابدأ من `HANDOFF-AR.md`** — فيه الحالة الحقيقية وما تبقّى.
+> آخر تحديث: 2026-10-28 · HEAD `275d1130f20f` · الموقع الحيّ 200
+> البوابات: check-site 233/0 · ESLint 0/0 · html-validate 0 · browser-test 128/0 ·
+> axe 0 تجاوز · asset-audit 50/50 · cloudflare-doctor 9/0/2 · DOM 481
+
 <!-- محدَّث 2026-10-28 -->
 # PROJECT_STATE — RAWAA | رواء
 
