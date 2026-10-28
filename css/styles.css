@@ -2018,6 +2018,10 @@ p a[href^="https://wa.me"] {
 }
 .wa-float.is-visible { transform: translateY(0); opacity: 1; }
 body.has-shop-bar .wa-float { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+/* السلة فيها منتج ⟵ الشريط اللاصق يحلّ محلّ شريط الشراء المبكّر؛
+   زر واتساب يصعد فوقه بدل أن يغطّي طرفه (كان يتراكب على 390px). */
+body.has-sticky-bar .wa-float { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+body.has-shop-bar.has-sticky-bar .wa-float { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 @media (min-width: 900px) { .wa-float { display: none; } }
 
 /* ═══════════════════════════════════════════════════════════

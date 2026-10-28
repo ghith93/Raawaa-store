@@ -507,10 +507,8 @@
       if (shareUrl) el.shareBtn.setAttribute('data-share-url', shareUrl);
     }
 
-    // شريط الشراء المبكّر (قبل وجود أي منتج)
-    updateShopBar(isEmpty);
-
-    // شريط السلة اللاصق على الهاتف
+    // شريط السلة اللاصق على الهاتف — يُحسب أولًا، لأن شريط الشراء المبكّر
+    // يعتمد عليه في تحديد موضعه (كانا يتراكبان على الشاشات الصغيرة).
     if (el.stickyBar) {
       if (!isEmpty && !(el.dialog && el.dialog.open)) {
         el.stickyBar.hidden = false;
@@ -522,6 +520,9 @@
         document.body.classList.remove('has-sticky-bar');
       }
     }
+
+    // شريط الشراء المبكّر (قبل وجود أي منتج)
+    updateShopBar(isEmpty);
 
     // إعادة بناء رابط واتساب وزر النسخ
     if (el.fallbackLink && !isEmpty) {
@@ -627,6 +628,9 @@
 
     bar.hidden = !show;
     document.body.classList.toggle('has-shop-bar', show);
+    // الحالة تُعاد لكل شاشة عرض: تغيير الحجم بين هاتف وسطح مكتب كان يترك
+    // حالة قديمة على <body> فتبقى مساحة محجوزة أسفل الصفحة بلا سبب.
+    document.body.classList.toggle('has-sticky-bar', !isEmpty);
   }
 
   /**
@@ -1807,7 +1811,7 @@
       // إعادة المحاولة محصورة في الميزات المستقلة عن العنصر المفقود
       [renderSizePicker, renderRoutines, renderFormula, renderCustomPickers, renderCraft, renderPaymentCards,
        renderTrust, renderCalculator].forEach(function (fn) {
-        try { fn(); } catch (e) { /* ميزة واحدة معطّلة لا تُسقط الباقي */ }
+        try { fn(); } catch { /* ميزة واحدة معطّلة لا تُسقط الباقي */ }
       });
     }
   }
