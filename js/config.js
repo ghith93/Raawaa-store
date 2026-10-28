@@ -231,6 +231,16 @@
       note: 'مؤكَّدة من المالك: 3–4 دولارات لكل عبوة، ثابتة لكل الأحجام.'
     },
 
+    /**
+     * إعدادات التسويق.
+     * facebookPixelId: معرّف البكسل من Meta Events Manager.
+     * ⚠ فارغ = لا تتبّع إطلاقًا. املأه ليبدأ القياس (مع شريط موافقة للزائرة).
+     */
+    marketing: {
+      facebookPixelId: '',
+      channel: 'facebook'
+    },
+
     cart: {
       maxQuantityPerItem: 10,
       minQuantityPerItem: 1

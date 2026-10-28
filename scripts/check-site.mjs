@@ -387,9 +387,19 @@ async function checkContentClaims() {
   const allowedPercents = new Set();
   for (const m of cfgText.matchAll(/discountPercent:\s*(\d+)/g)) allowedPercents.add(m[1]);
 
+  /**
+   * نفحص النسب **الظاهرة للزائرة** فقط: نُزيل الوسوم وترميز الروابط.
+   * سبب الإصلاح (2026-10-28): رابط واتساب بترميز `%D9%85…` كان يُقرأ كنسب
+   * مثل "85%" و"9%"، فيفشل الفحص بسبب محتوى لم تره زائنة قط.
+   */
+  const visible = all
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/%[0-9A-Fa-f]{2}/g, ' ')
+    .replace(/&#?[a-zA-Z0-9]+;/g, ' ');
+
   const badPercents = [];
   let percentCount = 0;
-  for (const m of all.matchAll(/([\d٠-٩]+)\s*(?:٪|%)/g)) {
+  for (const m of visible.matchAll(/([\d٠-٩]+)\s*(?:٪|%)/g)) {
     percentCount += 1;
     if (!allowedPercents.has(m[1])) badPercents.push(m[0].trim());
   }

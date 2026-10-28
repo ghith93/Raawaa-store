@@ -60,9 +60,21 @@
     return CONFIG.products.filter(function (p) { return p.id === id; })[0] || null;
   }
 
+  /**
+   * يضيف سطر مصدر الزيارة إلى رسالة واتساب.
+   * الفائدة التجارية: المالك يقرأ "الحملة: serum-oct" في الرسالة نفسها،
+   * فيعرف أي إعلان فيسبوك أنتج هذا الطلب — بلا أداة ولا اشتراك.
+   * لا يُضاف شيء إن لم تكن الزيارة من إعلان.
+   */
+  function withSourceTag(text) {
+    var tag = typeof window.rawaaSrcTag === 'function' ? window.rawaaSrcTag() : '';
+    if (!tag) return text;
+    return text + '\n\n— المصدر: ' + tag;
+  }
+
   function waLink(text) {
     return 'https://wa.me/' + CONFIG.contact.whatsappNumber +
-      (text ? '?text=' + encodeURIComponent(text) : '');
+      (text ? '?text=' + encodeURIComponent(withSourceTag(text)) : '');
   }
 
   function announce(message) {
