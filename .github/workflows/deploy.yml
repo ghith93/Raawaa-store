@@ -1,0 +1,66 @@
+name: Deploy to Cloudflare Pages
+
+# لماذا هذا الملف؟
+# كل إصدار كان يحتاج تشغيلًا يدويًا من جهاز يملك توكن Cloudflare. هذا هشّ:
+# التوكن يُفقد، ولا أحد يعرف أي إصدار منشور. بعد هذا الملف:
+#   push إلى main  ⇒  فحص  ⇒  بناء  ⇒  نشر تلقائي.
+# ولا توكن في الكود: يُقرأ من GitHub Secret اسمه CLOUDFLARE_API_TOKEN.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: بناء ونشر
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: تثبيت الاعتماديات
+        run: npm ci --ignore-scripts || npm install --ignore-scripts
+
+      - name: فحص الموقع قبل النشر
+        run: node scripts/check-site.mjs
+
+      - name: بناء مجلد النشر
+        run: bash scripts/build-deploy.sh
+
+      - name: التحقق أن الخطوط نُشرت (عطل سابق)
+        run: |
+          n=$(ls dist/site/assets/fonts/*.woff2 2>/dev/null | wc -l)
+          echo "خطوط في مجلد النشر: $n"
+          if [ "$n" -lt 5 ]; then echo "✗ الخطوط لم تُنشر — إيقاف"; exit 1; fi
+
+      - name: نشر إلى Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist/site --project-name=raawaa-store --branch=main
+
+      - name: التحقق من الموقع الحيّ بعد النشر
+        run: |
+          sleep 20
+          for i in 1 2 3 4 5; do
+            if curl -sf --max-time 25 https://raawaa-store.pages.dev/ | grep -q "price-strip"; then
+              echo "✓ الحى يعرض الإصدار الجديد"; exit 0
+            fi
+            echo "انتظار انتشار الإصدار ($i/5)…"; sleep 15
+          done
+          echo "✗ الحى لا يعرض الإصدار الجديد"; exit 1
