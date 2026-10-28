@@ -2163,3 +2163,11 @@ div[id="custom"] {
 @media (max-width: 719px) {
   section[id] { scroll-margin-top: 4.5rem; }
 }
+
+/* ═══ زرّا الهيرو على الهاتف بعرض واحد ═══
+   كان الزر الأول يضيق والثاني يمتد، فيبدو التخطيط مكسورًا على أول شاشة يراها الزائر. */
+@media (max-width: 719px) {
+  .hero-actions { display: grid; grid-template-columns: 1fr; gap: var(--space-2); }
+  .hero-actions .btn,
+  .hero-actions .btn-wa { width: 100%; justify-content: center; }
+}

@@ -14,7 +14,7 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'v1793196207';
+const CACHE_VERSION = 'v1793196971';
 const RUNTIME = 'rawaa-runtime-v5';
 
 /** الأصول التي يجب أن تعمل بلا إنترنت */

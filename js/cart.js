@@ -168,7 +168,7 @@
     amount.textContent = money(product.price);
     var unit = document.createElement('span');
     unit.className = 'unit-note';
-    unit.textContent = 'سعر مرجعي';
+    unit.textContent = 'السعر';
     price.appendChild(amount);
     price.appendChild(unit);
 
@@ -183,7 +183,7 @@
       var perText = per >= 0.1 ? per.toFixed(2) : per.toFixed(3);
       var perMlNode = document.createElement('p');
       perMlNode.className = 'unit-price';
-      perMlNode.innerHTML = '<bdi>$' + perText + '</bdi> لكل مل';
+      perMlNode.innerHTML = '<bdi>$' + perText + '</bdi> لكل مل — كل حجم أوفر من الذي قبله';
       price.appendChild(perMlNode);
     }
 
@@ -269,15 +269,19 @@
     if (!host) return;
     var parts = [];
     var cfg = CONFIG.customization || {};
+    var chosenScent = null;
     if (custom.scent) {
-      var sc = (cfg.scentOptions || []).filter(function (o) { return o.id === custom.scent; })[0];
-      if (sc) parts.push('العطر: ' + sc.label);
+      chosenScent = (cfg.scentOptions || []).filter(function (o) { return o.id === custom.scent; })[0];
+      if (chosenScent) parts.push('العطر: ' + chosenScent.label);
     }
     if (custom.oil) {
       var ol = (cfg.oilAdditions || []).filter(function (o) { return o.id === custom.oil; })[0];
-      if (ol) parts.push('إضافة: ' + ol.label);
+      if (ol) parts.push('إضافة: ' + ol.label + (ol.note ? ' — ' + ol.note : ''));
     }
-    host.textContent = parts.length ? parts.join(' · ') : 'لم تختر عطرًا بعد — اختياري';
+    var note = chosenScent && chosenScent.note ? chosenScent.note : '';
+    host.textContent = parts.length
+      ? parts.join(' · ') + (note ? ' · ' + note : '')
+      : 'العطر اختياري — وسنرسل السيروم بلا عطر إن لم تختبري شيئًا.';
   }
 
   /* ------------------------------ السلة ------------------------------ */
