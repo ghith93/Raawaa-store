@@ -28,7 +28,7 @@ jobs:
 
       - name: فحص الصفحات والأصول الأساسية
         run: |
-          BASE="https://rawaa-store.ghith-shikhkhaled.workers.dev"
+          BASE="https://raawaa-store.ghith-shikhkhaled.workers.dev"
           FAIL=0
           for path in "" "privacy.html" "manifest.webmanifest" "sw.js" \
                       "css/styles.css" "js/config.js" "js/cart.js" \
@@ -50,7 +50,7 @@ jobs:
 
       - name: فحص المحتوى الحرج في الصفحة الرئيسية
         run: |
-          HTML=$(curl -s --max-time 25 "https://rawaa-store.ghith-shikhkhaled.workers.dev/")
+          HTML=$(curl -s --max-time 25 "https://raawaa-store.ghith-shikhkhaled.workers.dev/")
           for needle in "RAWAA" "رواء" "data-product-grid" "963997310856" "شام كاش"; do
             if echo "$HTML" | grep -q "$needle"; then
               echo "✓ يحتوي: $needle"
@@ -66,4 +66,4 @@ jobs:
           python -m playwright install --with-deps chromium
 
       - name: اختبار وظيفي كامل على الموقع المنشور
-        run: python scripts/browser-test.py --base https://rawaa-store.ghith-shikhkhaled.workers.dev
+        run: python scripts/browser-test.py --base https://raawaa-store.ghith-shikhkhaled.workers.dev

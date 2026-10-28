@@ -48,6 +48,21 @@ def current() -> dict[str, str]:
     }
 
 
+def known_urls() -> list[str]:
+    """كل العناوين التي قد تكون مكتوبة في الملفات — تُشتق من canonical الحالي
+    ومن قائمة تاريخية، فلا نعتمد على تحديث يدوي في كل نقل."""
+    urls: set[str] = set()
+
+    cur = current()["canonical"]
+    if cur and cur.startswith("http"):
+        urls.add(cur.rstrip("/"))
+        # النسخة بلا شرطة أخيرة وبمسارات .html
+        urls.add(cur.rstrip("/").removesuffix("/index.html"))
+
+    urls.update(KNOWN)
+    return sorted(u for u in urls if u.startswith("http"))
+
+
 def normalize(url: str) -> str:
     url = url.strip().rstrip("/")
     if not url.startswith(("http://", "https://")):
@@ -67,6 +82,7 @@ def main() -> int:
 
     new = normalize(sys.argv[1])
     changed: list[str] = []
+    olds = known_urls()
 
     for rel in TARGETS:
         path = ROOT / rel
@@ -74,11 +90,11 @@ def main() -> int:
             continue
         text = path.read_text(encoding="utf-8")
         original = text
-        for old in KNOWN:
+        for old in olds:
             text = text.replace(old, new)
         if text != original:
             path.write_text(text, encoding="utf-8")
-            n = sum(original.count(old) for old in KNOWN)
+            n = sum(original.count(old) for old in olds)
             changed.append(f"{rel} ({n} استبدال)")
 
     if not changed:

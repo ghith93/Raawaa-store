@@ -3,7 +3,7 @@
   // لا يوجد "main": لا كود Worker يُنفَّذ إطلاقًا، لذلك لا تُحتسب طلبات
   // على حصة Workers (100k/يوم). الملفات الثابتة مجانية وغير محدودة.
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "rawaa-store",
+  "name": "raawaa-store",
   "compatibility_date": "2026-10-28",
 
   "assets": {
