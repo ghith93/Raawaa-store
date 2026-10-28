@@ -1004,7 +1004,7 @@
 
     try {
       opened = window.open(url, '_blank', 'noopener,noreferrer');
-    } catch (error) {
+    } catch {
       opened = null;
     }
 
@@ -1016,7 +1016,7 @@
     } else {
       hideFallback();
       announce('فُتحت محادثة واتساب في نافذة جديدة. الطلب لا يُعد مؤكدًا قبل ردّنا عليك.');
-      try { opened.opener = null; } catch (error) { /* تجاهل */ }
+      try { opened.opener = null; } catch { /* تجاهل: لا شيء نفعله بالخطأ */ }
     }
   }
 
@@ -1164,7 +1164,7 @@
     var params;
     try {
       params = new URLSearchParams(window.location.search);
-    } catch (error) {
+    } catch {
       return;
     }
     var wanted = params.get('offer');
@@ -1194,7 +1194,7 @@
       var plain = {};
       Object.keys(cart).forEach(function (k) { plain[k] = cart[k]; });
       window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(plain));
-    } catch (error) { /* التخزين قد يكون معطّلًا — الموقع يعمل بدونه */ }
+    } catch { /* تجاهل: لا شيء نفعله بالخطأ */ }
   }
 
   function restoreCart() {
@@ -1206,7 +1206,7 @@
         var qty = parseInt(data[id], 10);
         if (getProduct(id) && qty > 0) cart[id] = clampQty(qty);
       });
-    } catch (error) { /* تجاهل أي بيانات تالفة */ }
+    } catch { /* تجاهل: لا شيء نفعله بالخطأ */ }
   }
 
   /**
@@ -1216,7 +1216,7 @@
    */
   function loadCartFromUrl() {
     var params;
-    try { params = new URLSearchParams(window.location.search); } catch (e) { return; }
+    try { params = new URLSearchParams(window.location.search); } catch { return; }
     var raw = params.get('cart');
     if (!raw) return;
     raw.split(',').forEach(function (chunk) {

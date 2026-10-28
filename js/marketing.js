@@ -28,22 +28,22 @@
     };
     var has = Object.keys(src).some(function (k) { return src[k]; });
     if (has) {
-      try { sessionStorage.setItem(STORE_KEY, JSON.stringify(src)); } catch (e) { /* وضع خاص */ }
+      try { sessionStorage.setItem(STORE_KEY, JSON.stringify(src)); } catch { /* تجاهل: لا شيء نفعله بالخطأ */ }
       return src;
     }
     try { return JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null') || {}; }
-    catch (e) { return {}; }
+    catch { return {}; }
   }
 
   var source = readSource();
 
   /* ── ٢) موافقة التتبّع — البكسل لا يُحمَّل بلا إذن ──────────── */
   function consent() {
-    try { return localStorage.getItem(CONSENT_KEY); } catch (e) { return null; }
+    try { return localStorage.getItem(CONSENT_KEY); } catch { return null; }
   }
 
   window.rawaaConsent = function (granted) {
-    try { localStorage.setItem(CONSENT_KEY, granted ? 'yes' : 'no'); } catch (e) { /* تجاهل */ }
+    try { localStorage.setItem(CONSENT_KEY, granted ? 'yes' : 'no'); } catch { /* تجاهل: لا شيء نفعله بالخطأ */ }
     if (granted) loadPixel();
     var bar = document.querySelector('[data-consent-bar]');
     if (bar) bar.hidden = true;
@@ -73,7 +73,7 @@
       var log = JSON.parse(sessionStorage.getItem('rawaa_events') || '[]');
       log.push({ e: event, t: Date.now(), src: source.utm_campaign || null });
       sessionStorage.setItem('rawaa_events', JSON.stringify(log.slice(-40)));
-    } catch (e) { /* تجاهل */ }
+    } catch { /* تجاهل: لا شيء نفعله بالخطأ */ }
   }
   window.rawaaTrack = track;
 
