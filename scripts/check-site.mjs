@@ -229,7 +229,11 @@ async function checkHtmlHooks() {
   const html = await read('index.html');
 
   const hooks = [
-    ['data-product-grid', 'شبكة المنتجات'],
+    // تغيّر 2026-10-28: استُبدلت شبكة الثلاث بطاقات ببطاقة منتج واحدة
+    // بمبدّل أحجام. الفحص يتحقق الآن من **مبدّل الأحجام** وزر الإضافة الحيّ.
+    ['data-size-options', 'مبدّل أحجام المنتج'],
+    ['data-price-live', 'السعر الحيّ'],
+    ['data-add-current', 'زر الإضافة المرتبط بالحجم المختار'],
     ['data-cart-count', 'شارة عدد العناصر'],
     ['data-cart-open', 'أزرار فتح السلة'],
     ['data-cart-close', 'زر إغلاق السلة'],

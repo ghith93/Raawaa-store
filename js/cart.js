@@ -246,6 +246,120 @@
     return article;
   }
 
+  /* ------------------------ اختيار الحجم -----------------------------
+     منتج واحد، ثلاثة أحجام. القرار يصبح «أي حجم» لا «أي منتج» — وهذا ما
+     تفعله Gisou و Rhode: منتج البطل واحد، والحجم خيار داخله.
+     الاختيار يُخزَّن في selectedSize، وزر الإضافة يستخدمه. */
+
+  var selectedSize = null;
+
+  function selectedProduct() {
+    var id = selectedSize || (CONFIG.products[1] && CONFIG.products[1].id) || 'serum-50';
+    return getProduct(id) || CONFIG.products[0];
+  }
+
+  function renderSizePicker() {
+    var host = document.querySelector('[data-size-options]');
+    if (!host || !CONFIG.products.length) return;
+    host.textContent = '';
+
+    CONFIG.products.forEach(function (product, index) {
+      var isDefault = index === 1 || CONFIG.products.length === 1;
+      if (selectedSize === null && isDefault) selectedSize = product.id;
+
+      var label = document.createElement('label');
+      label.className = 'size-option' + (product.badge ? ' size-option--featured' : '');
+      label.setAttribute('data-size-for', product.id);
+
+      var radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'rawaa-size';
+      radio.value = product.id;
+      radio.className = 'size-option-input';
+      radio.checked = product.id === selectedSize;
+      radio.addEventListener('change', function () {
+        if (radio.checked) selectSize(product.id);
+      });
+
+      var body = document.createElement('span');
+      body.className = 'size-option-body';
+
+      var size = document.createElement('span');
+      size.className = 'size-option-size';
+      size.textContent = product.sizeLabel;
+
+      var price = document.createElement('span');
+      price.className = 'size-option-price';
+      price.textContent = money(product.price);
+
+      body.appendChild(size);
+      body.appendChild(price);
+
+      if (product.badge) {
+        var flag = document.createElement('span');
+        flag.className = 'size-option-flag';
+        flag.textContent = product.badge;
+        body.appendChild(flag);
+      }
+
+      label.appendChild(radio);
+      label.appendChild(body);
+      host.appendChild(label);
+    });
+
+    syncSizeUI();
+  }
+
+  function selectSize(id) {
+    selectedSize = id;
+    syncSizeUI();
+  }
+
+  function syncSizeUI() {
+    if (!selectedSize) return;
+    var product = selectedProduct();
+    if (!product) return;
+
+    Array.prototype.forEach.call(document.querySelectorAll('.size-option'), function (node) {
+      var on = node.getAttribute('data-size-for') === selectedSize;
+      node.classList.toggle('is-selected', on);
+      var input = node.querySelector('input');
+      if (input) input.checked = on;
+    });
+
+    var priceNode = document.querySelector('[data-price-live]');
+    if (priceNode) priceNode.innerHTML = '<bdi>' + money(product.price) + '</bdi> <span>' + product.sizeLabel + '</span>';
+
+    var unitNode = document.querySelector('[data-unit-live]');
+    if (unitNode && product.sizeMl && product.price) {
+      var per = product.price / product.sizeMl;
+      unitNode.innerHTML = '<bdi>$' + (per >= 0.1 ? per.toFixed(2) : per.toFixed(3)) + '</bdi> لكل مل — كل حجم أوفر من الذي قبله';
+    }
+
+    // صورة البطاقة تتبع الحجم المختار — ترى الزائنة العبوة التي تختارها فعلًا
+    var img = document.querySelector('[data-size-img]');
+    var srcAvif = document.querySelector('[data-size-avif]');
+    var srcWebp = document.querySelector('[data-size-webp]');
+    var base = product.image && product.image.base;
+    if (img && base) {
+      var widths = (product.image.widths || [480, 720, 900]);
+      var setOf = function (ext) {
+        return widths.map(function (w) {
+          return 'assets/img/products/' + base + '-v5-' + w + '.' + ext + ' ' + w + 'w';
+        }).join(', ');
+      };
+      if (srcAvif) srcAvif.setAttribute('srcset', setOf('avif'));
+      if (srcWebp) srcWebp.setAttribute('srcset', setOf('webp'));
+      img.setAttribute('src', product.image.src);
+      img.setAttribute('alt', 'عبوة سيروم زيوت رواء ' + product.sizeLabel + ' — تصميم مقترح، ليست صورة منتج مُصنَّع');
+    }
+
+    // زر الإضافة يتبع الحجم المختار — الـ id لا يُكتب في HTML
+    Array.prototype.forEach.call(document.querySelectorAll('[data-add-current]'), function (btn) {
+      btn.setAttribute('data-add-to-cart', selectedSize);
+    });
+  }
+
   function renderProducts() {
     if (!el.grid) return;
     el.grid.textContent = '';
@@ -1071,6 +1185,35 @@
     if (sig && cfg.signature) sig.textContent = cfg.signature;
   }
 
+  /** روتين الاستخدام — من CONFIG.routines */
+  function renderRoutines() {
+    var cfg = CONFIG.routines;
+    if (!cfg) return;
+    var host = document.querySelector('[data-routines]');
+    if (!host) return;
+    var list = host.querySelector('[data-routine-list]');
+    if (list) {
+      list.textContent = '';
+      (cfg.items || []).forEach(function (item) {
+        var li = document.createElement('li');
+        li.className = 'routine';
+        var when = document.createElement('span');
+        when.className = 'routine-when';
+        when.textContent = item.when;
+        var t = document.createElement('p');
+        t.className = 'routine-title';
+        t.textContent = item.title;
+        var b = document.createElement('p');
+        b.className = 'routine-body';
+        b.textContent = item.body;
+        li.appendChild(when); li.appendChild(t); li.appendChild(b);
+        list.appendChild(li);
+      });
+    }
+    var note = host.querySelector('[data-routine-note]');
+    if (note) note.textContent = cfg.note || '';
+  }
+
   /** يبني قائمة اختيار العطر والزيت من CONFIG — لا خيارات مكتوبة يدويًا. */
   function renderCustomPickers() {
     var cfg = CONFIG.customization;
@@ -1381,12 +1524,20 @@
     el.navToggle = document.querySelector('[data-nav-toggle]');
     el.navPanel = document.getElementById('mobile-nav');
 
-    if (!CONFIG || !el.grid) return;
+    /**
+     * الحرس القديم كان: إن غابت شبكة المنتجات القديمة، اخرج من init بالكامل.
+     * بعد إعادة تصميم قسم المنتج (بطاقة واحدة بدل ثلاث) اختفت الشبكة، فصار
+     * init يخرج قبل تشغيل نصف الواجهة — بلا أي رسالة خطأ.
+     * الحرس الجديد: نخرج فقط إن غاب **الإعداد**، وهو الشرط الوحيد الحقيقي.
+     */
+    if (!CONFIG) return;
 
     applyOfferFromUrl();
     loadCartFromUrl();
     restoreCart();
     renderProducts();
+    renderSizePicker();
+    renderRoutines();
     renderCustomPickers();
     renderCraft();
     renderPaymentCards();
@@ -1524,11 +1675,18 @@
       }, { rootMargin: '0px 0px 240px 0px', threshold: 0 });
 
       revealTargets.forEach(function (node) {
+        /**
+         * ⚠ درس مُقاس (Lighthouse 2026-10-28): كان يُضاف `reveal` (opacity:0)
+         * لكل عنوان قسم، ثم يُكشف داخل init() بعد تحميل JavaScript وتحليله.
+         * النتيجة: نص الهيرو — وهو عنصر LCP — يبقى **مخفيًا 3.8 ثانية**
+         * على شبكة 4G، لأن المتصفح لا يحتسب نصًا غير مرئي في LCP.
+         * الإصلاح: لا نُخفي أبدًا ما هو داخل الشاشة أصلًا. الحركة تبقى لما هو
+         * تحت الطية فقط، حيث لا تضرّ ولا تُقاس.
+         */
+        var rect = node.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) return;
         node.classList.add('reveal');
         observer.observe(node);
-        // أي عنصر داخل الشاشة أصلًا يظهر فورًا بلا انتظار
-        var rect = node.getBoundingClientRect();
-        if (rect.top < window.innerHeight) node.classList.add('is-visible');
       });
 
       // شبكة أمان: لا يبقى أي محتوى مخفيًا إن فشل المراقب لأي سبب
@@ -1538,10 +1696,30 @@
     }
   }
 
+  /**
+   * ⚠ درس مُكلِّف (2026-10-28): كان init() يُستدعى عاريًا. أي عنصر مفقود
+   * داخل init (مثل شبكة منتجات أُعيد تصميمها) كان يرمي استثناءً فيتوقّف
+   * **كل** ما بعده: مبدّل الحجم، مخصّص العطر، قسم الصنعة، حاسبة التوصيل —
+   * بلا أي رسالة في الكونسول لأن الخطأ داخل مستمع DOMContentLoaded.
+   * الآن: init محمي، والخطأ يُبلَّغ عنه باسمه، وبقية الميزات لا تتوقف.
+   */
+  function boot() {
+    try {
+      init();
+    } catch (err) {
+      if (window.console && console.error) console.error('[RAWAA] تعذّر تهيئة الواجهة:', err);
+      // إعادة المحاولة محصورة في الميزات المستقلة عن العنصر المفقود
+      [renderSizePicker, renderRoutines, renderCustomPickers, renderCraft, renderPaymentCards,
+       renderTrust, renderCalculator].forEach(function (fn) {
+        try { fn(); } catch (e) { /* ميزة واحدة معطّلة لا تُسقط الباقي */ }
+      });
+    }
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', boot);
   } else {
-    init();
+    boot();
   }
 
   // واجهة اختبارية داخلية (تُستخدم في scripts/check-site.mjs فقط، لا تُستخدم في الواجهة)

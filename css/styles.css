@@ -194,7 +194,18 @@ bdi { unicode-bidi: isolate; }
   letter-spacing: 0.02em;
   text-align: center;
 }
-.topbar p { margin: 0; padding: 8px var(--gutter); }
+.topbar p {
+  margin: 0;
+  padding: 8px var(--gutter);
+  white-space: nowrap;      /* سطر واحد دائمًا — لا التفاف ولا انزلاق */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topbar-full { display: none; }
+@media (min-width: 900px) {
+  .topbar-short { display: none; }
+  .topbar-full { display: block; white-space: normal; }
+}
 
 /* ---------- الترويسة ---------- */
 .site-header {
@@ -1372,10 +1383,30 @@ bdi { unicode-bidi: isolate; }
   .nav-toggle { display: none; }
   .mobile-nav { display: none !important; }
 
-  .hero { padding: var(--space-8) 0 var(--space-9); }
-  .hero-top { max-width: 64ch; }
-  .hero-figure { margin-top: var(--space-7); }
-  .hero-figure img { max-height: 560px; object-fit: cover; object-position: center; }
+  /**
+   * الهيرو على سطح المكتب — كان عمودًا واحدًا عريضًا وصورةً تحته، فبدت الشاشة
+   * الأولى نصف فارغة وارتفاعها 920px. العلامات المرجعية (Gisou, Rhode, Aesop)
+   * تضع الصورة **بجانب** النص، فيقع المنتج في مجال النظر نفسه مع العنوان.
+   * RTL: النص يمين، الصورة يسار — ترتيب DOM يبقى نصًا ثم صورة (قراءة صحيحة).
+   */
+  .hero .shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
+    gap: clamp(2rem, 4.5vw, 4.5rem);
+    align-items: center;
+  }
+  .hero-top { max-width: 44ch; margin-bottom: 0; }
+  .hero { padding: clamp(2rem, 3.2vw, 2.8rem) 0 clamp(2.2rem, 3.2vw, 3rem); }
+  .hero-figure { margin-top: 0; }
+  .hero-figure img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    max-height: none;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 4px;
+  }
+  .hero-figure figcaption { text-align: start; margin-top: 0.6rem; }
 
   .section { padding: var(--space-9) 0; }
   .product-grid { gap: var(--space-5); }
@@ -2244,4 +2275,232 @@ div[id="custom"] {
   line-height: 1.7;
   color: var(--ink-soft, #4A443C);
   max-width: var(--reading, 34rem);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   بطاقة المنتج الواحدة — بديل شبكة الثلاث بطاقات المتطابقة
+   المرجع: Gisou و Rhode تعرضان منتجًا بطلًا واحدًا، والحجم خيار داخله.
+   ═══════════════════════════════════════════════════════════════════ */
+.product-hero {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-6);
+  padding: var(--space-5);
+  background: var(--surface, #FFFDFA);
+  border: 1px solid var(--line, #E4DCD0);
+  border-radius: 16px;
+}
+@media (min-width: 860px) {
+  .product-hero {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+    gap: clamp(1.5rem, 3vw, 3rem);
+    padding: var(--space-6);
+    align-items: center;
+  }
+}
+
+.product-hero-media { margin: 0; }
+.product-hero-media img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+}
+.product-hero-media figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--taupe, #6E6053);
+}
+
+.product-hero-body { min-width: 0; }
+.product-hero-kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  color: #8A5F2E;
+}
+.product-hero-name {
+  margin: 0 0 0.6rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.25;
+}
+.product-hero-desc {
+  margin: 0 0 var(--space-4);
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: var(--ink-soft, #4A443C);
+  max-width: 46ch;
+}
+
+/* ── اختيار الحجم ── */
+.size-picker { border: 0; margin: 0; padding: 0; }
+.size-picker legend {
+  padding: 0;
+  margin-bottom: 0.6rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft, #4A443C);
+}
+.size-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+
+.size-option {
+  position: relative;
+  display: block;
+  cursor: pointer;
+  border: 1px solid var(--line, #E4DCD0);
+  border-radius: 10px;
+  background: var(--surface, #FFFDFA);
+  transition: border-color 140ms ease, background 140ms ease;
+}
+.size-option:hover { border-color: #B08556; }
+.size-option.is-selected {
+  border-color: var(--ink, #2E2A26);
+  background: var(--cream, #F7F2EA);
+  box-shadow: inset 0 0 0 1px var(--ink, #2E2A26);
+}
+/* الراديو مخفي بصريًا لكنه باقٍ في شجرة الوصول */
+.size-option-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px; height: 1px;
+  margin: 0;
+}
+.size-option-input:focus-visible + .size-option-body {
+  outline: 2px solid #B08556;
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+.size-option-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.7rem 0.4rem;
+  min-height: 60px;
+  justify-content: center;
+}
+.size-option-size { font-size: 0.78rem; color: var(--ink-soft, #4A443C); }
+.size-option-price { font-size: 1rem; font-weight: 700; }
+.size-option-flag {
+  font-size: 0.62rem;
+  color: #8A5F2E;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* ── السعر الحيّ ── */
+.product-hero-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: var(--space-4) 0 0.15rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.product-hero-price span {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--ink-soft, #4A443C);
+}
+.product-hero-unit {
+  margin: 0 0 var(--space-4);
+  font-size: 0.76rem;
+  color: var(--taupe, #6E6053);
+}
+.product-hero-actions { margin-top: 0; }
+.product-hero-feedback {
+  min-height: 1.2em;
+  margin: 0.6rem 0 0;
+  font-size: 0.78rem;
+  color: #2F6B4F;
+}
+.product-hero-facts {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) 0 0;
+  border-top: 1px solid var(--line-soft, #F0EAE0);
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--ink-soft, #4A443C);
+}
+.product-hero-facts li { display: flex; gap: 0.45rem; }
+.product-hero-facts li::before { content: '·'; color: #8A5F2E; font-weight: 700; }
+
+/* صور المنتج لا تأخذ الشاشة قبل زر الشراء */
+@media (max-width: 859px) {
+  .product-hero-media img {
+    aspect-ratio: 4 / 5;
+    max-height: 44vh;
+    object-fit: cover;
+    object-position: center 55%;
+  }
+}
+
+/* ═══ روتين الاستخدام — «متى أضعه؟» سؤال لا يجيب عنه أي متجر محلي ═══
+   المرجع: Gisou تعرض خمس طرق للاستخدام، وOUAI تبني روتينًا حول المنتج.
+   هنا: ثلاث لحظات حقيقية من يوم الزائنة، كل واحدة بصورتها اللفظية. */
+.routines { margin-top: var(--space-6); }
+.routines-title {
+  margin: 0 0 var(--space-4);
+  font-size: clamp(1.15rem, 2.4vw, 1.4rem);
+}
+.routine-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1px;
+  background: var(--line, #E4DCD0);
+  border: 1px solid var(--line, #E4DCD0);
+  border-radius: 12px;
+  overflow: hidden;
+}
+@media (min-width: 760px) { .routine-list { grid-template-columns: repeat(3, 1fr); } }
+.routine {
+  background: var(--surface, #FFFDFA);
+  padding: 1.15rem 1.15rem 1.3rem;
+}
+.routine-when {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--cream, #F7F2EA);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #8A5F2E;
+}
+.routine-title { margin: 0 0 0.35rem; font-size: 0.95rem; font-weight: 700; }
+.routine-body { margin: 0; font-size: 0.84rem; line-height: 1.75; color: var(--ink-soft, #4A443C); }
+.routine-note {
+  margin: var(--space-4) 0 0;
+  font-size: 0.78rem;
+  color: var(--taupe, #6E6053);
+  max-width: 52ch;
+}
+
+/* ═══ الحكاية على الهاتف: صورة واحدة، لا ثلاث ═══
+   المقاس: كانت صورتان عموديتان تستهلكان ~1400px بلا نص على 390px.
+   نُبقي «الثلاثي» لأنه يحمل معلومة (الأحجام)، ونحجب التحريرية على الهاتف فقط. */
+@media (max-width: 899px) {
+  .story-figure--editorial { display: none; }
+}
+/* مساحة لمس على أسئلة الشائعة — السطر 36px كان أصغر من الحد الموصى به (44px) */
+.faq-list summary { padding-block: 0.55rem; }
+
+/* ═══ حافة الصور على الهاتف ═══
+   الصور تخرج من حافة الشاشة بلا استدارة، فتبدو مقصوصة لا موضوعة.
+   الاستدارة الجانبية اليمنى/اليسرى تعيدها إلى نظام البطاقات. */
+@media (max-width: 719px) {
+  .story-figure picture,
+  .story-figure img,
+  .hero-figure picture,
+  .hero-figure img {
+    border-radius: 10px;
+  }
 }

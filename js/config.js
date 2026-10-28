@@ -49,12 +49,12 @@
         price: 10,
         image: {
           base: 'size-30',
-          avif: ['size-30-v4-480.avif', 'size-30-v4-720.avif', 'size-30-v4-900.avif'],
-          webp: ['size-30-v4-480.webp', 'size-30-v4-720.webp', 'size-30-v4-900.webp'],
+          avif: ['size-30-v5-480.avif', 'size-30-v5-720.avif', 'size-30-v5-900.avif'],
+          webp: ['size-30-v5-480.webp', 'size-30-v5-720.webp', 'size-30-v5-900.webp'],
           widths: [480, 720, 900],
-          src: 'assets/img/products/size-30-v4-720.jpg',
-          width: 720,
-          height: 720,
+          src: 'assets/img/products/size-30-v5-720.jpg',
+          width: 1024,  /* المصدر الأصلي */
+          height: 1024,
           alt: 'صورة توضيحية لعبوة سيروم رواء 30 مل — زجاج كهرماني وملصق عاجي باسم RAWAA ورواء، وليست صورة منتج مُصنَّع'
         }
       },
@@ -69,12 +69,12 @@
         badge: 'الأكثر اختيارًا',
         image: {
           base: 'size-50',
-          avif: ['size-50-v4-480.avif', 'size-50-v4-720.avif', 'size-50-v4-900.avif'],
-          webp: ['size-50-v4-480.webp', 'size-50-v4-720.webp', 'size-50-v4-900.webp'],
+          avif: ['size-50-v5-480.avif', 'size-50-v5-720.avif', 'size-50-v5-900.avif'],
+          webp: ['size-50-v5-480.webp', 'size-50-v5-720.webp', 'size-50-v5-900.webp'],
           widths: [480, 720, 900],
-          src: 'assets/img/products/size-50-v4-720.jpg',
-          width: 720,
-          height: 720,
+          src: 'assets/img/products/size-50-v5-720.jpg',
+          width: 1024,  /* المصدر الأصلي */
+          height: 1024,
           alt: 'صورة توضيحية لعبوة سيروم رواء 50 مل — زجاج كهرماني وغطاء قطّارة أسود وملصق عاجي، وليست صورة منتج مُصنَّع'
         }
       },
@@ -89,12 +89,12 @@
         badge: 'أفضل قيمة',
         image: {
           base: 'size-100',
-          avif: ['size-100-v4-480.avif', 'size-100-v4-720.avif', 'size-100-v4-900.avif'],
-          webp: ['size-100-v4-480.webp', 'size-100-v4-720.webp', 'size-100-v4-900.webp'],
+          avif: ['size-100-v5-480.avif', 'size-100-v5-720.avif', 'size-100-v5-900.avif'],
+          webp: ['size-100-v5-480.webp', 'size-100-v5-720.webp', 'size-100-v5-900.webp'],
           widths: [480, 720, 900],
-          src: 'assets/img/products/size-100-v4-720.jpg',
-          width: 720,
-          height: 720,
+          src: 'assets/img/products/size-100-v5-720.jpg',
+          width: 1024,  /* المصدر الأصلي */
+          height: 1024,
           alt: 'صورة توضيحية لعبوة سيروم رواء 100 مل — أكبر أحجام العلامة، وليست صورة منتج مُصنَّع'
         }
       }
@@ -172,40 +172,40 @@
     imagery: {
       hero: {
         base: 'hero-wide',
-        avif: ['hero-wide-v3-v4-480.avif', 'hero-wide-v3-v4-720.avif', 'hero-wide-v3-v4-1080.avif', 'hero-wide-v3-v4-1400.avif', 'hero-wide-v3-v4-1600.avif'],
-        webp: ['hero-wide-v3-v4-480.webp', 'hero-wide-v3-v4-720.webp', 'hero-wide-v3-v4-1080.webp', 'hero-wide-v3-v4-1400.webp', 'hero-wide-v3-v4-1600.webp'],
+        avif: ['hero-wide-v5-480.avif', 'hero-wide-v5-720.avif', 'hero-wide-v5-1080.avif', 'hero-wide-v5-1400.avif', 'hero-wide-v5-1440.avif'],
+        webp: ['hero-wide-v5-480.webp', 'hero-wide-v5-720.webp', 'hero-wide-v5-1080.webp', 'hero-wide-v5-1400.webp', 'hero-wide-v5-1440.webp'],
         widths: [480, 720, 1080, 1400, 1600],
-        src: 'assets/img/products/hero-wide-v3-v4-1080.jpg',
-        width: 1080,
-        height: 540,
+        src: 'assets/img/products/hero-wide-v5-1080.jpg',
+        width: 1440,
+        height: 720,
         alt: 'صورة توضيحية للأحجام الثلاثة لسيروم رواء على سطح فاتح بإضاءة ناعمة — وليست صورة منتج مُصنَّع'
       },
       trio: {
         base: 'trio',
-        avif: ['trio-v4-480.avif', 'trio-v4-720.avif', 'trio-v4-1080.avif', 'trio-v4-1400.avif'],
-        webp: ['trio-v4-480.webp', 'trio-v4-720.webp', 'trio-v4-1080.webp', 'trio-v4-1400.webp'],
+        avif: ['trio-v5-480.avif', 'trio-v5-720.avif', 'trio-v5-1080.avif', 'trio-v5-1400.avif'],
+        webp: ['trio-v5-480.webp', 'trio-v5-720.webp', 'trio-v5-1080.webp', 'trio-v5-1400.webp'],
         widths: [480, 720, 1080, 1400],
-        src: 'assets/img/products/trio-v4-1080.jpg',
+        src: 'assets/img/products/trio-v5-1080.jpg',
         width: 1080,
         height: 810,
         alt: 'الأحجام الثلاثة لسيروم رواء 30 و50 و100 مل بجانب بعضها — صورة توضيحية للتصميم'
       },
       editorial: {
         base: 'editorial',
-        avif: ['editorial-v4-480.avif', 'editorial-v4-720.avif', 'editorial-v4-900.avif'],
-        webp: ['editorial-v4-480.webp', 'editorial-v4-720.webp', 'editorial-v4-900.webp'],
+        avif: ['editorial-v5-480.avif', 'editorial-v5-720.avif', 'editorial-v5-900.avif'],
+        webp: ['editorial-v5-480.webp', 'editorial-v5-720.webp', 'editorial-v5-900.webp'],
         widths: [480, 720, 900],
-        src: 'assets/img/products/editorial-v4-720.jpg',
+        src: 'assets/img/products/editorial-v5-720.jpg',
         width: 720,
         height: 1029,
         alt: 'صورة تحريرية لعبوة سيروم رواء بإضاءة جانبية ناعمة — صورة توضيحية للتصميم'
       },
       detail: {
         base: 'detail-label',
-        avif: ['detail-label-v4-480.avif', 'detail-label-v4-720.avif', 'detail-label-v4-900.avif'],
-        webp: ['detail-label-v4-480.webp', 'detail-label-v4-720.webp', 'detail-label-v4-900.webp'],
+        avif: ['detail-label-v5-480.avif', 'detail-label-v5-720.avif', 'detail-label-v5-900.avif'],
+        webp: ['detail-label-v5-480.webp', 'detail-label-v5-720.webp', 'detail-label-v5-900.webp'],
         widths: [480, 720, 900],
-        src: 'assets/img/products/detail-label-v4-720.jpg',
+        src: 'assets/img/products/detail-label-v5-720.jpg',
         width: 720,
         height: 720,
         alt: 'مقربة من ملصق عبوة رواء يظهر الاسم والشعار — صورة توضيحية للتصميم'
@@ -256,6 +256,32 @@
     },
 
     /**
+    /**
+     * روتين الاستخدام — يسدّ فراغًا في السوق المحلي: لا أحد يشرح «متى».
+     * كل سطر مبني على طبيعة المنتج (سيروم تشطيب) لا على وعد علاجي.
+     */
+    routines: {
+      title: 'ثلاث لحظات، وقطرة تكفي في كل واحدة',
+      note: 'قطرتان إلى ثلاث على الأطراف فقط. الشعر الناعم يبدأ بقطرة واحدة — والكمية الزائدة تُثقل الشعرة.',
+      items: [
+        {
+          when: 'بعد الغسل',
+          title: 'على شعر رطب قليلًا',
+          body: 'قطرة على الأطراف قبل التمشيط: يقلّ التشابك ويصير التسريح أسهل.'
+        },
+        {
+          when: 'قبل الخروج',
+          title: 'لمعة بلا ثقل',
+          body: 'قطرة على الشعر الجاف من منتصف الطول إلى الأطراف — لا على الجذور.'
+        },
+        {
+          when: 'قبل النوم',
+          title: 'عناية تبقى حتى الصبح',
+          body: 'كمية صغيرة على الأطراف قبل النوم، وتُغسل في الصباح كالمعتاد.'
+        }
+      ]
+    },
+
     /**
      * الصنعة — أقوى أصل تملكه رواء، ولا يملكه أي منافس في الفئة:
      * التركيبة أعدّها صيادلة ومختصون، لا مزيج زيوت يُخلط بالتقدير.
