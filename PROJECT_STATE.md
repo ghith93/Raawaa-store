@@ -1,9 +1,11 @@
 # حالة المشروع — رواء
 
 > **الجلسة القادمة: ابدأ من `HANDOFF-AR.md`** — فيه الحالة الحقيقية وما تبقّى.
-> آخر تحديث: 2026-10-28 · HEAD `275d1130f20f` · الموقع الحيّ 200
-> البوابات: check-site 233/0 · ESLint 0/0 · html-validate 0 · browser-test 128/0 ·
-> axe 0 تجاوز · asset-audit 50/50 · cloudflare-doctor 9/0/2 · DOM 481
+> آخر تحديث: 2026-10-28 · HEAD `5e3b14691dda` · الموقع الحيّ https://raawaa-store.pages.dev (200)
+> البوابات: check-site **326/0** · ESLint 0 · html-validate 0 · browser-test **128/0** ·
+> a11y-audit **0 مخالفة / 8 حالات** · axe-audit 0 · Lighthouse سطح مكتب **100/100/100/100** ·
+> جوال **90/100/100/100** (LCP 3.63s · CLS 0.005) · CI: جودة الكود ✅ · Site checks ✅ · Deploy ✅
+> **قسم المكوّنات صار جدول تركيبة بنِسب المصنع (مجموع 99.6%)** — التفصيل في `FORMULA-DECISIONS-AR.md`.
 
 <!-- محدَّث 2026-10-28 -->
 # PROJECT_STATE — RAWAA | رواء
