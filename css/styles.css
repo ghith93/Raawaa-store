@@ -2002,3 +2002,17 @@ body.has-shop-bar .wa-float { bottom: calc(76px + env(safe-area-inset-bottom, 0p
     margin-bottom: var(--space-block);
   }
 }
+
+
+/* ═══ إصلاح axe: نص 12px داخل شريط السعر ═══
+   axe يقيس تباين النص الصغير بصرامة أعلى من حسابي المبسّط.
+   المتغيّر العام (#7A6E61 = 4.69) يمرّ للنص العادي، لكن النص **الصغير جدًا**
+   (≤13px) يحتاج هامشًا أكبر. نستخدم درجة أغمق له وحده. */
+.price-strip .ps-size,
+.unit-price,
+.price-strip-note,
+.unit-note,
+.product-pay-preview,
+figcaption {
+  color: #655A4E; /* 6.34 على #FBF8F3 · 6.62 على #FFFDFA */
+}
