@@ -290,6 +290,34 @@
   </section>
 
 
+  <section class="section products" id="products" aria-labelledby="products-title">
+    <div class="shell">
+      <header class="section-head">
+        <p class="eyebrow">الأحجام</p>
+        <h2 id="products-title">ثلاثة أحجام، وسعر مرجعي معلن لكل حجم</h2>
+        <p class="section-lead">
+          الأسعار التالية مرجعية بالسعر الأمريكي، مقدَّمة من رواء، ولم تُتحقَّق من جهة مستقلة.
+          يُثبَّت السعر النهائي ورسوم التوصيل عند تأكيد طلبك عبر واتساب.
+        </p>
+      </header>
+
+      <!-- تُبنى البطاقات من js/config.js — المصدر الوحيد للأسعار -->
+      <div class="product-grid" data-product-grid aria-live="polite"></div>
+
+      <noscript>
+        <p class="notice">
+          لعرض الأحجام والأسعار وإضافة أي حجم إلى السلة، يلزم تفعيل JavaScript في متصفحك.
+          يمكنك أيضًا مراسلتنا عبر <a href="https://wa.me/963997310856">واتساب</a> وسنؤكد لك الأحجام والأسعار المتاحة.
+        </p>
+      </noscript>
+
+      <p class="fine-print">
+        جميع صور العبوات في هذه الصفحة صور توضيحية أُنشئت لهذا الموقع، وليست صورًا لمنتج مصنَّع.
+        لا تُعبِّر عن تغليف نهائي أو ملصق أو شهادة.
+      </p>
+    </div>
+  </section>
+
   <section class="section design" id="design" aria-labelledby="design-title">
     <div class="shell">
       <header class="section-head">
@@ -364,34 +392,6 @@
             <figcaption>الحجم الكبير 100 مل</figcaption>
           </figure>
       </div>
-    </div>
-  </section>
-
-  <section class="section products" id="products" aria-labelledby="products-title">
-    <div class="shell">
-      <header class="section-head">
-        <p class="eyebrow">الأحجام</p>
-        <h2 id="products-title">ثلاثة أحجام، وسعر مرجعي معلن لكل حجم</h2>
-        <p class="section-lead">
-          الأسعار التالية مرجعية بالسعر الأمريكي، مقدَّمة من رواء، ولم تُتحقَّق من جهة مستقلة.
-          يُثبَّت السعر النهائي ورسوم التوصيل عند تأكيد طلبك عبر واتساب.
-        </p>
-      </header>
-
-      <!-- تُبنى البطاقات من js/config.js — المصدر الوحيد للأسعار -->
-      <div class="product-grid" data-product-grid aria-live="polite"></div>
-
-      <noscript>
-        <p class="notice">
-          لعرض الأحجام والأسعار وإضافة أي حجم إلى السلة، يلزم تفعيل JavaScript في متصفحك.
-          يمكنك أيضًا مراسلتنا عبر <a href="https://wa.me/963997310856">واتساب</a> وسنؤكد لك الأحجام والأسعار المتاحة.
-        </p>
-      </noscript>
-
-      <p class="fine-print">
-        جميع صور العبوات في هذه الصفحة صور توضيحية أُنشئت لهذا الموقع، وليست صورًا لمنتج مصنَّع.
-        لا تُعبِّر عن تغليف نهائي أو ملصق أو شهادة.
-      </p>
     </div>
   </section>
 
@@ -748,6 +748,16 @@
     </footer>
   </div>
 </dialog>
+
+
+<!-- شريط شراء مبكّر: يظهر بعد تجاوز قسم الأحجام وقبل إضافة أي منتج.
+     الغرض: مسار إلى الأسعار دائم الظهور، فلا تحتاج الزبونة تمريرًا للوصول للشراء. -->
+<div class="shop-bar" data-shop-bar hidden>
+  <a class="shop-bar-link" href="#products">
+    <span class="shop-bar-text">ثلاثة أحجام · من <bdi>$10</bdi></span>
+    <span class="shop-bar-cta">اختاري حجمك</span>
+  </a>
+</div>
 
 <div class="sticky-bar" data-sticky-bar hidden>
   <button type="button" class="sticky-bar-btn" data-cart-open>

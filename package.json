@@ -3,7 +3,9 @@
     "wrangler": "^4.154.0",
     "eslint": "^9.39.5",
     "html-validate": "^9.7.1",
-    "repomix": "^1.14.0"
+    "repomix": "^1.14.0",
+    "lighthouse": "^12.8.2",
+    "chrome-launcher": "^1.2.1"
   },
   "name": "rawaa-store",
   "private": true,
@@ -14,8 +16,9 @@
     "check": "node scripts/check-site.mjs",
     "lint": "eslint js/*.js sw.js",
     "html": "html-validate index.html privacy.html 404.html",
-    "gates": "node scripts/check-site.mjs && eslint js/*.js sw.js && html-validate index.html privacy.html 404.html && python3 scripts/browser-test.py && python3 scripts/axe-audit.py",
+    "gates": "node scripts/check-site.mjs && eslint js/*.js sw.js && html-validate index.html privacy.html 404.html && python3 scripts/browser-test.py && python3 scripts/axe-audit.py && node scripts/perf-budget.mjs",
     "pack": "repomix",
-    "verify": "npm run gates && npm run build"
+    "verify": "npm run gates && npm run build",
+    "perf": "node scripts/perf-budget.mjs"
   }
 }

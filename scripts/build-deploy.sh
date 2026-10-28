@@ -5,6 +5,11 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# ارفع إصدار كاش الـ Service Worker تلقائيًا مع كل بناء.
+# السبب: نسيان رفعه يعني بقاء الزوار على نسخة قديمة لأيام — حدث فعلًا في هذا المشروع.
+SW_BUMP=$(date +%s)
+sed -i "s/const CACHE_VERSION = 'v[0-9]*';/const CACHE_VERSION = 'v${SW_BUMP}';/" "$ROOT/sw.js"
+
 OUT="$ROOT/dist/site"
 
 rm -rf "$OUT"

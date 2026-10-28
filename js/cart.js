@@ -349,6 +349,9 @@
       if (shareUrl) el.shareBtn.setAttribute('data-share-url', shareUrl);
     }
 
+    // شريط الشراء المبكّر (قبل وجود أي منتج)
+    updateShopBar(isEmpty);
+
     // شريط السلة اللاصق على الهاتف
     if (el.stickyBar) {
       if (!isEmpty && !(el.dialog && el.dialog.open)) {
@@ -441,6 +444,32 @@
   }
 
 
+
+
+
+  /** هل السلة فارغة الآن؟ */
+  function cartIsEmpty() {
+    return !cart || Object.keys(cart).length === 0;
+  }
+
+  /**
+   * شريط الشراء المبكّر — يظهر حين: (١) الشاشة هاتف، (٢) السلة فارغة،
+   * (٣) تجاوزت الزائرة قسم الأحجام. الغرض: مسار شراء دائم الظهور بلا تمرير طويل.
+   * يُخفى فور وجود أي منتج في السلة (يحلّ محلّه الشريط اللاصق الكامل).
+   */
+  function updateShopBar(isEmpty) {
+    var bar = document.querySelector('[data-shop-bar]');
+    if (!bar) return;
+    var productsSection = document.getElementById('products');
+    if (!productsSection) { bar.hidden = true; return; }
+
+    var isPhone = window.matchMedia('(max-width: 899px)').matches;
+    var passed = productsSection.getBoundingClientRect().bottom < 0;
+    var show = isPhone && isEmpty && passed;
+
+    bar.hidden = !show;
+    document.body.classList.toggle('has-shop-bar', show);
+  }
 
   /**
    * حاسبة التوصيل — تعرض الإجمالي النهائي لحجم 50 مل بحسب المحافظة وطريقة الدفع.
@@ -1239,6 +1268,14 @@
     renderPaymentCards();
     renderTrust();
     renderCalculator();
+
+    // شريط الشراء المبكّر يتبع التمرير
+    if (!window.__rawaaShopBarScroll) {
+      window.__rawaaShopBarScroll = true;
+      window.addEventListener('scroll', function () {
+        updateShopBar(cartIsEmpty());
+      }, { passive: true });
+    }
     renderCart();
 
     // سجل السنة الحالية

@@ -1612,3 +1612,33 @@ p, li, dd, dt { line-height: 1.85; }
 }
 [class*="spec"] dt:first-child, .spec-card dt:first-child { margin-top: 0; }
 [class*="spec"] dd, .spec-card dd { margin: .2rem 0 0; font-size: .95rem; }
+
+/* ---------- شريط شراء مبكّر (يظهر قبل وجود شيء في السلة) ---------- */
+.shop-bar {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 90;
+  padding: .6rem .9rem calc(.6rem + env(safe-area-inset-bottom));
+  background: rgb(251 248 243 / .97);
+  border-top: 1px solid var(--sand-deep);
+  backdrop-filter: blur(8px);
+}
+.shop-bar[hidden] { display: none; }
+.shop-bar-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 48px;
+  padding: .55rem 1.1rem;
+  background: var(--ink, #2A2622);
+  color: #FBF8F3;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: .92rem;
+}
+.shop-bar-text { font-weight: 400; opacity: .85; }
+.shop-bar-cta { font-weight: 700; }
+body.has-shop-bar { padding-block-end: 76px; }
+@media (min-width: 900px) { .shop-bar { display: none !important; } }
