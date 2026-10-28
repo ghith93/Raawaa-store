@@ -172,6 +172,21 @@
     price.appendChild(amount);
     price.appendChild(unit);
 
+    /**
+     * سعر الوحدة — المرحلة ٢ من برومت الكفاءة العالمية.
+     * أغلب المتاجر لا تعرضه (Baymard 2026: ثمانية من كل عشرة)، وعرضه يُسهّل قرار الحجم
+     * ويرفع الطلب على العبوة الكبيرة **بلا أي خصم**.
+     * القيمة تُحسب من price ÷ sizeMl هنا، ولا تُكتب يدويًا في أي ملف.
+     */
+    if (CONFIG.showPricePerUnit && product.sizeMl && product.price) {
+      var per = product.price / product.sizeMl;
+      var perText = per >= 0.1 ? per.toFixed(2) : per.toFixed(3);
+      var perMlNode = document.createElement('p');
+      perMlNode.className = 'unit-price';
+      perMlNode.innerHTML = '<bdi>$' + perText + '</bdi> لكل مل';
+      price.appendChild(perMlNode);
+    }
+
     // شارة الحجم المميّز داخل رأس البطاقة
     if (product.badge) {
       var flag = document.createElement('p');
@@ -183,7 +198,7 @@
     // سطر «السعر النهائي بحسب طريقة الدفع» — محسوب من نفس معادلة السلة
     var priceByMethod = document.createElement('p');
     priceByMethod.className = 'product-pay-preview';
-    availableMethods.forEach(function (method) {
+    availableMethods.slice(0, 1).forEach(function (method) {
       var unitCents = toCents(product.price);
       var disc = Math.round(unitCents * (method.discountPercent || 0) / 100);
       var del = toCents(deliveryFeeFor(method, activeZone()));
@@ -198,18 +213,6 @@
       item.appendChild(amount);
       priceByMethod.appendChild(item);
     });
-
-    // سعر الملليلتر — حساب مباشر من السعر والحجم، يساعد على المقارنة بصدق
-    var perMl = document.createElement('p');
-    perMl.className = 'product-per-ml';
-    var perMlValue = document.createElement('bdi');
-    perMlValue.textContent = '$' + (Math.round(product.price * 100 / product.sizeMl) / 100).toFixed(2);
-    var perMlLabel = document.createElement('span');
-    perMlLabel.textContent = ' لكل ملليلتر — ';
-    perMl.appendChild(document.createTextNode('السعر '));
-    perMl.appendChild(perMlValue);
-    perMl.appendChild(perMlLabel);
-    perMl.appendChild(document.createTextNode('مقارنة مباشرة بين الأحجام.'));
 
     // وصف قصير للحجم
     var note = null;
@@ -234,7 +237,6 @@
     body.appendChild(top);
     body.appendChild(price);
     body.appendChild(priceByMethod);
-    body.appendChild(perMl);
     if (note) body.appendChild(note);
     body.appendChild(button);
     body.appendChild(feedback);
@@ -1458,4 +1460,28 @@
     cart: cart,
     MAX_QTY: MAX_QTY
   };
+})();
+
+/* ── زر واتساب العائم: يظهر بعد تجاوز قسم الأحجام ──────────────────
+   الغرض التجاري: من يصل من إعلان فيسبوك يجب أن يجد طريق الطلب أينما كان.
+   يختفي في أعلى الصفحة حتى لا يزاحم زر «اختاري حجمك». */
+(function floatingWhatsApp() {
+  'use strict';
+  var btn = document.querySelector('[data-wa-float]');
+  var anchor = document.querySelector('#products [data-add-to-cart]');
+  if (!btn || !anchor || !('IntersectionObserver' in window)) return;
+
+  var seen = false;
+  new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      // نُظهر الزر بعد أن يمرّ الزائر بقسم الأحجام
+      if (entry.boundingClientRect.top < 0) seen = true;
+      btn.classList.toggle('is-visible', seen);
+    });
+  }, { threshold: 0 }).observe(anchor);
+
+  // إن وصل الزائر بتمرير سريع، لا يبقى الزر مخفيًا
+  window.addEventListener('scroll', function () {
+    if (!seen && window.scrollY > 1400) { seen = true; btn.classList.add('is-visible'); }
+  }, { passive: true });
 })();

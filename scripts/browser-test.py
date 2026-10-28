@@ -78,9 +78,13 @@ def run(base: str) -> int:
               "أُضيف" in page.locator('[data-add-to-cart="serum-30"]').inner_text())
 
         # شريط السلة اللاصق (يُختبر في سياق الهاتف لاحقًا) وسعر الملليلتر
-        per_ml = page.locator(".product-per-ml bdi").all_inner_texts()
+        # الحساب من CONFIG فقط (price ÷ sizeMl) — لا رقم مكتوب يدويًا
+        per_ml = page.locator(".product-price .unit-price bdi").all_inner_texts()
         check("سعر الملليلتر محسوب لكل حجم",
               per_ml == ["$0.33", "$0.24", "$0.15"], str(per_ml))
+        check("سعر الملليلتر مذكور مرة واحدة لكل بطاقة",
+              page.locator(".product-card .unit-price").count() == 3,
+              f"العدد={page.locator('.product-card .unit-price').count()}")
 
         page.locator('[data-add-to-cart="serum-50"]').click()
         page.wait_for_timeout(80)
@@ -600,7 +604,9 @@ def run(base: str) -> int:
         check("لا صور مكسورة في الصفحة", len(broken) == 0, str(broken[:4]))
 
         total_imgs = ip.evaluate("document.images.length")
-        check("عدد صور الصفحة أكبر من 8", total_imgs > 8, f"العدد={total_imgs}")
+        # حُذف قسم التصميم (2026-10-28) لأنه يصف عبوة غير مُصنَّعة ويحتل 98 عنصرًا.
+        # الحدّ الحالي: 6 صور = 3 بطاقات + البطل + الثلاثية + التحريرية. لا تُنقص دون بديل.
+        check("عدد صور الصفحة 6 على الأقل", total_imgs >= 6, f"العدد={total_imgs}")
 
         check("لا استجابات HTTP ≥400", len(bad_responses) == 0, str(bad_responses[:4]))
 
@@ -634,9 +640,10 @@ def run(base: str) -> int:
         check("لا صورة تتجاوز عرض الشاشة", len(wide) == 0, str(wide[:3]))
 
         ip.screenshot(path=str(SHOTS / "v2-iphone-top.png"))
-        ip.evaluate("document.querySelector('#design').scrollIntoView()")
+        # قسم #design حُذف 2026-10-28 — نلتقط قسم العلامة (يحمل صورة الثلاثية الآن)
+        ip.evaluate("document.querySelector('#story').scrollIntoView()")
         ip.wait_for_timeout(500)
-        ip.screenshot(path=str(SHOTS / "v2-iphone-design.png"))
+        ip.screenshot(path=str(SHOTS / "v2-iphone-story.png"))
         ip.evaluate("document.querySelector('#products').scrollIntoView()")
         ip.wait_for_timeout(500)
         ip.screenshot(path=str(SHOTS / "v2-iphone-products.png"))
