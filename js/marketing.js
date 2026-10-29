@@ -119,8 +119,18 @@
 
   /* ── ٥) مصدر مختصر وآمن في رسالة واتساب ───────────────────── */
   function sourceTag() {
-    return String(source.utm_campaign || source.utm_source || '')
-      .replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 120);
+    function clean(value) {
+      return String(value || '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 60);
+    }
+
+    var parts = [];
+    if (source.utm_campaign) parts.push('campaign=' + clean(source.utm_campaign));
+    if (source.utm_source || source.utm_medium) {
+      parts.push('source=' + [clean(source.utm_source), clean(source.utm_medium)].filter(Boolean).join('/'));
+    }
+    if (source.utm_content) parts.push('creative=' + clean(source.utm_content));
+
+    return parts.join(' | ').slice(0, 120);
   }
   window.rawaaSrcTag = sourceTag;
 
