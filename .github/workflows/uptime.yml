@@ -100,7 +100,7 @@ jobs:
           check-latest: true
       - name: اختبار مراقب إعدادات الطلب
         run: node --test scripts/order-config-monitor.test.mjs
-      - name: مطابقة الأسعار وأحجامها والتوصيل ورقم واتساب مع المصدر
+      - name: مطابقة الأسعار والتوصيل والدفع ورقم واتساب مع المصدر
         run: node scripts/order-config-monitor.mjs
       - name: الخط الجديد منشور فعلًا
         run: |
