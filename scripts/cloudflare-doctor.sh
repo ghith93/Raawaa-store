@@ -79,7 +79,7 @@ miss=0
 # وpipefail يعتبر الأمر فاشلًا — فيُعلن «مفقود» وهو موجود.
 # الحل: نقرأ الصفحة مرة واحدة إلى متغيّر، ثم نفحص منه بلا أنابيب.
 HOME_HTML=$(curl -s --max-time 20 "$SITE/" || true)
-for token in price-strip marketing.js data-wa-direct; do
+for token in data-size-options marketing.js data-wa-direct; do
   case "$HOME_HTML" in
     *"$token"*) pass "الحى يحتوي «$token»" ;;
     *) fail "الحى **لا** يحتوي «$token» — الموقع منشور بإصدار قديم"; miss=$((miss+1)) ;;
