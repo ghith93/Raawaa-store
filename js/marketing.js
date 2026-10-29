@@ -141,16 +141,7 @@
     }
   }
 
-  /* الإضافة إلى السلة */
-  document.addEventListener('click', function (e) {
-    var t = e.target.closest && e.target.closest('[data-add-to-cart]');
-    if (t) {
-      track('AddToCart', {
-        content_ids: [t.getAttribute('data-product-id') || 'serum'],
-        content_type: 'product'
-      });
-    }
-  }, true);
+  // تُسجَّل الإضافة من السلة بعد نجاحها، لا من النقرة التي قد يرفضها حد الكمية.
 
   /* فتح السلة ليس تواصلًا. الحدث هنا نقرٌ للانتقال، لا رسالة مستلمة. */
   document.addEventListener('click', function (e) {

@@ -1222,6 +1222,13 @@
     saveCart();
     renderCart();
 
+    // القياس اختياري ولا يجب أن يمنع الإضافة إن غاب أو فشل.
+    // نبلّغ عن معرّف الحجم الفعلي فقط بعد نجاح الإضافة بواسطة الزائرة.
+    if (button && typeof window.rawaaTrack === 'function') {
+      try { window.rawaaTrack('AddToCart', { content_ids: [product.id], content_type: 'product' }); }
+      catch { /* السلة تبقى عاملة دون القياس */ }
+    }
+
     if (button) {
       updateButtonFeedback(button, 'أُضيف إلى السلة ✓', false);
       button.classList.add('is-added');
