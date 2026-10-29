@@ -47,7 +47,7 @@ jobs:
           const low=prod.offers.lowPrice, high=prod.offers.highPrice;
           console.log('الأسعار في JSON-LD:', low, '-', high);
           const cfg=fs.readFileSync('js/config.js','utf8');
-          const prices=[...cfg.matchAll(/price:\s*(\d+)/g)].map(x=>+x[1]);
+          const prices=[...cfg.matchAll(/price:\s*(\d+(?:\.\d+)?)/g)].map(x=>+x[1]);
           console.log('الأسعار في config.js:', prices.join(', '));
           if(+low!==Math.min(...prices)||+high!==Math.max(...prices)){
             console.error('✗ تناقض: JSON-LD لا يطابق config.js');process.exit(1)
