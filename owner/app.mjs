@@ -92,3 +92,16 @@ async function pairingAction(action) {
 $('pair-start').addEventListener('click',()=>pairingAction('start'));
 $('pair-finish').addEventListener('click',()=>pairingAction('finish'));
 $('pair-copy').addEventListener('click',async()=>{ try { await navigator.clipboard.writeText($('pair-code').textContent); $('pair-status').textContent='نُسخت الرسالة. أرسلها للبوت ثم عد واضغط تحقق.'; } catch { $('pair-status').textContent='انسخ الرسالة الظاهرة يدويًا وأرسلها للبوت.'; } });
+
+$('telegram-test').addEventListener('click',async()=>{
+  if (!authenticated || pairingBusy) return;
+  pairingBusy=true; const current=generation; $('telegram-test').disabled=true; $('pair-status').textContent='جارٍ إرسال رسالة الاختبار…';
+  try {
+    await client.sendTest(); if(current!==generation || !authenticated) return;
+    $('pair-status').textContent='أُرسلت رسالة اختبار إلى تيليغرام. تأكد من وصولها؛ تنبيهات الطلبات لم تُفعّل بعد.';
+  } catch(error) {
+    if(current!==generation) return;
+    if(error.message==='SESSION_EXPIRED'){closeSession('انتهت الجلسة، يرجى تسجيل الدخول مجددًا.');return;}
+    $('pair-status').textContent=error.message==='TEST_UNKNOWN'?'تعذر تأكيد الإرسال. راجع تيليغرام قبل إعادة المحاولة.':'تعذر إرسال رسالة الاختبار. حاول لاحقًا.';
+  } finally {pairingBusy=false; $('telegram-test').disabled=false;}
+});

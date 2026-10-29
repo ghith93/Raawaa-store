@@ -47,3 +47,9 @@ test('pairing uses authenticated requests and never permits foreign endpoint',as
   await client.login('a@b.com','dummy');assert.match((await client.pair('start')).message,/^\/pair /);await client.pair('finish');
   assert.equal(calls[1].init.headers.authorization,'Bearer valid.jwt');assert.equal(calls[1].init.cache,'no-store');assert.deepEqual(JSON.parse(calls[2].init.body),{action:'finish'});
 });
+test('test message request uses owner token, no body, and distinguishes unknown delivery',async()=>{
+  assert.throws(()=>createOwnerClient({...base,telegramTestEndpoint:'https://evil.example'}));
+  let fail=false;const client=createOwnerClient({...base,telegramTestEndpoint:'https://example.functions.supabase.co/test',fetchImpl:async(url,init)=>{
+    if(url.includes('/token?'))return response({access_token:'valid.jwt',expires_in:60});assert.equal(init.body,undefined);assert.equal(init.headers.authorization,'Bearer valid.jwt');return fail?{ok:false,status:503,json:async()=>({error:'unknown'})}:response({ok:true});
+  }});await client.login('a@b.com','dummy');await client.sendTest();fail=true;await assert.rejects(client.sendTest(),/TEST_UNKNOWN/);
+});
