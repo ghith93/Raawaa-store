@@ -17,6 +17,24 @@
 .serum-purchase .product-hero-unit { margin: .65rem 0 0; padding-bottom: 0; }
 .serum-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin-top: .85rem; }
 .serum-actions .btn { width: 100%; text-align: center; font-size: .85rem; }
+/* إجمالي عبوة واحدة قرب الشراء، مع تفاصيل الشروط دون مزاحمة الزر. */
+.serum-estimate { min-height: 170px; margin-top: .8rem; padding: .8rem .9rem; border: 1px solid var(--line); border-radius: 10px; background: var(--ivory); }
+.serum-estimate [hidden] { display: none; }
+.serum-estimate h2 { margin: 0 0 .35rem; font-size: .84rem; line-height: 1.5; }
+.serum-estimate-live { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; color: var(--ink-soft); font-size: .78rem; }
+.serum-estimate-live strong { color: var(--ink); font-size: 1rem; white-space: nowrap; }
+.serum-estimate-details summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-size: .78rem; font-weight: 700; text-decoration: underline; text-underline-offset: .18em; }
+.serum-estimate-details summary::after { content: '+'; margin-inline-start: auto; font-size: 1.1rem; }
+.serum-estimate-details[open] summary::after { content: '−'; }
+.serum-estimate-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+.serum-estimate-fields label { display: grid; gap: .3rem; color: var(--ink-soft); font-size: .76rem; }
+.serum-estimate-fields select { width: 100%; min-height: 44px; padding: .45rem .55rem; border: 1px solid var(--line); border-radius: 6px; background: var(--white); color: var(--ink); font: inherit; font-size: 1rem; }
+.serum-estimate-breakdown { display: grid; gap: .2rem; margin: .8rem 0 0; color: var(--ink-soft); font-size: .78rem; }
+.serum-estimate-breakdown > div { display: flex; justify-content: space-between; gap: 1rem; }
+.serum-estimate-breakdown dd { margin: 0; font-weight: 700; }
+.serum-estimate-note, .serum-estimate-fallback { margin: .3rem 0 0; color: var(--ink-soft); font-size: .72rem; line-height: 1.65; }
+@media (max-width: 420px) { .serum-estimate-fields { grid-template-columns: 1fr; } }
+@media (min-width: 600px) { .serum-estimate { min-height: 151px; } }
 .serum-order-note { font-size: .76rem; color: var(--ink-soft); line-height: 1.65; margin: .75rem 0 0; }
 .serum-trust { list-style: none; border-top: 1px solid var(--line-soft); padding: .75rem 0 0; margin: .75rem 0 0; display: grid; gap: .2rem; color: var(--ink-soft); font-size: .75rem; }
 .serum-trust li::before { content: '·'; color: var(--brown); font-weight: 700; padding-inline-end: .45rem; }

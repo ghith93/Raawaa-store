@@ -354,6 +354,7 @@
       btn.setAttribute('data-add-to-cart', selectedSize);
       if (btn.hasAttribute('data-requires-js')) btn.disabled = false;
     });
+    refreshOrderEstimate();
   }
 
   function renderProducts() {
@@ -411,6 +412,18 @@
 
   function activeMethod() { return getMethod(selectedMethodId); }
 
+  /** حساب مشترك للسلة وتقدير العبوة الواحدة؛ الأرقام كلها بالسنتات. */
+  function calculateAmounts(subtotalCents, count, method, zone) {
+    var discountCents = method ? Math.round(subtotalCents * (method.discountPercent || 0) / 100) : 0;
+    var deliveryCents = (method && count > 0) ? toCents(deliveryFeeFor(method, zone)) : 0;
+    return {
+      subtotalCents: subtotalCents,
+      discountCents: discountCents,
+      deliveryCents: deliveryCents,
+      totalCents: subtotalCents - discountCents + deliveryCents
+    };
+  }
+
   /**
    * محرّك الحساب: قيمة المنتجات ← الخصم ← رسوم التوصيل ← الإجمالي المرجعي.
    * كل الأرقام بالسنتات لتفادي أخطاء الفواصل العشرية.
@@ -428,17 +441,15 @@
 
     var method = activeMethod();
     var zone = activeZone();
-    var discountCents = method ? Math.round(subtotalCents * (method.discountPercent || 0) / 100) : 0;
-    var deliveryCents = (method && count > 0) ? toCents(deliveryFeeFor(method, zone)) : 0;
-    var totalCents = subtotalCents - discountCents + deliveryCents;
+    var amounts = calculateAmounts(subtotalCents, count, method, zone);
 
     return {
       entries: entries,
       count: count,
-      subtotalCents: subtotalCents,
-      discountCents: discountCents,
-      deliveryCents: deliveryCents,
-      totalCents: totalCents,
+      subtotalCents: amounts.subtotalCents,
+      discountCents: amounts.discountCents,
+      deliveryCents: amounts.deliveryCents,
+      totalCents: amounts.totalCents,
       method: method,
       zone: zone,
       freeDelivery: isFreeDelivery(method, zone)
@@ -460,6 +471,53 @@
       discount: p.discountCents / 100,
       delivery: p.deliveryCents / 100
     };
+  }
+
+  /** حاسبة منتج واحد؛ خياراتها هي خيارات السلة نفسها وليست طلبًا مؤكدًا. */
+  function initOrderEstimate() {
+    var box = document.querySelector('[data-order-estimate]');
+    if (!box || !zones.length || !availableMethods.length || !selectedProduct() || !activeZone() || !activeMethod()) return;
+    if (box.getAttribute('data-ready') === 'true') { refreshOrderEstimate(); return; }
+    var zoneSelect = box.querySelector('[data-estimate-zone]');
+    var methodSelect = box.querySelector('[data-estimate-method]');
+    var controls = box.querySelector('[data-estimate-interface]');
+    var fallback = box.querySelector('[data-estimate-fallback]');
+    if (!zoneSelect || !methodSelect || !controls || !fallback) return;
+    zones.forEach(function (zone) {
+      var opt = document.createElement('option');
+      opt.value = zone.id;
+      opt.textContent = zone.label;
+      zoneSelect.appendChild(opt);
+    });
+    availableMethods.forEach(function (method) {
+      var opt = document.createElement('option');
+      opt.value = method.id;
+      opt.textContent = method.short || method.label;
+      methodSelect.appendChild(opt);
+    });
+    zoneSelect.addEventListener('change', function () { setZone(zoneSelect.value, true); });
+    methodSelect.addEventListener('change', function () { setMethod(methodSelect.value, true); });
+    box.setAttribute('data-ready', 'true');
+    refreshOrderEstimate();
+    fallback.hidden = true;
+    controls.hidden = false;
+  }
+
+  function refreshOrderEstimate() {
+    var box = document.querySelector('[data-order-estimate]');
+    if (!box || box.getAttribute('data-ready') !== 'true') return;
+    var product = selectedProduct();
+    var zone = activeZone();
+    var method = activeMethod();
+    if (!product || !zone || !method) return;
+    var amounts = calculateAmounts(toCents(product.price), 1, method, zone);
+    box.querySelector('[data-estimate-zone]').value = zone.id;
+    box.querySelector('[data-estimate-method]').value = method.id;
+    box.querySelector('[data-estimate-context]').textContent = product.sizeLabel + ' · ' + zone.label + ' · ' + (method.short || method.label);
+    box.querySelector('[data-estimate-total]').textContent = money(amounts.totalCents / 100);
+    box.querySelector('[data-estimate-subtotal]').textContent = money(amounts.subtotalCents / 100);
+    box.querySelector('[data-estimate-discount]').textContent = amounts.discountCents > 0 ? '− ' + money(amounts.discountCents / 100) : 'لا يوجد';
+    box.querySelector('[data-estimate-delivery]').textContent = amounts.deliveryCents > 0 ? money(amounts.deliveryCents / 100) : 'مجاني';
   }
 
   function clampQty(qty) {
@@ -524,6 +582,7 @@
     if (el.fallbackLink && !isEmpty) {
       el.fallbackLink.setAttribute('href', waLink(buildOrderMessage()));
     }
+    refreshOrderEstimate();
   }
 
   /** صفوف الملخّص: قيمة المنتجات، الخصم، التوصيل، الإجمالي المرجعي. */
@@ -669,17 +728,14 @@
       var zone = CONFIG.delivery.zones.filter(function (z) { return z.id === zoneId; })[0];
       if (!method || !zone) return;
 
-      var subCents = toCents(sample.price);
-      var discCents = Math.round(subCents * (method.discountPercent || 0) / 100);
-      var delivCents = toCents(deliveryFeeFor(method, zone));
-      var totalCents = subCents - discCents + delivCents;
+      var amounts = calculateAmounts(toCents(sample.price), 1, method, zone);
 
-      outSub.textContent = money(subCents / 100);
-      outDisc.textContent = discCents > 0
-        ? '− ' + money(discCents / 100) + ' (' + method.discountPercent + '%)'
+      outSub.textContent = money(amounts.subtotalCents / 100);
+      outDisc.textContent = amounts.discountCents > 0
+        ? '− ' + money(amounts.discountCents / 100) + ' (' + method.discountPercent + '%)'
         : 'لا يوجد';
-      outDeliv.textContent = delivCents > 0 ? money(delivCents / 100) : 'مجاني';
-      outTotal.textContent = money(totalCents / 100);
+      outDeliv.textContent = amounts.deliveryCents > 0 ? money(amounts.deliveryCents / 100) : 'مجاني';
+      outTotal.textContent = money(amounts.totalCents / 100);
 
       var note = '';
       if (methodId === 'shamcash' && zoneId !== 'hama') {
@@ -845,12 +901,12 @@
     });
   }
 
-  function setZone(id) {
+  function setZone(id, silent) {
     if (!zones.some(function (z) { return z.id === id; })) return;
     selectedZoneId = id;
     renderCart();
     var z = activeZone();
-    if (z) announce('منطقة التوصيل: ' + z.label + '. الإجمالي المرجعي الآن ' + money(totals().amount) + '.');
+    if (!silent && z) announce('منطقة التوصيل: ' + z.label + '. الإجمالي المرجعي الآن ' + money(totals().amount) + '.');
   }
 
   /** أزرار اختيار طريقة الدفع — تُبنى حرفيًا من CONFIG.payment.methods. */
@@ -918,12 +974,12 @@
     el.payment.appendChild(note);
   }
 
-  function setMethod(id) {
-    if (!getMethod(id)) return;
+  function setMethod(id, silent) {
+    if (!availableMethods.some(function (m) { return m.id === id; })) return;
     selectedMethodId = id;
     renderCart();
     var method = activeMethod();
-    if (method) announce('طريقة الدفع: ' + method.label + '. الإجمالي المرجعي الآن ' + money(totals().amount) + '.');
+    if (!silent && method) announce('طريقة الدفع: ' + method.label + '. الإجمالي المرجعي الآن ' + money(totals().amount) + '.');
   }
 
   function buildCartItem(product, qty) {
@@ -1546,6 +1602,7 @@
     renderPaymentCards();
     renderTrust();
     renderCalculator();
+    initOrderEstimate();
 
     // شريط الشراء المبكّر يتبع التمرير
     if (!window.__rawaaShopBarScroll) {
@@ -1712,7 +1769,7 @@
       if (window.console && console.error) console.error('[RAWAA] تعذّر تهيئة الواجهة:', err);
       // إعادة المحاولة محصورة في الميزات المستقلة عن العنصر المفقود
       [renderSizePicker, renderRoutines, renderCustomPickers, renderCraft, renderPaymentCards,
-       renderTrust, renderCalculator].forEach(function (fn) {
+       renderTrust, renderCalculator, initOrderEstimate].forEach(function (fn) {
         try { fn(); } catch { /* ميزة واحدة معطّلة لا تُسقط الباقي */ }
       });
     }

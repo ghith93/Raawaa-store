@@ -1085,7 +1085,8 @@ async function checkProductPage(config) {
   ok(visible.includes('rel="canonical" href="https://raawaa-store.pages.dev/serum"'), 'رابط canonical مستقل');
   const home = (await read('index.html')).replace(/<!--[\s\S]*?-->/g, ' ');
   const homeHero = home.match(/<section[^>]*class="hero"[\s\S]*?<\/section>/)?.[0] || '';
-  const landing = visible.match(/<section[^>]*class="serum-landing"[\s\S]*?<\/section>/)?.[0] || '';
+  // يحتوي قسم الشراء أقسامًا متداخلة؛ نصل إلى إغلاقه الذي يسبق الفوائد، لا أول إغلاق داخلي.
+  const landing = visible.match(/<section[^>]*class="serum-landing"[\s\S]*?<\/section>\s*(?=<section[^>]*id="benefits")/)?.[0] || '';
   const benefits = visible.match(/<section[^>]*id="benefits"[\s\S]*?<\/section>/)?.[0] || '';
   ok(homeHero.includes('الباهت') && homeHero.includes('المتطاير') && homeHero.includes('لمعة') &&
     homeHero.includes('href="/serum" data-discover-serum'), 'الرئيسية تشرح الحاجة والفائدة وتوجّه لاختيار الحجم');
@@ -1114,6 +1115,10 @@ async function checkProductPage(config) {
   ok(/ليست صورة للمنتج الفعلي/.test(visible) && /تصميم مقترح/.test(visible), 'الصورة موصوفة كتصوّر لا تصوير حقيقي');
   ok(!/الأكثر اختيارًا|الأكثر طلبًا|التصنيع حسب الطلب|كيراتين/.test(visible), 'لا شعبية أو مدة تصنيع أو تركيبة متناقضة');
   ok(visible.includes('توصيل مجاني داخل حماة فقط') && visible.includes('$4'), 'قيود ورسوم التوصيل واضحة');
+  ok(/data-estimate-interface[^>]*hidden/.test(visible) && visible.includes('data-estimate-fallback') && visible.includes('تقدير عبوة واحدة مع التوصيل'), 'التقدير الرقمي مخفي دون JavaScript وله بديل ومحدّد بعبوة واحدة');
+  ok(['data-estimate-zone', 'data-estimate-method', 'data-estimate-total', 'data-estimate-discount', 'data-estimate-delivery'].every(hook => visible.includes(hook)), 'خيارات وتفاصيل التقدير موجودة');
+  const cartLogic = await read('js/cart.js');
+  ok(cartLogic.includes('calculateAmounts(subtotalCents, count, method, zone)') && cartLogic.includes('calculateAmounts(toCents(product.price), 1, method, zone)'), 'السلة وتقدير المنتج يستخدمان حسابًا مشتركًا');
   ok(visible.includes('لا يسجّل طلبًا تلقائيًا ولا يؤكّده'), 'فتح واتساب ليس إتمام طلب');
   ok((await read('sitemap.xml')).includes('https://raawaa-store.pages.dev/serum</loc>'), 'صفحة السيروم في خريطة الموقع');
   ok((await read('scripts/build-deploy.sh')).includes('index.html serum.html'), 'صفحة السيروم تدخل حزمة النشر');
