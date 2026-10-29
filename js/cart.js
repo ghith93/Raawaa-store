@@ -9,7 +9,7 @@
   var MAX_QTY = (CONFIG && CONFIG.cart && CONFIG.cart.maxQuantityPerItem) || 10;
   var MIN_QTY = (CONFIG && CONFIG.cart && CONFIG.cart.minQuantityPerItem) || 1;
 
-  /** حالة السلة: { productId: quantity } — في الذاكرة فقط. */
+  /** حالة السلة: { productId: quantity } — في الذاكرة وذاكرة جلسة التبويب عند توفرها. */
   var cart = Object.create(null);
 
   var el = {};
@@ -306,7 +306,9 @@
   }
 
   function selectSize(id) {
+    if (!getProduct(id)) return;
     selectedSize = id;
+    saveChoices();
     syncSizeUI();
   }
 
@@ -371,8 +373,25 @@
   var custom = { scent: '', oil: '' };
 
   function setCustom(field, value) {
+    if (field !== 'scent' && field !== 'oil') return;
+    var cfg = CONFIG.customization || {};
+    var options = field === 'scent' ? (cfg.scentOptions || []) : (cfg.oilAdditions || []);
+    if (value && !options.some(function (o) { return o.id === value; })) return;
     custom[field] = value || '';
+    saveChoices();
+    syncCustomChips();
     renderCustomSummary();
+    if (el.items) renderCart();
+  }
+
+  function syncCustomChips() {
+    ['scent', 'oil'].forEach(function (field) {
+      Array.prototype.forEach.call(document.querySelectorAll('[data-custom-' + field + ']'), function (chip) {
+        var selected = chip.getAttribute('data-custom-' + field) === custom[field];
+        chip.classList.toggle('is-selected', selected);
+        chip.setAttribute('aria-pressed', selected ? 'true' : 'false');
+      });
+    });
   }
 
   function renderCustomSummary() {
@@ -526,6 +545,18 @@
 
   function renderCart() {
     var summary = totals();
+    var focus = document.activeElement;
+    var focusKey = null;
+    var focusValue = null;
+    if (el.dialog && el.dialog.open && focus && el.dialog.contains(focus)) {
+      ['data-zone-select', 'data-pay-select', 'data-qty-increase', 'data-qty-decrease', 'data-remove-item']
+        .some(function (key) {
+          if (!focus.hasAttribute(key)) return false;
+          focusKey = key;
+          focusValue = focus.getAttribute(key);
+          return true;
+        });
+    }
 
     // الشارة
     if (el.count) {
@@ -536,6 +567,10 @@
         el.count.hidden = true;
         el.count.textContent = '0';
       }
+      var countButton = el.count.closest('[data-cart-open]');
+      if (countButton) countButton.setAttribute('aria-label', summary.count > 0
+        ? 'فتح سلة المشتريات، ' + summary.count + ' في السلة'
+        : 'فتح سلة المشتريات، السلة فارغة');
     }
 
     // عناصر السلة
@@ -547,12 +582,14 @@
     var isEmpty = summary.count === 0;
     el.empty.hidden = !isEmpty;
     el.foot.hidden = isEmpty;
+    if (el.orderOptions) el.orderOptions.hidden = isEmpty;
 
     if (!isEmpty) {
       renderZones();
       renderPaymentMethods();
       renderSummary(summary);
     }
+    renderCartCustomSummary(isEmpty);
 
     // زر «مشاركة السلة»
     if (el.shareBtn) {
@@ -583,6 +620,38 @@
       el.fallbackLink.setAttribute('href', waLink(buildOrderMessage()));
     }
     refreshOrderEstimate();
+    fitCartFooter();
+
+    // إعادة بناء خيارات السلة لا يجب أن تُخرج مستخدمة لوحة المفاتيح من الحوار.
+    if (focusKey && el.dialog && el.dialog.open) {
+      var findFocus = function (key) {
+        return Array.prototype.filter.call(el.dialog.querySelectorAll('[' + key + ']'), function (node) {
+          return node.getAttribute(key) === focusValue && !node.disabled;
+        })[0];
+      };
+      var replacement = findFocus(focusKey);
+      if (!replacement && focusKey === 'data-qty-increase') replacement = findFocus('data-qty-decrease');
+      if (!replacement && focusKey === 'data-qty-decrease') replacement = findFocus('data-qty-increase');
+      if (!replacement && focusKey === 'data-remove-item') replacement = el.closeBtn;
+      if (replacement) {
+        try { replacement.focus({ preventScroll: true }); } catch { replacement.focus(); }
+      }
+    }
+  }
+
+  /** اختيارات العطر والإضافة استفسار للطلب كله، لا حجز أو ضمان توفر. */
+  function renderCartCustomSummary(isEmpty) {
+    if (!el.cartCustomSummary) return;
+    var cfg = CONFIG.customization || {};
+    var scent = (cfg.scentOptions || []).filter(function (o) { return o.id === custom.scent; })[0];
+    var oil = (cfg.oilAdditions || []).filter(function (o) { return o.id === custom.oil; })[0];
+    var parts = [];
+    if (scent) parts.push('العطر: ' + scent.label);
+    if (oil) parts.push('إضافة زيت: ' + oil.label);
+    el.cartCustomSummary.hidden = isEmpty || !parts.length;
+    el.cartCustomSummary.textContent = parts.length
+      ? 'للاستفسار عن الطلب ككل: ' + parts.join(' · ') + '؛ نؤكد التوفّر في واتساب.'
+      : '';
   }
 
   /** صفوف الملخّص: قيمة المنتجات، الخصم، التوصيل، الإجمالي المرجعي. */
@@ -623,6 +692,10 @@
     }
 
     if (el.total) el.total.textContent = money(summary.amount);
+    if (el.cartContext) {
+      el.cartContext.textContent = [summary.zone && summary.zone.label, method && (method.short || method.label)]
+        .filter(Boolean).join(' · ');
+    }
 
     // تنبيه شفاف: تركيبة قد لا تغطي التكلفة
     if (el.marginNote && summary.count > 0 && summary.zone && summary.method) {
@@ -884,10 +957,11 @@
       name.textContent = zone.label;
       var fee = document.createElement('span');
       fee.className = 'zone-fee';
-      if (zone.fee > 0) {
+      var amount = deliveryFeeFor(activeMethod(), zone);
+      if (amount > 0) {
         fee.appendChild(document.createTextNode('توصيل '));
         var bdi = document.createElement('bdi');
-        bdi.textContent = money(zone.fee);
+        bdi.textContent = money(amount);
         fee.appendChild(bdi);
       } else {
         fee.textContent = 'توصيل مجاني';
@@ -904,6 +978,7 @@
   function setZone(id, silent) {
     if (!zones.some(function (z) { return z.id === id; })) return;
     selectedZoneId = id;
+    saveChoices();
     renderCart();
     var z = activeZone();
     if (!silent && z) announce('منطقة التوصيل: ' + z.label + '. الإجمالي المرجعي الآن ' + money(totals().amount) + '.');
@@ -977,6 +1052,7 @@
   function setMethod(id, silent) {
     if (!availableMethods.some(function (m) { return m.id === id; })) return;
     selectedMethodId = id;
+    saveChoices();
     renderCart();
     var method = activeMethod();
     if (!silent && method) announce('طريقة الدفع: ' + method.label + '. الإجمالي المرجعي الآن ' + money(totals().amount) + '.');
@@ -1290,11 +1366,6 @@
         btn.addEventListener('click', function () {
           var same = custom[field] === opt.id;
           setCustom(field, same ? '' : opt.id);
-          Array.prototype.forEach.call(host.querySelectorAll('.chip'), function (c) {
-            var selected = c.getAttribute('data-custom-' + field) === custom[field];
-            c.classList.toggle('is-selected', selected);
-            c.setAttribute('aria-pressed', selected ? 'true' : 'false');
-          });
         });
         host.appendChild(btn);
       });
@@ -1302,6 +1373,7 @@
 
     build(scentHost, cfg.scentOptions || [], 'scent');
     build(oilHost, cfg.oilAdditions || [], 'oil');
+    syncCustomChips();
     renderCustomSummary();
   }
 
@@ -1347,7 +1419,7 @@
   function shareCart(button) {
     var url = button.getAttribute('data-share-url');
     if (!url) return;
-    var text = 'طلب من رواء — افتحي الرابط لترى نفس السلة:';
+    var text = 'أحجام وكميات من رواء — تحقّقي من المنطقة والدفع والخيارات عند فتح الرابط:';
 
     if (navigator.share) {
       navigator.share({ title: 'سلة رواء', text: text, url: url })
@@ -1383,9 +1455,17 @@
 
   /* ------------------------------ نافذة السلة ------------------------------ */
 
-  function openCart() {
+  /** ألغِ تثبيت التذييل إن حجب المحتوى، بما في ذلك عند تكبير حجم النص. */
+  function fitCartFooter() {
+    if (!el.dialog || !el.dialog.open || !el.cartScroller || !el.cartHead || !el.foot) return;
+    var available = el.cartScroller.clientHeight;
+    var needed = el.cartHead.offsetHeight + (el.foot.hidden ? 0 : el.foot.offsetHeight) + 96;
+    el.cartScroller.classList.toggle('cart-inner--flow', available > 0 && needed > available);
+  }
+
+  function openCart(trigger) {
     if (!el.dialog) return;
-    lastFocused = document.activeElement;
+    lastFocused = trigger || document.activeElement;
     hideFallback();
 
     if (typeof el.dialog.showModal === 'function') {
@@ -1396,6 +1476,8 @@
 
     document.body.classList.add('is-locked');
     if (el.stickyBar) el.stickyBar.hidden = true;
+    fitCartFooter();
+    if (el.cartScroller) el.cartScroller.scrollTop = 0;
     if (el.closeBtn) el.closeBtn.focus();
   }
 
@@ -1472,7 +1554,7 @@
    * تختار طريقة الدفع تلقائيًا، فيصل الزائر من منشور فيسبوك أو انستغرام
    * إلى نفس الحساب الذي رآه في المنشور. لا تُرسَل أي بيانات، ولا يُنفَّذ أي كود من الرابط.
    */
-  function applyOfferFromUrl() {
+  function applyOfferFromUrl(restoredMethod) {
     var params;
     try {
       params = new URLSearchParams(window.location.search);
@@ -1483,7 +1565,20 @@
     if (!wanted) return;
     var method = getMethod(wanted);
     if (!method || method.id !== wanted) return;
+    // نطبّق رابط العرض عند الوصول إليه، لا كلما حدّثت الزائرة الصفحة بعد أن غيّرت رأيها.
+    try {
+      if (restoredMethod && window.history.state && window.history.state.rawaaAppliedOffer === wanted) return;
+    } catch { /* سجل المتصفح غير متاح؛ يبقى العرض هو الافتراضي */ }
     selectedMethodId = method.id;
+    saveChoices();
+    try {
+      var state = window.history.state;
+      if (state === null || (typeof state === 'object' && !Array.isArray(state))) {
+        var updated = Object.assign({}, state || {});
+        updated.rawaaAppliedOffer = wanted;
+        window.history.replaceState(updated, '');
+      }
+    } catch { /* الموقع يعمل حتى لو مُنع تعديل سجل الصفحة */ }
   }
 
   /** يبني رابط مشاركة لطريقة دفع معيّنة (يُستخدم في بطاقات الدفع نفسها). */
@@ -1495,30 +1590,66 @@
   /* ------------------------------ حفظ ومشاركة السلة ------------------------------ */
 
   /**
-   * نحفظ السلة في sessionStorage فقط (تُمسَح عند إغلاق التبويب).
-   * السبب: الشبكة في سوريا متقطّعة، وفقدان الاختيار عند تحديث الصفحة يفقد طلبًا.
-   * لا يُرسَل شيء لأي جهة، ولا يبقى بعد إغلاق التبويب، ولا كوكيز.
+   * نحفظ السلة في sessionStorage فقط لتبقى عند التحديث أو انقطاع الشبكة.
+   * تنتهي عادةً بإغلاق التبويب، وقد يستعيدها المتصفح عند استعادة الجلسة.
+   * لا تُرسَل بيانات التخزين تلقائيًا، ولا تُستخدم كوكيز للسلة.
    */
   var STORAGE_KEY = 'rawaa:cart:v1';
+  var CHOICES_KEY = 'rawaa:choices:v1';
+
+  /** رموز اختيارات فقط، في جلسة التبويب؛ لا أسماء أو عناوين أو أرقام تواصل. */
+  function saveChoices() {
+    try {
+      window.sessionStorage.setItem(CHOICES_KEY, JSON.stringify({
+        size: selectedSize, zone: selectedZoneId, method: selectedMethodId,
+        scent: custom.scent, oil: custom.oil
+      }));
+    } catch { /* التخزين قد يُمنع؛ تبقى الاختيارات في الذاكرة للصفحة الحالية */ }
+  }
+
+  /** لا نستعيد إلا معرّفات موجودة في الإعدادات الحالية. */
+  function restoreChoices() {
+    try {
+      var raw = window.sessionStorage.getItem(CHOICES_KEY);
+      if (!raw) return false;
+      var data = JSON.parse(raw);
+      if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+      var fallbackProduct = CONFIG.products[1] || CONFIG.products[0];
+      selectedSize = typeof data.size === 'string' && getProduct(data.size)
+        ? data.size : (fallbackProduct && fallbackProduct.id) || null;
+      var defaultZone = (CONFIG.delivery && CONFIG.delivery.defaultZone) || (zones[0] && zones[0].id) || null;
+      selectedZoneId = zones.some(function (z) { return z.id === data.zone; }) ? data.zone : defaultZone;
+      var validMethod = availableMethods.some(function (m) { return m.id === data.method; });
+      selectedMethodId = validMethod ? data.method : (availableMethods[0] && availableMethods[0].id) || null;
+      var cfg = CONFIG.customization || {};
+      custom.scent = (cfg.scentOptions || []).some(function (o) { return o.id === data.scent; }) ? data.scent : '';
+      custom.oil = (cfg.oilAdditions || []).some(function (o) { return o.id === data.oil; }) ? data.oil : '';
+      return validMethod;
+    } catch { return false; }
+  }
 
   function saveCart() {
     try {
       var plain = {};
       Object.keys(cart).forEach(function (k) { plain[k] = cart[k]; });
       window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(plain));
-    } catch { /* تجاهل: لا شيء نفعله بالخطأ */ }
+      return true;
+    } catch { return false; /* التخزين محجوب؛ تبقى السلة في ذاكرة الصفحة */ }
   }
 
-  function restoreCart() {
+  function restoreCart(replace) {
     try {
       var raw = window.sessionStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
+      if (!raw) return false;
       var data = JSON.parse(raw);
+      if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+      if (replace) Object.keys(cart).forEach(function (id) { delete cart[id]; });
       Object.keys(data).forEach(function (id) {
         var qty = parseInt(data[id], 10);
         if (getProduct(id) && qty > 0) cart[id] = clampQty(qty);
       });
-    } catch { /* تجاهل: لا شيء نفعله بالخطأ */ }
+      return true;
+    } catch { return false; }
   }
 
   /**
@@ -1526,18 +1657,37 @@
    * يفيد الزبونة التي تريد إرسال طلبها لصديقة، أو نشره في مجموعة.
    * يُقرأ بأمان: أي معرّف غير معروف يُتجاهل.
    */
-  function loadCartFromUrl() {
+  function loadCartFromUrl(restoredCart) {
     var params;
     try { params = new URLSearchParams(window.location.search); } catch { return; }
     var raw = params.get('cart');
     if (!raw) return;
+    var shared = Object.create(null);
     raw.split(',').forEach(function (chunk) {
       var parts = chunk.split('x');
       if (parts.length !== 2) return;
       var id = parts[0].trim();
       var qty = parseInt(parts[1], 10);
-      if (getProduct(id) && qty > 0) cart[id] = clampQty(qty);
+      if (getProduct(id) && qty > 0) shared[id] = clampQty(qty);
     });
+    var ids = Object.keys(shared);
+    if (!ids.length) return;
+    if (el.cartSharedNotice) el.cartSharedNotice.hidden = false;
+    try {
+      if (restoredCart && window.history.state && window.history.state.rawaaAppliedCart === raw) return;
+    } catch { /* يبقى رابط السلة قابلًا للاستخدام دون تعديل السجل */ }
+    // لا نستبدل كمية موجودة مسبقًا؛ نضيف الأحجام الجديدة فقط ونوضح ذلك للزائرة.
+    ids.forEach(function (id) { if (!cart[id]) cart[id] = shared[id]; });
+    // لا نعلّم الرابط كمطبّق إن منع المتصفح الحفظ، كي يظل صالحًا عند التحديث.
+    if (!saveCart()) return;
+    try {
+      var state = window.history.state;
+      if (state === null || (typeof state === 'object' && !Array.isArray(state))) {
+        var updated = Object.assign({}, state || {});
+        updated.rawaaAppliedCart = raw;
+        window.history.replaceState(updated, '');
+      }
+    } catch { /* قد يمنع المتصفح تعديل السجل */ }
   }
 
   /** يبني رابط مشاركة للسلة الحالية. */
@@ -1555,8 +1705,14 @@
     el.count = document.querySelector('[data-cart-count]');
     el.dialog = document.getElementById('cart-dialog');
     el.items = document.querySelector('[data-cart-items]');
+    el.cartCustomSummary = document.querySelector('[data-cart-custom-summary]');
+    el.cartSharedNotice = document.querySelector('[data-cart-shared-notice]');
+    el.cartScroller = el.dialog && el.dialog.querySelector('.cart-inner');
+    el.cartHead = el.dialog && el.dialog.querySelector('.cart-head');
     el.empty = document.querySelector('[data-cart-empty]');
     el.foot = document.querySelector('[data-cart-foot]');
+    el.orderOptions = document.querySelector('[data-cart-order-options]');
+    el.cartContext = document.querySelector('[data-cart-context]');
     el.total = document.querySelector('[data-cart-total]');
     el.checkout = document.querySelector('[data-cart-checkout]');
     el.closeBtn = document.querySelector('[data-cart-close]');
@@ -1580,6 +1736,13 @@
     el.stickyCount = document.querySelector('[data-sticky-count]');
     el.stickyTotal = document.querySelector('[data-sticky-total]');
     el.cartTriggers = Array.prototype.slice.call(document.querySelectorAll('[data-cart-open]'));
+    if (window.ResizeObserver && el.cartScroller && el.cartHead && el.foot) {
+      var cartLayoutObserver = new window.ResizeObserver(fitCartFooter);
+      cartLayoutObserver.observe(el.cartScroller);
+      cartLayoutObserver.observe(el.cartHead);
+      cartLayoutObserver.observe(el.foot);
+    }
+    window.addEventListener('resize', fitCartFooter, { passive: true });
     el.navToggle = document.querySelector('[data-nav-toggle]');
     el.navPanel = document.getElementById('mobile-nav');
 
@@ -1591,9 +1754,10 @@
      */
     if (!CONFIG) return;
 
-    applyOfferFromUrl();
-    loadCartFromUrl();
-    restoreCart();
+    var restoredMethod = restoreChoices();
+    applyOfferFromUrl(restoredMethod);
+    var restoredCart = restoreCart();
+    loadCartFromUrl(restoredCart);
     renderProducts();
     renderSizePicker();
     renderRoutines();
@@ -1627,12 +1791,12 @@
         event.preventDefault();
         var productId = target.getAttribute('data-add-to-cart');
         addToCart(productId, target);
-        if (target.hasAttribute('data-open-cart-after-add') && cart[productId]) openCart();
+        if (target.hasAttribute('data-open-cart-after-add') && cart[productId]) openCart(target);
         return;
       }
       if (target.hasAttribute('data-cart-open')) {
         event.preventDefault();
-        openCart();
+        openCart(target);
         return;
       }
       if (target.hasAttribute('data-cart-close')) {
@@ -1780,6 +1944,16 @@
   } else {
     boot();
   }
+
+  window.addEventListener('pageshow', function (event) {
+    if (!event.persisted || !CONFIG) return;
+    restoreChoices();
+    restoreCart(true);
+    syncSizeUI();
+    syncCustomChips();
+    renderCustomSummary();
+    if (el.items) renderCart();
+  });
 
   // واجهة اختبارية داخلية (تُستخدم في scripts/check-site.mjs فقط، لا تُستخدم في الواجهة)
   window.__RAWAA_TEST__ = {

@@ -21,7 +21,11 @@ from playwright.sync_api import sync_playwright
 
 AXE = (Path(__file__).parent / "vendor" / "axe.min.js").read_text(encoding="utf-8")
 
-PAGES = ["/", "/serum.html", "/privacy.html", "/404.html"]
+# تُفحص الصفحة والحوار الفارغ والممتلئ، بما فيه بديل واتساب عند حظر النافذة.
+PAGES = [("/", "page"), ("/serum.html", "page"), ("/privacy.html", "page"),
+         ("/404.html", "page"), ("/", "empty"), ("/serum.html", "empty"),
+         ("/", "cart"), ("/serum.html", "cart"),
+         ("/", "fallback"), ("/serum.html", "fallback")]
 SEVERITY = {"critical": 3, "serious": 2, "moderate": 1, "minor": 0}
 
 
@@ -32,13 +36,22 @@ def audit(base: str, threshold: str, viewport: tuple[int, int]) -> int:
         browser = p.chromium.launch()
         ctx = browser.new_context(viewport={"width": viewport[0], "height": viewport[1]},
                                   locale="ar")
-        for path in PAGES:
+        for path, state in PAGES:
             page = ctx.new_page()
+            label = f"{path} [{state}]"
             try:
-                response = page.goto(base.rstrip("/") + path, wait_until="load", timeout=45000)
+                if state == "fallback":
+                    page.add_init_script("window.open = () => null")
+                suffix = "?cart=serum-50x1" if state in ("cart", "fallback") else ""
+                response = page.goto(base.rstrip("/") + path + suffix, wait_until="load", timeout=45000)
                 if not response or (response.status >= 400 and path != "/404.html"):
                     raise RuntimeError(f"HTTP {response.status if response else 'no response'}")
                 page.wait_for_timeout(900)
+                if state != "page":
+                    page.locator('[data-cart-open]').first.click()
+                if state == "fallback":
+                    page.locator('[data-cart-checkout]').click()
+                    page.locator('[data-cart-fallback]').wait_for(state="visible")
                 page.add_script_tag(content=AXE)
                 res = page.evaluate("""async () => {
                     const r = await axe.run(document, {
@@ -53,14 +66,14 @@ def audit(base: str, threshold: str, viewport: tuple[int, int]) -> int:
                 }""")
                 blocking = [v for v in res if SEVERITY.get(v["impact"], 0) >= limit]
                 mark = "✓" if not blocking else "✗"
-                print(f"  {mark} {path:16} {len(res)} مخالفة · {len(blocking)} تتجاوز العتبة")
+                print(f"  {mark} {label:24} {len(res)} مخالفة · {len(blocking)} تتجاوز العتبة")
                 for v in blocking:
                     print(f"      [{v['impact']}] {v['id']} — {v['count']} عنصر")
                     for n in v["nodes"]:
                         print(f"          {n[:90]}")
                 total_fail += len(blocking)
             except Exception as e:
-                print(f"  ✗ {path:16} خطأ: {type(e).__name__}: {str(e)[:80]}")
+                print(f"  ✗ {label:24} خطأ: {type(e).__name__}: {str(e)[:80]}")
                 total_fail += 1
             finally:
                 page.close()

@@ -788,8 +788,16 @@ bdi { unicode-bidi: isolate; }
   flex-direction: column;
   height: 100%;
   min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block-start: 5rem;
+  scroll-padding-block-end: 18rem;
 }
 .cart-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--ivory);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -801,12 +809,21 @@ bdi { unicode-bidi: isolate; }
 .cart-head h2 { margin: 0; font-size: 1.25rem; }
 
 .cart-body {
-  flex: 1 1 auto;
+  flex: 1 0 auto;
   min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
   padding: var(--space-4) var(--gutter);
 }
+.cart-custom-summary, .cart-shared-notice {
+  margin: var(--space-4) 0 0;
+  padding: .65rem .75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--cream);
+  color: var(--ink-soft);
+  font-size: .8rem;
+  line-height: 1.7;
+}
+.cart-custom-summary[hidden], .cart-shared-notice[hidden] { display: none; }
 
 .cart-empty {
   font-size: 0.92rem;
@@ -900,6 +917,9 @@ bdi { unicode-bidi: isolate; }
 .cart-remove:hover { color: var(--brown); }
 
 .cart-foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
   flex: none;
   border-top: 1px solid var(--line);
   padding: var(--space-4) var(--gutter) calc(var(--space-5) + env(safe-area-inset-bottom));
@@ -920,9 +940,18 @@ bdi { unicode-bidi: isolate; }
   font-variant-numeric: lining-nums tabular-nums;
   font-feature-settings: "lnum" 1, "onum" 0, "tnum" 1;
 }
+.cart-context { margin: .25rem 0 0; font-size: .78rem; line-height: 1.5; color: var(--ink-soft); }
+@media (max-height: 480px) {
+  .cart-foot { position: static; }
+  .cart-inner { scroll-padding-block-end: 1rem; }
+}
+/* مع تكبير النص قد يصبح التذييل أطول من الشاشة حتى إن كان ارتفاعها عاديًا. */
+.cart-inner--flow .cart-foot { position: static; }
+.cart-inner--flow { scroll-padding-block-end: 1rem; }
 .cart-note { margin: var(--space-3) 0 var(--space-4); font-size: 0.76rem; line-height: 1.8; color: var(--taupe); }
 .cart-share { margin-top: 8px; }
 .cart-share[hidden] { display: none; }
+.cart-share-note { margin: .35rem 0 0; font-size: .74rem; line-height: 1.6; color: var(--ink-soft); }
 .cart-disclaimer { margin: var(--space-3) 0 0; font-size: 0.72rem; color: var(--taupe); text-align: center; }
 
 .cart-fallback {

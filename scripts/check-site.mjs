@@ -1119,6 +1119,10 @@ async function checkProductPage(config) {
   ok(['data-estimate-zone', 'data-estimate-method', 'data-estimate-total', 'data-estimate-discount', 'data-estimate-delivery'].every(hook => visible.includes(hook)), 'خيارات وتفاصيل التقدير موجودة');
   const cartLogic = await read('js/cart.js');
   ok(cartLogic.includes('calculateAmounts(subtotalCents, count, method, zone)') && cartLogic.includes('calculateAmounts(toCents(product.price), 1, method, zone)'), 'السلة وتقدير المنتج يستخدمان حسابًا مشتركًا');
+  ok([home, visible].every(page => ['data-cart-order-options','data-cart-context','data-cart-custom-summary','data-cart-shared-notice','cart-share-note'].every(hook => page.includes(hook))), 'السلتان تعرضان سياق الإجمالي والاختيارات وحدود المشاركة');
+  ok(cartLogic.includes("var CHOICES_KEY = 'rawaa:choices:v1'") && cartLogic.includes('restoreChoices()') && cartLogic.includes('saveChoices()'), 'الاختيارات الصالحة تُستعاد في جلسة المتصفح');
+  const privacy = await read('privacy.html');
+  ok(privacy.includes('العطر والزيت') && privacy.includes('التبويب نفسه') && privacy.includes('الكميات فقط'), 'الخصوصية تشرح حفظ الاختيارات وحدود رابط المشاركة');
   ok(visible.includes('لا يسجّل طلبًا تلقائيًا ولا يؤكّده'), 'فتح واتساب ليس إتمام طلب');
   ok((await read('sitemap.xml')).includes('https://raawaa-store.pages.dev/serum</loc>'), 'صفحة السيروم في خريطة الموقع');
   ok((await read('scripts/build-deploy.sh')).includes('index.html serum.html'), 'صفحة السيروم تدخل حزمة النشر');

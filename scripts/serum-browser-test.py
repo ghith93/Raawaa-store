@@ -115,9 +115,13 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             ev = page.evaluate("JSON.parse(sessionStorage.getItem('rawaa_events') || '[]').map(x => x.e)")
             check("فتح السلة ليس Contact أو طلبًا مكتملًا", 'Contact' not in ev and 'InitiateCheckout' not in ev and 'Purchase' not in ev, str(ev))
             check("50 مل + شام كاش حماة = $10.80", page.locator('[data-cart-subtotal]').inner_text() == '$12' and page.locator('[data-cart-total]').inner_text() == '$10.80' and page.locator('[data-cart-delivery]').inner_text() == 'مجاني')
+            hama_fee = page.locator('[data-zone-select="hama"]').locator('..').locator('.zone-fee')
+            other_fee = page.locator('[data-zone-select="other"]').locator('..').locator('.zone-fee')
+            check("بطاقتا المنطقة تتبعان رسوم شام كاش الفعلية", 'مجاني' in hama_fee.inner_text() and '$4' in other_fee.inner_text())
             page.locator('[data-zone-select="other"]').check()
             check("50 مل + شام كاش المحافظات = $14.80", page.locator('[data-cart-total]').inner_text() == '$14.80')
             page.locator('[data-pay-select="cod"]').check()
+            check("بطاقتا المنطقة تتبعان رسوم الاستلام الفعلية", '$2' in hama_fee.inner_text() and '$4' in other_fee.inner_text())
             check("50 مل + استلام المحافظات = $16", page.locator('[data-cart-total]').inner_text() == '$16')
             page.locator('[data-zone-select="hama"]').check()
             check("50 مل + استلام حماة = $14", page.locator('[data-cart-total]').inner_text() == '$14')
@@ -136,6 +140,8 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                 page.locator('[data-add-current]').click()
                 page.locator('[data-cart-close]').click()
             page.locator('[data-cart-open]').first.click()
+            check("تظهر خيارات العطر والزيت للاستفسار داخل السلة",
+                  all(x in page.locator('[data-cart-custom-summary]').inner_text() for x in ['الطلب ككل','فانيلا','أرجان','نؤكد']))
             check("الأحجام الثلاثة = $37 قبل الخصم", page.locator('[data-cart-subtotal]').inner_text() == '$37')
             page.locator('[data-pay-select="shamcash"]').check()
             check("شام كاش حماة = $33.30", page.locator('[data-cart-total]').inner_text() == '$33.30')
@@ -229,6 +235,322 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               'الدفع عند الاستلام' in page.locator('[data-estimate-context]').inner_text())
         ctx.close()
 
+        # استعادة الاختيارات بين التحديث والتنقل، دون إرسال بيانات أو مشاركتها تلقائيًا.
+        ctx = browser.new_context(viewport={"width":390,"height":844}, locale="ar",
+                                  reduced_motion="reduce", ignore_https_errors=ignore_https)
+        ctx.add_init_script("window.__waCalls = []; window.open = url => { window.__waCalls.push(url); return null; };")
+        page = ctx.new_page()
+        errors = []
+        page.on('pageerror', lambda e: errors.append(str(e)))
+        page.goto(base + path + '?utm_campaign=continuity&utm_content=detail', wait_until='load')
+        page.locator('#products .size-option').nth(2).click()
+        page.locator('.serum-estimate-details summary').click()
+        page.locator('[data-estimate-zone]').select_option('other')
+        page.locator('[data-estimate-method]').select_option('cod')
+        page.locator('[data-custom-scent="vanilla"]').click()
+        page.locator('[data-custom-oil="argan"]').click()
+        page.locator('[data-add-current]').click()
+        check("قبل التحديث: 100 مل والاستلام للمحافظات = $19",
+              page.locator('[data-cart-total]').inner_text() == '$19' and
+              'باقي المحافظات' in page.locator('[data-cart-context]').inner_text())
+        check("اسم زر السلة المقروء يتضمن عدد العناصر الظاهر",
+              '1 في السلة' in (page.locator('.cart-trigger').get_attribute('aria-label') or ''))
+        check("مراجعة العطر والإضافة للطلب ككل داخل السلة",
+              all(x in page.locator('[data-cart-custom-summary]').inner_text() for x in ['الطلب ككل','فانيلا','أرجان','نؤكد']))
+        share_url = page.evaluate('window.__RAWAA_TEST__.cartShareLink()')
+        check("رابط المشاركة يقتصر على الأحجام والكميات",
+              'serum-100x1' in share_url and all(x not in share_url for x in ['other','cod','vanilla','argan']) and
+              'لا يشمل المنطقة' in page.locator('.cart-share-note').inner_text())
+        page.locator('[data-cart-close]').click()
+        page.reload(wait_until='load')
+        check("بعد التحديث تبقى الخيارات والتقدير دون تغيير صامت",
+              '$15' in page.locator('[data-price-live]').text_content() and
+              page.locator('[data-estimate-total]').inner_text() == '$19' and
+              page.locator('[data-estimate-zone]').input_value() == 'other' and
+              page.locator('[data-estimate-method]').input_value() == 'cod' and
+              page.locator('[data-custom-scent="vanilla"]').get_attribute('aria-pressed') == 'true' and
+              page.locator('[data-custom-oil="argan"]').get_attribute('aria-pressed') == 'true')
+        stored = page.evaluate("JSON.parse(sessionStorage.getItem('rawaa:choices:v1'))")
+        check("ذاكرة الجلسة تحفظ رموز الاختيارات فقط لا معلومات اتصال",
+              set(stored) == {'size','zone','method','scent','oil'} and
+              stored == {'size':'serum-100','zone':'other','method':'cod','scent':'vanilla','oil':'argan'} and
+              page.evaluate("localStorage.getItem('rawaa:choices:v1')") is None, str(stored))
+        page.locator('[data-cart-open]').first.click()
+        draft = parse_qs(urlparse(page.locator('[data-cart-fallback-link]').get_attribute('href') or '').query).get('text', [''])[0]
+        check("السلة والرسالة المعدّة تستعيدان السعر والاختيارات والمصدر",
+              page.locator('[data-cart-total]').inner_text() == '$19' and
+              all(x in draft for x in ['100 مل','$19','فانيلا','أرجان','باقي المحافظات','الدفع عند الاستلام','continuity','detail']))
+        events = page.evaluate("JSON.parse(sessionStorage.getItem('rawaa_events') || '[]').map(x => x.e)")
+        check("حفظ الاختيارات لا يفتح واتساب أو ينشئ طلبًا",
+              not page.evaluate('window.__waCalls.length') and 'Contact' not in events and 'Purchase' not in events)
+        page.locator('[data-cart-close]').click()
+        shared = ctx.new_page(); shared.goto(share_url, wait_until='load')
+        check("رابط المشاركة في تبويب مستقل لا يتضمن الخيارات الأخرى",
+              shared.locator('[data-cart-count]').inner_text() == '1' and
+              shared.locator('[data-estimate-zone]').input_value() == 'hama' and
+              shared.locator('[data-estimate-method]').input_value() == 'shamcash' and
+              shared.locator('[data-custom-scent="vanilla"]').get_attribute('aria-pressed') == 'false' and
+              shared.locator('[data-custom-oil="argan"]').get_attribute('aria-pressed') == 'false')
+        shared.close()
+        page.goto(base + '/', wait_until='load')
+        check("الخيارات تنتقل للرئيسية في التبويب نفسه",
+              '$15' in page.locator('[data-price-live]').text_content() and
+              page.locator('[data-custom-scent="vanilla"]').get_attribute('aria-pressed') == 'true' and
+              page.locator('[data-custom-oil="argan"]').get_attribute('aria-pressed') == 'true')
+        page.locator('[data-cart-open]').first.click()
+        check("السلة في الرئيسية تحافظ على الإجمالي والمنطقة والدفع",
+              page.locator('[data-cart-total]').inner_text() == '$19' and
+              page.locator('[data-zone-select="other"]').is_checked() and page.locator('[data-pay-select="cod"]').is_checked())
+        page.locator('[data-zone-select="hama"]').check()
+        page.locator('[data-pay-select="shamcash"]').check()
+        page.locator('[data-cart-close]').click()
+        page.locator('[data-custom-scent="rose"]').click()
+        page.locator('[data-custom-oil="almond"]').click()
+        page.locator('#products .size-option').nth(0).click()
+        page.locator('[data-add-current]').click()
+        page.locator('[data-cart-open]').first.click()
+        page.locator('[data-remove-item="serum-100"]').click()
+        page.locator('[data-cart-close]').click()
+        page.go_back(wait_until='load')
+        page.wait_for_selector('#products .size-option input')
+        check("العودة للمنتج تعكس أحدث اختيارات الحجم والعطر والزيت",
+              '$10' in page.locator('[data-price-live]').text_content() and
+              page.locator('[data-custom-scent="rose"]').get_attribute('aria-pressed') == 'true' and
+              page.locator('[data-custom-oil="almond"]').get_attribute('aria-pressed') == 'true' and
+              page.locator('[data-estimate-total]').inner_text() == '$9')
+        page.locator('[data-cart-open]').first.click()
+        check("العودة لا تعيد عنصرًا حُذف في الصفحة الأخرى",
+              page.locator('[data-cart-count]').inner_text() == '1' and
+              page.locator('[data-cart-item="serum-30"]').count() == 1 and
+              page.locator('[data-cart-item="serum-100"]').count() == 0 and
+              page.locator('[data-cart-total]').inner_text() == '$9')
+        page.locator('[data-cart-close]').click()
+        page.locator('[data-custom-scent="rose"]').click()
+        page.locator('[data-custom-oil="almond"]').click()
+        page.reload(wait_until='load')
+        page.locator('[data-cart-open]').first.click()
+        check("إلغاء العطر والإضافة يبقى ملغيًا بعد التحديث",
+              page.locator('[data-custom-scent="rose"]').get_attribute('aria-pressed') == 'false' and
+              page.locator('[data-custom-oil="almond"]').get_attribute('aria-pressed') == 'false' and
+              page.locator('[data-cart-custom-summary]').is_hidden())
+        page.locator('[data-cart-close]').click()
+        page.evaluate("""() => sessionStorage.setItem('rawaa:choices:v1',
+          JSON.stringify({size:'serum-999',zone:'bogus',method:'bogus',scent:'<img src=x onerror=alert(1)>',oil:{}}))""")
+        page.goto(base + path, wait_until='load')
+        check("الخيارات التالفة أو غير المعتمدة تُهمل دون حقن أو تعطل",
+              '$12' in page.locator('[data-price-live]').text_content() and
+              page.locator('[data-estimate-zone]').input_value() == 'hama' and
+              page.locator('[data-estimate-method]').input_value() == 'shamcash' and
+              page.locator('.chips [aria-pressed="true"]').count() == 0 and not errors, '; '.join(errors[:3]))
+        ctx.close()
+
+        # الرابط المشترك يدمج دون استبدال كميات سابقة، ولا يعيد صنفًا حُذف عند التحديث.
+        ctx = browser.new_context(viewport={"width":390,"height":844}, locale="ar", ignore_https_errors=ignore_https)
+        page = ctx.new_page(); page.goto(base + path, wait_until='load')
+        page.evaluate("sessionStorage.setItem('rawaa:cart:v1', JSON.stringify({'serum-50':3}))")
+        shared_path = base + path + '?cart=serum-50x1,serum-100x2&offer=cod'
+        page.goto(shared_path, wait_until='load')
+        page.locator('[data-cart-open]').first.click()
+        check("رابط مشترك يحافظ على الكمية السابقة ويضيف الحجم الجديد مع توضيح الدمج",
+              page.locator('[data-cart-count]').inner_text() == '5' and
+              page.locator('[data-cart-item="serum-50"] [data-qty-value]').inner_text() == '3' and
+              page.locator('[data-cart-item="serum-100"] [data-qty-value]').inner_text() == '2' and
+              page.locator('[data-cart-shared-notice]').is_visible() and
+              'تبقى الكميات الموجودة سابقًا' in page.locator('[data-cart-shared-notice]').inner_text())
+        check("رابط العرض والسلة يعملان معًا", page.locator('[data-pay-select="cod"]').is_checked())
+        page.locator('[data-remove-item="serum-100"]').click()
+        page.locator('[data-pay-select="shamcash"]').check()
+        page.reload(wait_until='load')
+        page.locator('[data-cart-open]').first.click()
+        check("تحديث الرابط لا يعيد الحجم المحذوف ولا يفرض العرض بعد تعديل الدفع",
+              page.locator('[data-cart-item="serum-100"]').count() == 0 and
+              page.locator('[data-cart-item="serum-50"] [data-qty-value]').inner_text() == '3' and
+              page.locator('[data-pay-select="shamcash"]').is_checked())
+        page.locator('[data-remove-item="serum-50"]').click()
+        page.reload(wait_until='load')
+        page.locator('[data-cart-open]').first.click()
+        check("السلة المفرغة لا تمتلئ مجددًا عند تحديث الرابط نفسه",
+              page.locator('[data-cart-empty]').is_visible() and page.locator('[data-cart-items] li').count() == 0)
+        page.goto(base + path, wait_until='load')
+        page.goto(shared_path, wait_until='load')
+        page.locator('[data-cart-open]').first.click()
+        check("فتح رابط مشترك من جديد يطبق أحجامه مرة جديدة",
+              page.locator('[data-cart-item="serum-50"] [data-qty-value]').inner_text() == '1' and
+              page.locator('[data-cart-item="serum-100"] [data-qty-value]').inner_text() == '2' and
+              page.locator('[data-pay-select="cod"]').is_checked())
+        ctx.close()
+
+        # روابط العرض تُطبّق عند الوصول، ولا تعيد فرضها بعد تغيير الاختيار ثم التحديث.
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        page = ctx.new_page(); page.goto(base + path + '?offer=cod', wait_until='load')
+        page.locator('.serum-estimate-details summary').click()
+        page.locator('[data-estimate-method]').select_option('shamcash')
+        page.reload(wait_until='load')
+        check("اختيار الدفع اليدوي يبقى بعد تحديث رابط عرض الاستلام",
+              page.locator('[data-estimate-method]').input_value() == 'shamcash' and page.locator('[data-estimate-total]').inner_text() == '$10.80')
+        page.goto(base + path, wait_until='load')
+        page.goto(base + path + '?offer=cod', wait_until='load')
+        check("فتح رابط عرض جديد يختار الاستلام مجددًا",
+              page.locator('[data-estimate-method]').input_value() == 'cod' and page.locator('[data-estimate-total]').inner_text() == '$14')
+        page.goto(base + path + '?offer=invalid', wait_until='load')
+        check("العرض غير الصالح لا يلغي الاختيار المحفوظ", page.locator('[data-estimate-method]').input_value() == 'cod')
+        ctx.close()
+
+        # إذا مُنع التخزين، يبقى الطلب قابلًا للاستعمال في الذاكرة دون أخطاء.
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx.add_init_script("Object.defineProperty(window, 'sessionStorage', {get(){throw new DOMException('blocked','SecurityError')}})")
+        page = ctx.new_page(); errors = []
+        page.on('pageerror', lambda e: errors.append(str(e)))
+        page.goto(base + path + '?offer=cod', wait_until='load')
+        page.locator('[data-custom-scent="vanilla"]').click()
+        page.locator('#products .size-option').nth(2).click()
+        page.locator('[data-add-current]').click()
+        check("عند منع التخزين تعمل السلة والاختيارات في الذاكرة",
+              page.locator('[data-cart-total]').inner_text() == '$17' and
+              'فانيلا' in page.locator('[data-cart-custom-summary]').inner_text() and not errors, '; '.join(errors[:3]))
+        ctx.close()
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx.add_init_script("Object.defineProperty(window, 'sessionStorage', {get(){throw new DOMException('blocked','SecurityError')}})")
+        page = ctx.new_page(); page.goto(base + path + '?cart=serum-30x1', wait_until='load')
+        page.locator('[data-cart-open]').first.click()
+        check("رابط السلة المشترك يفتح حتى عند منع التخزين",
+              page.locator('[data-cart-count]').inner_text() == '1' and page.locator('[data-cart-total]').inner_text() == '$9')
+        ctx.close()
+
+        # اختبر عجلة المستخدم الفعلية لا النقر الآلي الذي يمرّر overflow:hidden برمجيًا.
+        for width, height in [(320,568), (320,640), (390,844), (844,390)]:
+            ctx = browser.new_context(viewport={"width":width,"height":height}, locale="ar",
+                                      reduced_motion="reduce", ignore_https_errors=ignore_https)
+            ctx.add_init_script('window.open = () => null;')
+            page = ctx.new_page(); page.goto(base + path, wait_until='load')
+            page.locator('[data-add-current]').click()
+            item = page.locator('.cart-item').bounding_box()
+            head = page.locator('.cart-head').bounding_box()
+            check(f"{width}×{height}: بند السلة ظاهر كاملًا عند الفتح",
+                  bool(item and head and item['y'] >= head['y'] + head['height'] - 1 and item['y'] + item['height'] <= height))
+            box = page.locator('#cart-dialog').bounding_box()
+            page.mouse.move(box['x'] + box['width'] / 2, min(height * .45, 260))
+            page.mouse.wheel(0, 2000)
+            page.wait_for_timeout(250)
+            scrolled = page.locator('.cart-inner').evaluate('(e) => e.scrollTop')
+            share = page.locator('[data-cart-share]').bounding_box()
+            foot = page.locator('.cart-foot').bounding_box()
+            checkout = page.locator('[data-cart-checkout]').bounding_box()
+            head = page.locator('.cart-head').bounding_box()
+            # في الارتفاعات القصيرة لا يلزم بلوغ أسفل السلة تمامًا لإظهار المشاركة.
+            if share and head and share['y'] < head['y'] + head['height']:
+                page.mouse.wheel(0, -32)
+                page.wait_for_timeout(180)
+                share = page.locator('[data-cart-share]').bounding_box()
+                foot = page.locator('.cart-foot').bounding_box()
+                checkout = page.locator('[data-cart-checkout]').bounding_box()
+                head = page.locator('.cart-head').bounding_box()
+            check(f"{width}×{height}: عجلة التمرير تصل للمشاركة والملخص وزر واتساب",
+                  bool(scrolled > 30 and share and foot and head and checkout and
+                  share['y'] >= head['y'] + head['height'] - 2 and
+                  share['y'] + share['height'] <= foot['y'] + 2 and
+                  checkout['y'] >= 0 and checkout['y'] + checkout['height'] <= height + 2),
+                  f"scroll={scrolled:.0f}")
+            page.mouse.wheel(0, -500)
+            page.wait_for_timeout(180)
+            check(f"{width}×{height}: يمكن التمرير للأعلى والإغلاق يبقى ظاهرًا",
+                  page.locator('.cart-inner').evaluate('(e) => e.scrollTop') < scrolled and
+                  page.locator('[data-cart-close]').bounding_box()['y'] >= -1)
+            page.locator('[data-cart-close]').click()
+            check(f"{width}×{height}: الإغلاق يعيد التركيز لزر الإضافة",
+                  page.evaluate("document.activeElement.hasAttribute('data-add-current')"))
+            ctx.close()
+
+        # تمرير لمس أصلي لمحرك Chromium؛ لا ندّعي أنه اختبار جهاز فعلي.
+        if browser_name == 'chromium':
+            ctx = browser.new_context(viewport={"width":320,"height":568}, is_mobile=True, has_touch=True,
+                                      locale="ar", reduced_motion="reduce", ignore_https_errors=ignore_https)
+            page = ctx.new_page(); page.goto(base + path, wait_until='load')
+            page.locator('[data-add-current]').click()
+            cdp = ctx.new_cdp_session(page)
+            points = lambda y: [{'x':30, 'y':y, 'id':0, 'radiusX':2, 'radiusY':2, 'force':1}]
+            cdp.send('Input.dispatchTouchEvent', {'type':'touchStart', 'touchPoints':points(275)})
+            for y in [250,225,200,175,150,125,105]:
+                cdp.send('Input.dispatchTouchEvent', {'type':'touchMove', 'touchPoints':points(y)})
+                page.wait_for_timeout(30)
+            cdp.send('Input.dispatchTouchEvent', {'type':'touchEnd', 'touchPoints':[]})
+            page.wait_for_timeout(300)
+            check("لمس Chromium المحاكى يمرّر محتوى السلة فعليًا",
+                  page.locator('.cart-inner').evaluate('(e) => e.scrollTop') > 20)
+            ctx.close()
+
+        # لا تضيع بؤرة لوحة المفاتيح عند إعادة بناء الكمية أو المنطقة أو الدفع.
+        ctx = browser.new_context(viewport={"width":320,"height":568}, locale="ar",
+                                  reduced_motion="reduce", ignore_https_errors=ignore_https)
+        ctx.add_init_script('window.open = () => null;')
+        page = ctx.new_page(); page.goto(base + path, wait_until='load')
+        page.locator('[data-add-current]').click()
+        page.locator('[data-qty-increase]').focus(); page.keyboard.press('Enter')
+        check("لوحة المفاتيح تحتفظ بالتركيز بعد تعديل الكمية",
+              page.locator('[data-qty-value]').inner_text() == '2' and
+              page.evaluate("document.activeElement.getAttribute('data-qty-increase')") == 'serum-50')
+        page.locator('[data-zone-select="hama"]').focus(); page.keyboard.press('ArrowDown')
+        check("لوحة المفاتيح تحتفظ بالتركيز بعد تغيير المنطقة",
+              page.locator('[data-zone-select="other"]').is_checked() and
+              page.evaluate("document.activeElement.getAttribute('data-zone-select')") == 'other')
+        page.locator('[data-pay-select="shamcash"]').focus(); page.keyboard.press('ArrowDown')
+        check("لوحة المفاتيح تحتفظ بالتركيز بعد تغيير الدفع",
+              page.locator('[data-pay-select="cod"]').is_checked() and
+              page.evaluate("document.activeElement.getAttribute('data-pay-select')") == 'cod')
+        page.locator('[data-cart-checkout]').click(); page.keyboard.press('Tab')
+        copy = page.locator('[data-cart-copy-number]').bounding_box()
+        head = page.locator('.cart-head').bounding_box()
+        foot = page.locator('.cart-foot').bounding_box()
+        check("التركيز على رابط النسخ البديل غير محجوب بالتذييل الثابت",
+              page.evaluate("document.activeElement.hasAttribute('data-cart-copy-number')") and
+              bool(copy and head and foot and copy['y'] >= head['y'] + head['height'] - 2 and
+                   copy['y'] + copy['height'] <= foot['y'] + 2))
+        page.keyboard.press('Escape')
+        check("Escape يغلق الحوار ويعيد التركيز للزر السابق",
+              not page.locator('#cart-dialog').evaluate('(d) => d.open') and
+              page.evaluate("document.activeElement.hasAttribute('data-add-current')"))
+        ctx.close()
+
+        # إعادة تدفق السلة وتركيز Tab المرئي عند ضيق الشاشة أو تكبير النص.
+        for width, height, text_zoom in [(320,225,False), (320,568,False), (320,568,True),
+                                         (844,390,False), (1440,900,False)]:
+            ctx = browser.new_context(viewport={"width":width,"height":height}, locale="ar",
+                                      reduced_motion="reduce", ignore_https_errors=ignore_https)
+            page = ctx.new_page(); page.goto(base + path, wait_until='load')
+            page.locator('[data-add-current]').click()
+            if text_zoom:
+                page.evaluate("document.documentElement.style.fontSize = '200%'")
+                page.wait_for_timeout(250)  # ResizeObserver يعيد ضبط التذييل والحجم الفعلي.
+                check("تكبير النص 200% يحوّل التذييل الطويل إلى تمرير عادي",
+                      page.locator('.cart-foot').evaluate('(e) => getComputedStyle(e).position') == 'static')
+            geometry = page.locator('.cart-inner').evaluate('(e) => ({width:e.clientWidth, scrollWidth:e.scrollWidth})')
+            page.locator('[data-cart-close]').focus()
+            obscured = []
+            for _ in range(9):
+                page.keyboard.press('Tab')
+                page.wait_for_timeout(150)  # WebKit قد يحرّك العنصر تدريجيًا بعد التركيز.
+                status = page.evaluate("""() => {
+                  const e = document.activeElement, d = document.querySelector('#cart-dialog');
+                  const r = e.getBoundingClientRect(), head = document.querySelector('.cart-head').getBoundingClientRect();
+                  const foot = document.querySelector('.cart-foot'), f = foot.getBoundingClientRect();
+                  const inHead = !!e.closest('.cart-head'), inFoot = !!e.closest('.cart-foot');
+                  const visible = d.contains(e) && r.width > 0 && r.height > 0 && r.top >= -1 && r.bottom <= innerHeight + 1 &&
+                    (inHead || r.top >= head.bottom - 1) &&
+                    (getComputedStyle(foot).position !== 'sticky' || inFoot || r.bottom <= f.top + 1);
+                  return {visible, label:e.getAttribute('aria-label') || e.textContent.trim().slice(0,30)};
+                }""")
+                if not status['visible']:
+                    obscured.append(status['label'])
+            label = f"{width}×{height}" + (" ونص 200%" if text_zoom else "")
+            check(f"{label}: لا تمرير أفقي والتركيز المرئي يبقى داخل السلة",
+                  geometry['scrollWidth'] <= geometry['width'] + 1 and not obscured, str(obscured[:3]))
+            if text_zoom:
+                page.evaluate("document.documentElement.style.fontSize = '100%'")
+                page.wait_for_timeout(250)
+                check("إعادة النص إلى حجمه تعيد تثبيت التذييل عندما تتسع الشاشة",
+                      page.locator('.cart-foot').evaluate('(e) => getComputedStyle(e).position') == 'sticky')
+            ctx.close()
+
         # القيم لا تُنشئ أسطرًا مزوّرة في الرسالة، وتبقى محدودة الطول.
         ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         page = ctx.new_page()
@@ -278,6 +600,19 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             })""")
             check("المشهد وخيار الشراء يعملان بلا إنترنت", offline_image and page.locator('[data-add-current]').is_enabled() and '— نسخة المحتوى: finish' in page.evaluate('window.rawaaSourceNote()'))
             check("تقدير العبوة يظهر بالقيم الصحيحة دون إنترنت", page.locator('[data-order-estimate]').is_visible() and page.locator('[data-estimate-total]').inner_text() == '$10.80')
+            page.locator('#products .size-option').nth(2).click()
+            page.locator('.serum-estimate-details summary').click()
+            page.locator('[data-estimate-zone]').select_option('other')
+            page.locator('[data-estimate-method]').select_option('cod')
+            page.locator('[data-custom-scent="vanilla"]').click()
+            page.locator('[data-add-current]').click()
+            page.locator('[data-cart-close]').click()
+            page.reload(wait_until='load')
+            page.locator('[data-cart-open]').first.click()
+            check("بلا إنترنت تبقى خيارات الطلب والسلة بعد التحديث",
+                  page.locator('[data-cart-total]').inner_text() == '$19' and
+                  page.locator('[data-custom-scent="vanilla"]').get_attribute('aria-pressed') == 'true' and
+                  'فانيلا' in page.locator('[data-cart-custom-summary]').inner_text())
             ctx.close()
 
         # لا JavaScript: أسعار حقيقية وزر واتساب يعمل، وزر السلة معطّل بدل وهم وظيفي.

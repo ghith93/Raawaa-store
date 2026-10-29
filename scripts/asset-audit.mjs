@@ -13,7 +13,8 @@ let bad = 0, total = 0;
 
 async function text(path) {
   const r = await fetch(BASE + path, { headers: { 'user-agent': 'raawaa-asset-audit' } });
-  return r.ok ? r.text() : '';
+  if (!r.ok) throw new Error(`تعذر قراءة ${path || '/'}: HTTP ${r.status}`);
+  return r.text();
 }
 
 const blobs = await Promise.all(targets.map(text));
@@ -23,10 +24,14 @@ for (const blob of blobs) {
   }
 }
 
+if (!seen.size) throw new Error('لم يُعثر على أصول للفحص؛ لا يُعد ذلك نجاحًا');
+
 const results = await Promise.all([...seen].sort().map(async (p) => {
   try {
     const r = await fetch(`${BASE}/${p}`, { method: 'GET', headers: { 'user-agent': 'raawaa-asset-audit' } });
-    return { p, status: r.status };
+    // اقرأ الجسم بالكامل: التحقق من الحالة وحدها يترك ردود الصور معلّقة وقد يعطّل undici.
+    const body = await r.arrayBuffer();
+    return { p, status: r.status === 200 && body.byteLength === 0 ? 'EMPTY' : r.status };
   } catch (e) { return { p, status: 'ERR' }; }
 }));
 

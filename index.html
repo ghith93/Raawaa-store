@@ -448,7 +448,7 @@
 
         <p class="custom-summary" data-custom-summary role="status"></p>
         <p class="custom-disclaimer">
-          هذه اختيارات للاستفسار وليست وعدًا بتوفّر كل عطر أو إضافة؛ نؤكدها معك قبل الشحن.
+          هذه اختيارات للاستفسار عن الطلب ككل، تظهر في رسالة السلة وليست وعدًا بتوفّر كل عطر أو إضافة؛ نؤكدها معك قبل الشحن.
         </p>
       </div>
 
@@ -859,56 +859,59 @@
       <p class="cart-empty" data-cart-empty>
         سلة المشتريات فارغة حاليًا. اختاري الحجم الذي يناسبك من قسم الأحجام، وسيظهر هنا مع الكمية والمجموع المرجعي.
       </p>
+      <p class="cart-shared-notice" data-cart-shared-notice hidden>عند فتح رابط مشترك، تندمج أحجامه مع سلتك، وتبقى الكميات الموجودة سابقًا. يمكنك تعديلها قبل المتابعة.</p>
       <ul class="cart-items" data-cart-items></ul>
+      <p class="cart-custom-summary" data-cart-custom-summary hidden></p>
+      <div data-cart-order-options hidden>
+        <fieldset class="pay-fieldset" data-delivery-zones>
+          <legend class="pay-legend">منطقة التوصيل</legend>
+        </fieldset>
+        <fieldset class="pay-fieldset" data-payment-methods>
+          <legend class="pay-legend">طريقة الدفع</legend>
+        </fieldset>
+        <dl class="cart-summary">
+          <div class="sum-row" data-row-subtotal>
+            <dt>قيمة المنتجات</dt>
+            <dd data-cart-subtotal>$0</dd>
+          </div>
+          <div class="sum-row sum-discount" data-row-discount hidden>
+            <dt data-discount-label>الخصم</dt>
+            <dd data-cart-discount>$0</dd>
+          </div>
+          <div class="sum-row" data-row-delivery hidden>
+            <dt>التوصيل <span class="zone-inline" data-zone-label></span></dt>
+            <dd data-cart-delivery>$0</dd>
+          </div>
+        </dl>
+        <p class="margin-note" data-margin-note hidden></p>
+        <button type="button" class="btn btn-ghost btn-block cart-share" data-cart-share hidden>
+          مشاركة الأحجام والكميات
+        </button>
+        <p class="cart-share-note">الرابط يشارك الأحجام والكميات فقط؛ لا يشمل المنطقة أو الدفع أو العطر أو الإضافة. عند فتحه تندمج الأحجام مع السلة الموجودة وتبقى كمياتها السابقة.</p>
+        <div class="cart-fallback" data-cart-fallback hidden>
+          <p>إن لم تُفتح محادثة واتساب، استخدمي الرابط التالي:</p>
+          <a class="fallback-link" data-cart-fallback-link href="https://wa.me/963997310856" rel="noopener">فتح المحادثة في هذه النافذة</a>
+          <p class="fallback-alt">أو أضيفي الرقم يدويًا في واتساب: <bdi>0997310856</bdi></p>
+          <button type="button" class="btn btn-ghost btn-block" data-cart-copy-number>نسخ رقم واتساب</button>
+        </div>
+      </div>
     </div>
 
     <footer class="cart-foot" data-cart-foot aria-label="إجمالي السلة" hidden>
-      <fieldset class="pay-fieldset" data-delivery-zones>
-        <legend class="pay-legend">منطقة التوصيل</legend>
-      </fieldset>
-
-      <fieldset class="pay-fieldset" data-payment-methods>
-        <legend class="pay-legend">طريقة الدفع</legend>
-      </fieldset>
-
-      <dl class="cart-summary">
-        <div class="sum-row" data-row-subtotal>
-          <dt>قيمة المنتجات</dt>
-          <dd data-cart-subtotal>$0</dd>
-        </div>
-        <div class="sum-row sum-discount" data-row-discount hidden>
-          <dt data-discount-label>الخصم</dt>
-          <dd data-cart-discount>$0</dd>
-        </div>
-        <div class="sum-row" data-row-delivery hidden>
-          <dt>التوصيل <span class="zone-inline" data-zone-label></span></dt>
-          <dd data-cart-delivery>$0</dd>
-        </div>
-      </dl>
-
       <div class="cart-total">
         <span>المجموع المرجعي</span>
         <strong data-cart-total>$0</strong>
       </div>
-      <p class="margin-note" data-margin-note hidden></p>
+      <p class="cart-context" data-cart-context></p>
       <p class="cart-total-note" data-cart-total-note>
         المجموع مرجعي. يُؤكَّد السعر النهائي والتوصيل وطريقة الدفع عبر واتساب قبل الشحن.
       </p>
       <button type="button" class="btn btn-primary btn-block" data-cart-checkout>
         متابعة الطلب عبر واتساب
       </button>
-      <button type="button" class="btn btn-ghost btn-block cart-share" data-cart-share hidden>
-        مشاركة السلة
-      </button>
       <p class="cart-disclaimer">
         إرسال الرسالة لا يسجّل الطلب ولا يؤكده. لا يوجد نظام طلبات خلفي ولا تأكيد آلي.
       </p>
-      <div class="cart-fallback" data-cart-fallback hidden>
-        <p>إن لم تُفتح محادثة واتساب، استخدمي الرابط التالي:</p>
-        <a class="fallback-link" data-cart-fallback-link href="https://wa.me/963997310856" rel="noopener">فتح المحادثة في هذه النافذة</a>
-        <p class="fallback-alt">أو أضيفي الرقم يدويًا في واتساب: <bdi>0997310856</bdi></p>
-        <button type="button" class="btn btn-ghost btn-block" data-cart-copy-number>نسخ رقم واتساب</button>
-      </div>
     </footer>
   </div>
 </dialog>
