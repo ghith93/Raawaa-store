@@ -1035,6 +1035,11 @@ async function checkOwnerDecisions(config) {
   expect(/السيروم جاهز/.test(visibleHtml) && !/التصنيع حسب الطلب|متى يُصنع طلبي|٢[–-]٤ أيام عمل|صورة العبوة قبل الشحن/.test(customerCopy),
     'الجاهزية معلنة بلا مدة تصنيع أو وعد بصورة قبل الشحن');
   expect(visibleHtml.includes('ليست صورة للمنتج الفعلي'), 'التصميم التوضيحي ليس صورة المنتج الفعلي');
+  // لا نحمّل AVIF وWebP معًا بـpreload: المتصفحات تدعم الاثنين فتنزّل صورتين.
+  const preloads = [...visibleHtml.matchAll(/<link[^>]*rel="preload"[^>]*as="image"[^>]*>/g)].map(m => m[0]);
+  expect(preloads.length === 1 && preloads[0].includes('type="image/avif"') &&
+    preloads[0].includes('media="(min-width: 900px)"'),
+  'تحميل استباقي واحد لصورة الهيرو على سطح المكتب فقط');
 
   let schema;
   try {
