@@ -677,6 +677,9 @@
     if (el.fallbackLink && !isEmpty) {
       el.fallbackLink.setAttribute('href', waLink(buildOrderMessage()));
     }
+    if (el.copyText) el.copyText.value = isEmpty ? '' : withSourceTag(buildOrderMessage());
+    if (el.copyStatus) el.copyStatus.textContent = '';
+    if (isEmpty && el.copyManual) el.copyManual.hidden = true;
     refreshOrderEstimate();
     fitCartFooter();
 
@@ -1478,6 +1481,8 @@
 
   function hideFallback() {
     if (el.fallback) el.fallback.hidden = true;
+    if (el.copyManual) el.copyManual.hidden = true;
+    if (el.copyStatus) el.copyStatus.textContent = '';
   }
 
   /** مشاركة السلة: Web Share API على الآيفون، وإلا نسخ الرابط. */
@@ -1516,6 +1521,40 @@
     } else {
       done(false);
     }
+  }
+
+  /** نسخ الاستفسار يتم عند طلب الزائرة فقط ولا يرسل رسالة. */
+  function copyOrder() {
+    if (cartIsEmpty() || !el.copyText || !el.copyStatus || !el.copyManual) return;
+    var text = withSourceTag(buildOrderMessage());
+    el.copyText.value = text;
+    el.copyManual.hidden = true;
+    el.copyStatus.textContent = '';
+
+    function done(success) {
+      if (cartIsEmpty() || !el.dialog || !el.dialog.open) return;
+      if (text !== withSourceTag(buildOrderMessage())) {
+        el.copyStatus.textContent = 'تغيّرت السلة؛ أعيدي نسخ التفاصيل الحالية.';
+        return;
+      }
+      if (success) {
+        el.copyStatus.textContent = 'نُسخت التفاصيل. الصقيها في واتساب لإرسال استفسارك.';
+      } else {
+        el.copyManual.hidden = false;
+        el.copyStatus.textContent = 'تعذّر النسخ التلقائي؛ انسخي النص يدويًا.';
+      }
+      fitCartFooter();
+      if (!success) {
+        el.copyText.focus();
+        el.copyText.select();
+      }
+    }
+
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+      } else { done(false); }
+    } catch { done(false); }
   }
 
   /* ------------------------------ نافذة السلة ------------------------------ */
@@ -1784,6 +1823,9 @@
     el.fallback = document.querySelector('[data-cart-fallback]');
     el.fallbackLink = document.querySelector('[data-cart-fallback-link]');
     el.copyBtn = document.querySelector('[data-cart-copy-number]');
+    el.copyText = document.querySelector('[data-cart-copy-text]');
+    el.copyStatus = document.querySelector('[data-cart-copy-status]');
+    el.copyManual = document.querySelector('[data-cart-copy-manual]');
     el.payment = document.querySelector('[data-payment-methods]');
     el.subtotal = document.querySelector('[data-cart-subtotal]');
     el.subtotalRow = document.querySelector('[data-row-subtotal]');
@@ -1883,6 +1925,11 @@
       if (target.hasAttribute('data-cart-copy-number')) {
         event.preventDefault();
         copyNumber(target);
+        return;
+      }
+      if (target.hasAttribute('data-cart-copy-order')) {
+        event.preventDefault();
+        copyOrder();
         return;
       }
       if (target.hasAttribute('data-qty-increase')) {

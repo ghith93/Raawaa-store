@@ -555,6 +555,47 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                   page.evaluate("document.activeElement.hasAttribute('data-add-current')"))
             ctx.close()
 
+        # عند منع واتساب أو الحافظة يمكن استعادة نص الاستفسار دون إرسال.
+        for target_path in [path, '/']:
+            ctx = browser.new_context(viewport={"width":320,"height":568}, locale="ar",
+                                      reduced_motion="reduce", ignore_https_errors=ignore_https,
+                                      service_workers='block')
+            ctx.add_init_script("""window.__waCalls = []; window.__copied = []; window.__clipboardFail = true;
+              window.open = url => { window.__waCalls.push(url); return null; };
+              Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+                writeText: text => window.__clipboardFail ? Promise.reject(new Error('denied')) :
+                  (window.__copied.push(text), Promise.resolve())
+              }});""")
+            page = ctx.new_page(); page.goto(base + target_path + '?utm_campaign=copy-test', wait_until='load')
+            page.locator('[data-add-current]').click()
+            page.locator('[data-cart-checkout]').click()
+            box = page.locator('#cart-dialog').bounding_box()
+            page.mouse.move(box['x'] + box['width'] / 2, 280)
+            page.mouse.wheel(0, 2000); page.wait_for_timeout(250)
+            copy_box = page.locator('[data-cart-copy-order]').bounding_box()
+            check(f'{target_path}: التمرير الحقيقي يصل لزر نسخ التفاصيل',
+                  bool(copy_box and copy_box['y'] >= 0 and copy_box['y'] + copy_box['height'] <= 568))
+            page.locator('[data-cart-copy-order]').click()
+            page.wait_for_selector('[data-cart-copy-manual]:visible')
+            manual = page.locator('[data-cart-copy-text]').input_value()
+            expected = parse_qs(urlparse(page.locator('[data-cart-fallback-link]').get_attribute('href')).query).get('text', [''])[0]
+            check(f'{target_path}: عند رفض الحافظة يظهر نص كامل قابل للنسخ يدويًا',
+                  manual == expected and all(x in manual for x in ['50 مل', '$10.80', 'copy-test']) and
+                  page.evaluate("document.activeElement.hasAttribute('data-cart-copy-text')"))
+            audit(page, f'{target_path}: بديل النسخ اليدوي')
+            page.locator('[data-qty-increase="serum-50"]').click()
+            updated = page.locator('[data-cart-copy-text]').input_value()
+            check(f'{target_path}: تتحدث التفاصيل اليدوية بعد تعديل السلة',
+                  updated != manual and '$21.60' in updated)
+            page.evaluate('window.__clipboardFail = false')
+            page.locator('[data-cart-copy-order]').click()
+            check(f'{target_path}: النسخ الاختياري يطابق رابط الاستفسار ولا يفتح واتساب مجددًا',
+                  page.evaluate('window.__copied') == [updated] and
+                  page.locator('[data-cart-copy-manual]').is_hidden() and
+                  'نُسخت التفاصيل' in page.locator('[data-cart-copy-status]').inner_text() and
+                  page.evaluate('window.__waCalls.length') == 1)
+            ctx.close()
+
         # تمرير لمس أصلي لمحرك Chromium؛ لا ندّعي أنه اختبار جهاز فعلي.
         if browser_name == 'chromium':
             ctx = browser.new_context(viewport={"width":320,"height":568}, is_mobile=True, has_touch=True,
