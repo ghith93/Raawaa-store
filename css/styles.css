@@ -1344,6 +1344,11 @@ bdi { unicode-bidi: isolate; }
   font-variant-numeric: lining-nums tabular-nums;
   font-feature-settings: "lnum" 1, "onum" 0, "tnum" 1;
 }
+.sticky-bar-estimate {
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 400;
+}
 .sticky-bar-cta {
   flex: 1 1 auto;
   text-align: end;

@@ -7,6 +7,7 @@
 from __future__ import annotations
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urlparse
@@ -17,9 +18,27 @@ AXE = (ROOT / "scripts/vendor/axe.min.js").read_text(encoding="utf-8")
 checks: list[tuple[str, bool, str]] = []
 
 
+def report_exception(exc_type, value, traceback):
+    if os.environ.get('GITHUB_ACTIONS') == 'true':
+        frame = traceback
+        location = 'unknown'
+        while frame:
+            if Path(frame.tb_frame.f_code.co_filename).name == 'serum-browser-test.py':
+                location = f'serum-browser-test.py:{frame.tb_lineno}'
+            frame = frame.tb_next
+        print(f'::error::اختبار المتصفح توقف باستثناء {exc_type.__name__} ({location})', flush=True)
+    sys.__excepthook__(exc_type, value, traceback)
+
+
+sys.excepthook = report_exception
+
+
 def check(name: str, condition: bool, detail: str = "") -> None:
     checks.append((name, bool(condition), detail))
     print(f"  {'✓' if condition else '✗'} {name}" + (f" — {detail}" if detail else ""))
+    if not condition and os.environ.get('GITHUB_ACTIONS') == 'true':
+        # نشر اسم الفحص فقط؛ التفاصيل قد تحوي روابط أو معلومات لا يلزم إعلانها.
+        print(f"::error::{name}")
 
 
 def audit(page, label: str) -> None:
@@ -49,9 +68,18 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             errors: list[str] = []
             bad: list[str] = []
             page.on("pageerror", lambda e: errors.append(str(e)))
+            page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
             page.on("response", lambda r: bad.append(f"{r.status} {r.url}") if r.status >= 400 else None)
             response = page.goto(base + path + "?utm_source=facebook&utm_medium=paid&utm_campaign=serum-oct&utm_content=moment", wait_until="load", timeout=45000)
-            page.wait_for_selector('#products .size-option input')
+            try:
+                page.wait_for_selector('#products .size-option input', state='attached', timeout=10000)
+            except Exception:
+                if os.environ.get('GITHUB_ACTIONS') == 'true':
+                    for error in errors[:3]:
+                        safe = error.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')[:500]
+                        print(f'::error::Web browser console: {safe}', flush=True)
+                    print(f'::error::Configuration available: {page.evaluate("!!window.RAWAA_CONFIG")}; HTTP: {response.status if response else 0}', flush=True)
+                raise
             page.evaluate('document.fonts.ready')
             check("صفحة حقيقية HTTP 200", bool(response and response.status == 200), str(response.status if response else None))
             check("عنوان عربي واحد واتجاه RTL", page.locator('h1').count() == 1 and page.evaluate("getComputedStyle(document.body).direction") == 'rtl')
@@ -168,6 +196,21 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("50 مل + استلام حماة = $14", page.locator('[data-cart-total]').inner_text() == '$14')
             audit(page, 'السلة المفتوحة')
             page.locator('[data-cart-close]').click()
+            if width < 600:
+                sticky = page.locator('[data-sticky-bar]')
+                sticky.wait_for(state='visible', timeout=5000)
+                check("شريط السلة يوضح أن المبلغ تقديري ويتبع المنطقة والدفع",
+                      sticky.is_visible() and 'تقديري' in sticky.inner_text() and
+                      page.locator('[data-sticky-total]').inner_text() == '$14')
+                check("تسمية التقدير وزر السلة مقروءان دون اقتطاع",
+                      sticky.locator('.sticky-bar-btn').evaluate("""e => {
+                        const bounds = e.getBoundingClientRect();
+                        return [...e.children].every(child => {
+                          const r = child.getBoundingClientRect();
+                          return r.left >= bounds.left - 1 && r.right <= bounds.right + 1 &&
+                            child.scrollWidth <= child.clientWidth + 1;
+                        });
+                      }"""))
             check("تغيير المنطقة والدفع في السلة يحدّث تقدير الصفحة",
                   page.locator('[data-estimate-total]').inner_text() == '$14' and
                   page.locator('[data-estimate-zone]').input_value() == 'hama' and
@@ -204,7 +247,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("زر واتساب يقيس النقرة فقط لا الشراء", 'InitiateCheckout' in events and 'Contact' in events and 'Purchase' not in events, str(events))
             page.locator('[data-cart-close]').click()
             page.goto(base + '/', wait_until='load')
-            page.wait_for_selector('#products .size-option input')
+            page.wait_for_selector('#products .size-option input', state='attached')
             check("السلة والمصدر ينتقلان للرئيسية في التبويب نفسه", page.locator('[data-cart-count]').inner_text() == '3' and page.evaluate('window.rawaaSrcTag()') == 'serum-oct')
             check("لا أخطاء JavaScript", not errors, '; '.join(errors[:3]))
             check("لا استجابات فاشلة", not bad, '; '.join(bad[:3]))
@@ -222,7 +265,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         check("الرئيسية تربط الحاجة بخطوة اختيار الحجم", all(x in page.locator('.hero-lead').inner_text() for x in ['الباهت','المتطاير']) and page.locator('[data-discover-serum]').get_attribute('href') == '/serum')
         with page.expect_navigation(wait_until='load'):
             page.locator('[data-discover-serum]').click()
-        page.wait_for_selector('#products .size-option input')
+        page.wait_for_selector('#products .size-option input', state='attached')
         check("زر الرئيسية يفتح صفحة المنتج ويحفظ المصدر", urlparse(page.url).path == '/serum' and page.evaluate('window.rawaaSrcTag()') == 'home_bridge')
         page.locator('#products .size-option').nth(2).click()
         page.locator('[data-add-current]').click()
@@ -239,7 +282,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                                   reduced_motion="reduce", ignore_https_errors=ignore_https)
         page = ctx.new_page()
         page.goto(base + path + '?utm_campaign=estimate_test&utm_content=proof', wait_until='load')
-        page.wait_for_selector('#products .size-option input')
+        page.wait_for_selector('#products .size-option input', state='attached')
         page.locator('.serum-estimate-details summary').click()
         audit(page, 'التقدير المفتوح')
         cases = [
@@ -361,7 +404,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.locator('[data-remove-item="serum-100"]').click()
         page.locator('[data-cart-close]').click()
         page.go_back(wait_until='load')
-        page.wait_for_selector('#products .size-option input')
+        page.wait_for_selector('#products .size-option input', state='attached')
         check("العودة للمنتج تعكس أحدث اختيارات الحجم والعطر والزيت",
               '$10' in page.locator('[data-price-live]').text_content() and
               page.locator('[data-custom-scent="rose"]').get_attribute('aria-pressed') == 'true' and
@@ -689,7 +732,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             ctx.set_offline(True)
             with page.expect_navigation(wait_until='load'):
                 page.locator('[data-discover-serum]').click()
-            page.wait_for_selector('#products .size-option input')
+            page.wait_for_selector('#products .size-option input', state='attached')
             page.locator('#ritual img').scroll_into_view_if_needed()
             offline_image = page.locator('#ritual img').evaluate("""el => new Promise(resolve => {
               if (el.complete) return resolve(el.naturalWidth > 0);
@@ -752,7 +795,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             ctx = browser.new_context(viewport={"width":320,"height":844}, is_mobile=True, has_touch=True,
                                       locale="ar", ignore_https_errors=ignore_https)
             page = ctx.new_page(); page.goto(base + zoom_path, wait_until='load')
-            page.wait_for_selector('#products .size-option input')
+            page.wait_for_selector('#products .size-option input', state='attached')
             page.add_style_tag(content='html { font-size: 200% !important; }')
             target_selector = ('.header-actions button, .price-strip li' if zoom_path == '/' else
                                '.header-actions button, #products .size-option, [data-serum-controls]:visible button')
