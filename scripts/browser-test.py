@@ -79,8 +79,10 @@ def run(base: str) -> int:
         check("البانثينول ظاهر دون الإيهام بأن القائمة كاملة",
               "البانثينول" in ingredients and "ليست القائمة الكاملة" in ingredients)
         check("لا نسب مئوية في قسم التركيبة قبل التصحيح", "%" not in ingredients and "٪" not in ingredients)
-        check("الوصف الصحيح لحجم 50 مل ظاهر في شريط السعر والبطاقة",
-              page.locator(".ps-tag").inner_text() == "الأنسب للاستعمال اليومي" and
+        check("الواجهة الافتتاحية تحريرية بلا شريط أسعار، والأسعار ظاهرة في قسم المنتج",
+              page.locator(".hero .price-strip").count() == 0 and
+              [t.strip() for t in page.locator("#products .size-option-price").all_inner_texts()] == ["$10", "$12", "$15"])
+        check("الوصف الصحيح لحجم 50 مل ظاهر في محدد الأحجام",
               page.locator('[data-size-for="serum-50"] .size-option-flag').inner_text() == "الأنسب للاستعمال اليومي")
         check("لا شارة الأكثر اختيارًا أو الأكثر طلبًا",
               "الأكثر اختيارًا" not in page.locator("body").inner_text() and
