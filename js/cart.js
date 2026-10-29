@@ -1312,7 +1312,7 @@
       lines.push('التخصيص:');
       if (custom.scent) {
         var so = (cfgC.scentOptions || []).filter(function (o) { return o.id === custom.scent; })[0];
-        if (so) lines.push('• العطر: ' + so.label + (scentFee() ? ' (إضافة $2 لكل عبوة، مشمولة أعلاه)' : ''));
+        if (so) lines.push('• العطر: ' + so.label + (scentFee() ? ' (إضافة ' + money(scentFee()) + ' لكل عبوة، مشمولة أعلاه)' : ''));
       }
       if (custom.oil) {
         var oo = (cfgC.oilAdditions || []).filter(function (o) { return o.id === custom.oil; })[0];

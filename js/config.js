@@ -46,7 +46,7 @@
         sizeLabel: '30 مل',
         shortLabel: '30 مل — الحجم التجريبي',
         note: 'مناسب للتعرّف على المنتج أو للسفر.',
-        price: 10,
+        price: 17,
         image: {
           base: 'size-30',
           avif: ['size-30-v6-480.avif', 'size-30-v6-720.avif', 'size-30-v6-900.avif'],
@@ -65,7 +65,7 @@
         sizeLabel: '50 مل',
         shortLabel: '50 مل — الأنسب للاستعمال اليومي',
         note: 'حجم مناسب للاستعمال اليومي.',
-        price: 12,
+        price: 20.4,
         badge: 'الأنسب للاستعمال اليومي',
         image: {
           base: 'size-50',
@@ -85,7 +85,7 @@
         sizeLabel: '100 مل',
         shortLabel: '100 مل — العبوة الكبيرة',
         note: 'أفضل قيمة لكل ملليلتر على المدى الطويل.',
-        price: 15,
+        price: 25.5,
         badge: 'أفضل قيمة',
         image: {
           base: 'size-100',
@@ -332,7 +332,7 @@
      */
     customization: {
       title: 'رائحتك أنت',
-      scentPrice: 2,
+      scentPrice: 3.4,
       note: 'استفسري عن خيارات العطر والإضافات المتوفّرة عبر واتساب.',
       scentOptions: [
         { id: 'unscented', label: 'بلا عطر', note: 'خيار بلا عطر، نؤكد توفّره عند الطلب.' },

@@ -114,9 +114,9 @@ function checkConfig(config, source) {
   group('الإعدادات والأسعار');
 
   const expected = [
-    { id: 'serum-30', sizeMl: 30, price: 10 },
-    { id: 'serum-50', sizeMl: 50, price: 12 },
-    { id: 'serum-100', sizeMl: 100, price: 15 }
+    { id: 'serum-30', sizeMl: 30, price: 17 },
+    { id: 'serum-50', sizeMl: 50, price: 20.4 },
+    { id: 'serum-100', sizeMl: 100, price: 25.5 }
   ];
 
   const familyImages = [config.imagery.hero, config.imagery.trio];
@@ -182,7 +182,7 @@ async function checkNoScatteredPrices() {
   const allowedNumbers = new Set();
   const cfgSrc = await read('js/config.js');
   for (const m of cfgSrc.matchAll(/price:\s*(\d+(?:\.\d+)?)/g)) allowedNumbers.add(m[1]);
-  for (const m of cfgSrc.matchAll(/(?:discountPercent|deliveryFee):\s*(\d+(?:\.\d+)?)/g)) {
+  for (const m of cfgSrc.matchAll(/(?:discountPercent|deliveryFee|scentPrice):\s*(\d+(?:\.\d+)?)/g)) {
     allowedNumbers.add(m[1]);
   }
   // رسوم مناطق التوصيل مصدرها delivery.zones أيضاً
@@ -202,7 +202,7 @@ async function checkNoScatteredPrices() {
       for (const m of text.matchAll(new RegExp(re.source, 'g'))) {
         const value = m[1];
         seen.push(`${file}: ${m[0].trim()}`);
-        if (!allowedNumbers.has(value)) offenders.push(`${file}: «${m[0].trim()}»`);
+        if (![...allowedNumbers].some(n => Number(n) === Number(value))) offenders.push(`${file}: «${m[0].trim()}»`);
       }
     }
   }
@@ -522,11 +522,11 @@ async function checkCartLogic() {
   const price = (id) => config.products.find((p) => p.id === id).price;
 
   const cases = [
-    { cart: { 'serum-30': 1 }, expected: 10 },
-    { cart: { 'serum-50': 2 }, expected: 24 },
-    { cart: { 'serum-100': 3 }, expected: 45 },
-    { cart: { 'serum-30': 2, 'serum-50': 1 }, expected: 32 },
-    { cart: { 'serum-30': 1, 'serum-50': 1, 'serum-100': 1 }, expected: 37 }
+    { cart: { 'serum-30': 1 }, expected: 17 },
+    { cart: { 'serum-50': 2 }, expected: 40.8 },
+    { cart: { 'serum-100': 3 }, expected: 76.5 },
+    { cart: { 'serum-30': 2, 'serum-50': 1 }, expected: 54.4 },
+    { cart: { 'serum-30': 1, 'serum-50': 1, 'serum-100': 1 }, expected: 62.9 }
   ];
 
   for (const c of cases) {
@@ -1114,7 +1114,7 @@ async function checkProductPage(config) {
     landing.includes('$4') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
   for (const [label, page] of [['الرئيسية', home], ['المنتج', visible]]) {
     ok(!page.includes('data-unit-comparison') && !page.includes('قارني تكلفة كل 10 مل'), `${label}: إزالة مقارنة تكلفة 10 مل`);
-    ok(page.includes('الأسعار بلا عطر') && page.includes('إضافة العطر $2 للعبوة'), `${label}: توضيح سعر العطر`);
+    ok(page.includes('الأسعار بلا عطر') && page.includes('إضافة العطر $3.40 للعبوة'), `${label}: توضيح سعر العطر`);
   }
   ok([home, landing].every(page => page.includes('class="purchase-shortcuts"') &&
       ['#custom', '#ingredients', '#returns'].every(href => page.includes(`href="${href}"`)) && page.includes('data-expand-target')) &&
