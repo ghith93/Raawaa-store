@@ -1114,7 +1114,7 @@ async function checkProductPage(config) {
     landing.includes('$4') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
   for (const [label, page] of [['الرئيسية', home], ['المنتج', visible]]) {
     ok(!page.includes('data-unit-comparison') && !page.includes('قارني تكلفة كل 10 مل'), `${label}: إزالة مقارنة تكلفة 10 مل`);
-    ok(page.includes('الأسعار بلا عطر') && page.includes('إضافة العطر $3.40 للعبوة'), `${label}: توضيح سعر العطر`);
+    ok(page.includes('الأسعار بلا عطر') && page.includes('إضافة العطر $2 للعبوة'), `${label}: توضيح سعر العطر`);
   }
   ok([home, landing].every(page => page.includes('class="purchase-shortcuts"') &&
       ['#custom', '#ingredients', '#returns'].every(href => page.includes(`href="${href}"`)) && page.includes('data-expand-target')) &&
