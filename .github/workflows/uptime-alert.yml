@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: فتح تنبيه واحد للمراجعة
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const title = '⚠️ فشل مراقبة رواء — يلزم التحقق';
