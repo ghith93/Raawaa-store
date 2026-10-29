@@ -107,7 +107,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             package_note = page.locator('.serum-packaging-note').inner_text()
             check("السيروم جاهز والعبوة تُجهّز عند الطلب والموعد بالتأكيد", all(x in package_note for x in ['السيروم جاهز','العبوة تُجهَّز عند الطلب','موعد التجهيز والتوصيل']))
             check("صورة الحجم المختار من تصميم العبوة الجديد", 'size-50-v6-' in (page.locator('[data-size-img]').get_attribute('src') or ''))
-            check("المكوّنات غير مكتملة ولا نِسب فيها", 'البانثينول' in page.locator('#ingredients').inner_text() and 'ليست القائمة الكاملة' in page.locator('#ingredients').inner_text() and '%' not in page.locator('#ingredients').inner_text())
+            check("المكوّنات المختارة وشركاء التطوير واضحون بلا نسب مختلقة", all(x in page.locator('#ingredients').inner_text() for x in ['البانثينول','ليست القائمة الكاملة','مصنع','صيادلة','مخبر']) and '%' not in page.locator('#ingredients').inner_text())
             check("المصدر محفوظ في الجلسة", page.evaluate('window.rawaaSrcTag()') == 'serum-oct')
             direct = page.locator('[data-wa-direct]').first.get_attribute('href') or ''
             direct_msg = parse_qs(urlparse(direct).query).get('text', [''])[0]
@@ -246,9 +246,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             events = page.evaluate("JSON.parse(sessionStorage.getItem('rawaa_events') || '[]').map(x => x.e)")
             check("زر واتساب يقيس النقرة فقط لا الشراء", 'InitiateCheckout' in events and 'Contact' in events and 'Purchase' not in events, str(events))
             page.locator('[data-cart-close]').click()
-            heat_faq = page.locator('#faq details').filter(has_text='هل يحمي الشعر من حرارة التصفيف؟')
-            heat_faq.locator('summary').click()
-            check('لا نعد بحماية حرارية غير مؤكدة', 'لا تتوفر لدينا معلومة مؤكدة' in heat_faq.inner_text() and 'لا نعرضه كبديل' in heat_faq.inner_text())
+            check('لا ادعاء حماية حرارية بلا تأكيد', 'حماية حرارية' not in (page.locator('main').text_content() or ''))
             page.goto(base + '/', wait_until='load')
             page.wait_for_selector('#products .size-option input', state='attached')
             check("السلة والمصدر ينتقلان للرئيسية في التبويب نفسه", page.locator('[data-cart-count]').inner_text() == '3' and page.evaluate('window.rawaaSrcTag()') == 'serum-oct')
