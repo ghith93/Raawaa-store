@@ -574,6 +574,8 @@
     box.querySelector('[data-estimate-subtotal]').textContent = money(amounts.subtotalCents / 100);
     box.querySelector('[data-estimate-discount]').textContent = amounts.discountCents > 0 ? '− ' + money(amounts.discountCents / 100) : 'لا يوجد';
     box.querySelector('[data-estimate-delivery]').textContent = amounts.deliveryCents > 0 ? money(amounts.deliveryCents / 100) : 'مجاني';
+    var oilNote = box.querySelector('[data-estimate-oil-note]');
+    if (oilNote) oilNote.hidden = !custom.oil;
   }
 
   function clampQty(qty) {
