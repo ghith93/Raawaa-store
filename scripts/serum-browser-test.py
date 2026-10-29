@@ -7,6 +7,7 @@
 from __future__ import annotations
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urlparse
@@ -17,9 +18,25 @@ AXE = (ROOT / "scripts/vendor/axe.min.js").read_text(encoding="utf-8")
 checks: list[tuple[str, bool, str]] = []
 
 
+def report_exception(exc_type, value, traceback):
+    if os.environ.get('GITHUB_ACTIONS') == 'true':
+        frame = traceback
+        while frame and frame.tb_next:
+            frame = frame.tb_next
+        location = f'{Path(frame.tb_frame.f_code.co_filename).name}:{frame.tb_lineno}' if frame else 'unknown'
+        print(f'::error::اختبار المتصفح توقف باستثناء {exc_type.__name__} ({location})', flush=True)
+    sys.__excepthook__(exc_type, value, traceback)
+
+
+sys.excepthook = report_exception
+
+
 def check(name: str, condition: bool, detail: str = "") -> None:
     checks.append((name, bool(condition), detail))
     print(f"  {'✓' if condition else '✗'} {name}" + (f" — {detail}" if detail else ""))
+    if not condition and os.environ.get('GITHUB_ACTIONS') == 'true':
+        # نشر اسم الفحص فقط؛ التفاصيل قد تحوي روابط أو معلومات لا يلزم إعلانها.
+        print(f"::error::{name}")
 
 
 def audit(page, label: str) -> None:
