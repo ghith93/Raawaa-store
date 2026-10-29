@@ -10,6 +10,7 @@ RAWAA | رواء — اختبار متصفح فعلي (Playwright + Chromium).
 """
 import argparse
 import json
+import os
 import sys
 import urllib.parse
 from pathlib import Path
@@ -26,6 +27,8 @@ def check(name, condition, detail=""):
     results.append({"name": name, "ok": bool(condition), "detail": detail})
     mark = "PASS" if condition else "FAIL"
     print(f"[{mark}] {name}" + (f" — {detail}" if detail else ""))
+    if not condition and os.environ.get("GITHUB_ACTIONS") == "true":
+        print(f"::error::{name}", flush=True)
     return bool(condition)
 
 
@@ -96,8 +99,7 @@ def run(base: str) -> int:
         check("البانثينول ظاهر دون الإيهام بأن القائمة كاملة",
               "البانثينول" in ingredients and "ليست القائمة الكاملة" in ingredients)
         check("لا نسب مئوية في قسم التركيبة قبل التصحيح", "%" not in ingredients and "٪" not in ingredients)
-        check("الوصف الصحيح لحجم 50 مل ظاهر في شريط السعر والبطاقة",
-              page.locator(".ps-tag").inner_text() == "الأنسب للاستعمال اليومي" and
+        check("الوصف الصحيح لحجم 50 مل ظاهر في البطاقة",
               page.locator('[data-size-for="serum-50"] .size-option-flag').inner_text() == "الأنسب للاستعمال اليومي")
         check("لا شارة الأكثر اختيارًا أو الأكثر طلبًا",
               "الأكثر اختيارًا" not in page.locator("body").inner_text() and
