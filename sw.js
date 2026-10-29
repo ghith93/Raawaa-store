@@ -57,6 +57,7 @@ const CORE = [
   './assets/img/products/size-50-v6-480.avif',
   './assets/img/products/size-50-v6-720.avif',
   './assets/img/products/size-50-v6-480.webp',
+  './assets/img/products/size-50-v6-480.jpg',
   './assets/img/products/size-50-v6-720.jpg',
   './assets/img/products/size-100-v6-480.avif',
   './assets/img/products/size-100-v6-480.webp',

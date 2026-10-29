@@ -119,6 +119,13 @@ function checkConfig(config, source) {
     { id: 'serum-100', sizeMl: 100, price: 15 }
   ];
 
+  const familyImages = [config.imagery.hero, config.imagery.trio];
+  if (familyImages.every(image => image.src.endsWith('trio-v6-1080.jpg') &&
+      image.avif.every(name => name.startsWith('trio-v6-')) &&
+      image.webp.every(name => name.startsWith('trio-v6-')))) {
+    pass('إعداد صور العائلة يطابق التصميم الحالي v6');
+  } else fail('إعداد صور العائلة لا يطابق التصميم الحالي v6');
+
   if (config.products.length === 3) pass('عدد الأحجام = 3');
   else fail(`عدد الأحجام = ${config.products.length} (المتوقع 3)`);
 

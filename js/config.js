@@ -172,20 +172,20 @@
     imagery: {
       hero: {
         base: 'trio',
-        avif: ['trio-v5-480.avif', 'trio-v5-720.avif', 'trio-v5-1080.avif', 'trio-v5-1195.avif'],
-        webp: ['trio-v5-480.webp', 'trio-v5-720.webp', 'trio-v5-1080.webp', 'trio-v5-1195.webp'],
+        avif: ['trio-v6-480.avif', 'trio-v6-720.avif', 'trio-v6-1080.avif', 'trio-v6-1195.avif'],
+        webp: ['trio-v6-480.webp', 'trio-v6-720.webp', 'trio-v6-1080.webp', 'trio-v6-1195.webp'],
         widths: [480, 720, 1080, 1195],
-        src: 'assets/img/products/trio-v5-1080.jpg',
-        width: 1195,
-        height: 896,
+        src: 'assets/img/products/trio-v6-1080.jpg',
+        width: 1080,
+        height: 810,
         alt: 'الأحجام الثلاثة لسيروم زيوت رواء 30 و50 و100 مل — تصميم مقترح، ليست صورة للمنتج الفعلي'
       },
       trio: {
         base: 'trio',
-        avif: ['trio-v5-480.avif', 'trio-v5-720.avif', 'trio-v5-1080.avif', 'trio-v5-1400.avif'],
-        webp: ['trio-v5-480.webp', 'trio-v5-720.webp', 'trio-v5-1080.webp', 'trio-v5-1400.webp'],
-        widths: [480, 720, 1080, 1400],
-        src: 'assets/img/products/trio-v5-1080.jpg',
+        avif: ['trio-v6-480.avif', 'trio-v6-720.avif', 'trio-v6-1080.avif', 'trio-v6-1195.avif'],
+        webp: ['trio-v6-480.webp', 'trio-v6-720.webp', 'trio-v6-1080.webp', 'trio-v6-1195.webp'],
+        widths: [480, 720, 1080, 1195],
+        src: 'assets/img/products/trio-v6-1080.jpg',
         width: 1080,
         height: 810,
         alt: 'الأحجام الثلاثة لسيروم رواء 30 و50 و100 مل بجانب بعضها — صورة توضيحية للتصميم'
