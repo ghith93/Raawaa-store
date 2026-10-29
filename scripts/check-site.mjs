@@ -1095,6 +1095,13 @@ async function checkProductPage(config) {
   ok(visible.includes('لا يسجّل طلبًا تلقائيًا ولا يؤكّده'), 'فتح واتساب ليس إتمام طلب');
   ok((await read('sitemap.xml')).includes('https://raawaa-store.pages.dev/serum</loc>'), 'صفحة السيروم في خريطة الموقع');
   ok((await read('scripts/build-deploy.sh')).includes('index.html serum.html'), 'صفحة السيروم تدخل حزمة النشر');
+  const rules = (await read('_redirects')).split('\n').map(x => x.trim()).filter(x => x && !x.startsWith('#'));
+  for (const rule of rules) {
+    const [from, target] = rule.split(/\s+/);
+    ok(target?.startsWith('/') && await exists(target.slice(1)), `هدف تحويل قديم موجود: ${from}`);
+  }
+  const legacy = JSON.parse(await read('scripts/legacy-assets.json'));
+  ok(legacy.length > 0 && (await Promise.all(legacy.map(x => exists(x)))).every(Boolean), 'ملفات التوافق القديمة محفوظة عمدًا');
   const pixel = String(config.marketing?.facebookPixelId || '');
   ok((!pixel || /^\d{10,20}$/.test(pixel)) && (await read('js/marketing.js')).includes('RAWAA_CONFIG.marketing.facebookPixelId'), 'معرّف البكسل فارغ أو رقمي، وله مصدر إعداد واحد');
   if (pixel) ok(!(await read('privacy.html')).includes('لا يوجد بكسل إعلاني مفعّل حاليًا'), 'تُراجع الخصوصية عند تفعيل البكسل');
