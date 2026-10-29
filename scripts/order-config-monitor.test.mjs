@@ -14,6 +14,11 @@ test('reads size and price as a pair, phone and both delivery zones', () => {
     ['hama', 2, true], ['other', 4, false]
   ]);
   assert.match(result.phone, /^\d+$/);
+  assert.equal(result.defaultZone, 'hama');
+  assert.deepEqual(result.methods, [
+    { id: 'cod', discount: 0, freeDeliveryIn: [], available: true },
+    { id: 'shamcash', discount: 10, freeDeliveryIn: ['hama'], available: true }
+  ]);
 });
 
 test('detects swapped prices even though all three prices still appear', () => {
@@ -29,4 +34,21 @@ test('fails closed for missing products, duplicated phone, or missing zone', () 
 
 test('detects delivery charge drift', () => {
   assert.notDeepEqual(extractOrderConfig(source.replace("fee: 4, freeWithShamCash: false", "fee: 5, freeWithShamCash: false")).zones, extractOrderConfig(source).zones);
+});
+
+test('detects payment discount, free-shipping and availability drift', () => {
+  const original = extractOrderConfig(source);
+  for (const changed of [
+    source.replace('discountPercent: 10,', 'discountPercent: 15,'),
+    source.replace("freeDeliveryIn: ['hama'],", "freeDeliveryIn: ['other'],"),
+    source.replace('available: true,', 'available: false,'),
+    source.replace("defaultZone: 'hama',", "defaultZone: 'other',")
+  ]) assert.notDeepEqual(extractOrderConfig(changed), original);
+});
+
+test('fails closed if payment rules cannot be safely extracted', () => {
+  assert.throws(() => extractOrderConfig(source.replace("freeDeliveryIn: ['hama'],", "freeDeliveryIn: [externalValue],")));
+  assert.throws(() => extractOrderConfig(source.replace('discountPercent: 10,', 'discountPercent: calculation(),')));
+  assert.throws(() => extractOrderConfig(source.replace("id: 'cod',", "id: 'other-method',")));
+  assert.throws(() => extractOrderConfig(source.replace("freeDeliveryIn: ['hama'],", "freeDeliveryIn: ['hama', 'hama'],")));
 });
