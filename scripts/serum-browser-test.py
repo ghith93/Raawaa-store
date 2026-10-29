@@ -55,20 +55,33 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             page.evaluate('document.fonts.ready')
             check("صفحة حقيقية HTTP 200", bool(response and response.status == 200), str(response.status if response else None))
             check("عنوان عربي واحد واتجاه RTL", page.locator('h1').count() == 1 and page.evaluate("getComputedStyle(document.body).direction") == 'rtl')
+            intro = page.locator('.serum-purchase .serum-intro').inner_text()
+            benefit = page.locator('#benefits').inner_text()
+            check("الرسالة تبدأ بحاجة وفائدة لا بالمكوّنات وحدها", all(word in intro for word in ['الباهت','المتطاير','مظهر أنعم','لمعان لطيف']) and 'سيروم رواء للشعر' in page.locator('.serum-heading').inner_text())
+            check("الفوائد والاستعمال واختلاف النتيجة واضحة", all(word in benefit for word in ['ملمسًا أنعم','كمية صغيرة','النتيجة والإحساس يختلفان']))
+            add_box = page.locator('[data-add-current]').bounding_box()
+            check("زر الاختيار ظاهر في الشاشة الأولى", bool(add_box and add_box['y'] >= 0 and add_box['y'] + add_box['height'] <= height), str(add_box))
             check("الأحجام والأسعار من الإعدادات", page.locator('#products .size-option-size').all_inner_texts() == ['30 مل','50 مل','100 مل'] and page.locator('#products .size-option-price').all_inner_texts() == ['$10','$12','$15'])
             check("شارة 50 مل مطابقة لتوجيه المالك", page.locator('[data-size-for="serum-50"] .size-option-flag').inner_text() == 'الأنسب للاستعمال اليومي')
             check("لا تمرير أفقي", page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'))
+            if width < 600:
+                check("عرض شام كاش مقروء بلا اقتطاع", page.locator('.topbar-short').evaluate('(e) => e.scrollWidth <= e.clientWidth + 1'))
             check("الصورة توضيحية وليست صورة منتج", 'ليست صورة للمنتج الفعلي' in (page.locator('[data-size-img]').get_attribute('alt') or '') and 'ليس صورة العبوة الفعلية' in page.locator('.serum-photo figcaption').inner_text())
             check("المكوّنات غير مكتملة ولا نِسب فيها", 'البانثينول' in page.locator('#ingredients').inner_text() and 'ليست القائمة الكاملة' in page.locator('#ingredients').inner_text() and '%' not in page.locator('#ingredients').inner_text())
             check("المصدر محفوظ في الجلسة", page.evaluate('window.rawaaSrcTag()') == 'serum-oct')
             direct = page.locator('[data-wa-direct]').first.get_attribute('href') or ''
             direct_msg = parse_qs(urlparse(direct).query).get('text', [''])[0]
             check("المصدر في رابط واتساب المباشر", '— المصدر: serum-oct' in direct_msg)
+            page.locator('#products .size-option').nth(2).click()
+            check("السعر المختار يُعلن لقارئ الشاشة وتتبعه الصورة", '$15' in page.locator('[data-price-live]').inner_text() and '100 مل' in (page.locator('[data-size-img]').get_attribute('alt') or ''))
+            page.locator('#products .size-option').nth(1).click()
             check("لا بكسل مفعّل بلا معرّف", not page.evaluate('!!window.fbq') and page.locator('[data-consent-bar]').is_hidden())
             if screenshot_dir and width == 390:
                 Path(screenshot_dir).mkdir(parents=True, exist_ok=True)
                 page.screenshot(path=str(Path(screenshot_dir) / f'serum-{browser_name}-390.png'), full_page=False)
             audit(page, 'الصفحة')
+            page.locator('.serum-benefits-cta').click()
+            check("زر الفوائد يعيد الزائرة إلى اختيار الحجم", urlparse(page.url).fragment == 'products' and page.locator('[data-add-current]').is_visible())
 
             # إضافة الحجم الافتراضي تفتح السلة؛ لا يُحسب فتحها محادثة.
             page.locator('[data-add-current]').click()
@@ -115,6 +128,29 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("لا أخطاء JavaScript", not errors, '; '.join(errors[:3]))
             check("لا استجابات فاشلة", not bad, '; '.join(bad[:3]))
             ctx.close()
+
+        # رحلة من الرئيسية إلى صفحة المنتج، مع الحفاظ على مصدر الحملة والسلة.
+        # خادم الملفات البسيط في CI لا يعرف رابط Cloudflare النظيف؛ نحاكي التحويل محليًا فقط.
+        ctx = browser.new_context(viewport={"width":390,"height":844}, locale="ar",
+                                  ignore_https_errors=ignore_https, service_workers='block')
+        ctx.add_init_script("window.__waCalls = []; window.open = function(url) { window.__waCalls.push(url); return null; };")
+        if path.endswith('.html') and urlparse(base).hostname in ('127.0.0.1', 'localhost'):
+            ctx.route('**/serum', lambda route: route.continue_(url=base + path))
+        page = ctx.new_page()
+        page.goto(base + '/?utm_source=facebook&utm_medium=organic&utm_campaign=home_bridge', wait_until='load')
+        check("الرئيسية تربط الحاجة بخطوة اختيار الحجم", all(x in page.locator('.hero-lead').inner_text() for x in ['الباهت','المتطاير']) and page.locator('[data-discover-serum]').get_attribute('href') == '/serum')
+        with page.expect_navigation(wait_until='load'):
+            page.locator('[data-discover-serum]').click()
+        page.wait_for_selector('#products .size-option input')
+        check("زر الرئيسية يفتح صفحة المنتج ويحفظ المصدر", urlparse(page.url).path == '/serum' and page.evaluate('window.rawaaSrcTag()') == 'home_bridge')
+        page.locator('#products .size-option').nth(2).click()
+        page.locator('[data-add-current]').click()
+        check("100 مل من الرئيسية يصل للسلة بالسعر الصحيح", page.locator('#cart-dialog').evaluate('(d) => d.open') and page.locator('[data-cart-total]').inner_text() == '$13.50')
+        page.locator('[data-cart-checkout]').click()
+        calls = page.evaluate('window.__waCalls')
+        msg = parse_qs(urlparse(calls[-1] if calls else '').query).get('text', [''])[0]
+        check("مصدر الرئيسية والحجم ينتقلان لنص واتساب دون إرسال", all(x in msg for x in ['100 مل', '$13.50', '— المصدر: home_bridge']))
+        ctx.close()
 
         # لا JavaScript: أسعار حقيقية وزر واتساب يعمل، وزر السلة معطّل بدل وهم وظيفي.
         ctx = browser.new_context(java_script_enabled=False, ignore_https_errors=ignore_https, viewport={"width":390,"height":844})

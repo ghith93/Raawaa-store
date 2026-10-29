@@ -1083,6 +1083,16 @@ async function checkProductPage(config) {
   const html = await read('serum.html');
   const visible = html.replace(/<!--[\s\S]*?-->/g, ' ');
   ok(visible.includes('rel="canonical" href="https://raawaa-store.pages.dev/serum"'), 'رابط canonical مستقل');
+  const home = (await read('index.html')).replace(/<!--[\s\S]*?-->/g, ' ');
+  const homeHero = home.match(/<section[^>]*class="hero"[\s\S]*?<\/section>/)?.[0] || '';
+  const landing = visible.match(/<section[^>]*class="serum-landing"[\s\S]*?<\/section>/)?.[0] || '';
+  const benefits = visible.match(/<section[^>]*id="benefits"[\s\S]*?<\/section>/)?.[0] || '';
+  ok(homeHero.includes('الباهت') && homeHero.includes('المتطاير') && homeHero.includes('لمعة') &&
+    homeHero.includes('href="/serum" data-discover-serum'), 'الرئيسية تشرح الحاجة والفائدة وتوجّه لاختيار الحجم');
+  ok(landing.includes('سيروم رواء للشعر') && landing.includes('الباهت') && landing.includes('المتطاير') &&
+    landing.includes('مظهر أنعم') && landing.includes('لمعان لطيف'), 'صفحة المنتج تشرح الحاجة والفائدة قبل تفاصيل التركيبة');
+  ok(benefits.includes('ملمسًا أنعم') && benefits.includes('كمية صغيرة') && benefits.includes('النتيجة والإحساس يختلفان') &&
+    visible.indexOf('id="benefits"') < visible.indexOf('id="ingredients"'), 'فوائد تجميلية وخطوة استعمال وتحفّظ واضح قبل التركيبة');
   for (const hook of ['data-size-options', 'data-add-current', 'data-open-cart-after-add', 'data-cart-checkout', 'data-wa-direct']) {
     ok(visible.includes(hook), `مسار المنتج والسلة: ${hook}`);
   }
