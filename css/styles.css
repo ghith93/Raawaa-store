@@ -1728,8 +1728,9 @@ body.has-shop-bar { padding-block-end: 76px; }
 .price-strip .ps-featured .ps-price { color: #FFFDFA; }
 
 .price-strip .ps-tag {
-  font-size: 0.6rem;
-  letter-spacing: 0.04em;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
   color: #D9C7A7;
   margin-top: 1px;
 }
@@ -2388,7 +2389,9 @@ div[id="custom"] {
 .size-option-size { font-size: 0.78rem; color: var(--ink-soft, #4A443C); }
 .size-option-price { font-size: 1rem; font-weight: 700; }
 .size-option-flag {
-  font-size: 0.62rem;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  text-align: center;
   color: #8A5F2E;
   font-weight: 700;
   letter-spacing: 0.04em;

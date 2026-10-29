@@ -74,6 +74,48 @@ def run(base: str) -> int:
         check("اتجاه الصفحة RTL", page.evaluate("getComputedStyle(document.body).direction") == "rtl")
         check("عنوان h1 واحد", page.locator("h1").count() == 1)
 
+        # قرارات المالك 2026-10-29: لا نِسب غير مصححة، ولا مدة تصنيع مختلقة.
+        ingredients = page.locator("#ingredients").inner_text()
+        check("البانثينول ظاهر دون الإيهام بأن القائمة كاملة",
+              "البانثينول" in ingredients and "ليست القائمة الكاملة" in ingredients)
+        check("لا نسب مئوية في قسم التركيبة قبل التصحيح", "%" not in ingredients and "٪" not in ingredients)
+        check("الوصف الصحيح لحجم 50 مل ظاهر في شريط السعر والبطاقة",
+              page.locator(".ps-tag").inner_text() == "الأنسب للاستعمال اليومي" and
+              page.locator('[data-size-for="serum-50"] .size-option-flag').inner_text() == "الأنسب للاستعمال اليومي")
+        check("لا شارة الأكثر اختيارًا أو الأكثر طلبًا",
+              "الأكثر اختيارًا" not in page.locator("body").inner_text() and
+              "الأكثر طلبًا" not in page.locator("body").inner_text())
+        ready_faq = page.locator("details").filter(has_text="هل السيروم جاهز ومتى يصل؟").text_content() or ""
+        check("الأسئلة تؤكد أن السيروم جاهز وتترك موعد التوصيل للمحادثة",
+              "السيروم جاهز" in ready_faq and "موعد التوصيل" in ready_faq and "التصنيع" in ready_faq)
+        all_faq = page.locator("#faq").text_content() or ""
+        check("لا مدة تصنيع مختلقة أو وعد بصورة قبل الشحن",
+              "٢–٤ أيام" not in all_faq and "التصنيع حسب الطلب" not in all_faq and "صورة العبوة قبل الشحن" not in all_faq)
+        check("الصور موصوفة بأنها تصميم لا صورة المنتج الفعلي",
+              "ليست صورة للمنتج الفعلي" in (page.locator(".hero-figure figcaption").inner_text()))
+        faq_payment = page.locator("details").filter(has_text="ما طرق الدفع المتاحة؟").text_content() or ""
+        check("FAQ الدفع تبيّن حماة ورسوم باقي المحافظات",
+              "حماة فقط" in faq_payment and "$2" in faq_payment and "$4" in faq_payment)
+
+        # اختيارات الرائحة والإضافة استفسار لا افتراض للتوفّر، وتُنقل إلى الرسالة.
+        scent = page.locator('[data-custom-scent="vanilla"]')
+        oil = page.locator('[data-custom-oil="argan"]')
+        default_custom = page.locator('[data-custom-summary]').inner_text()
+        check("الافتراضي لا يعد بإرسال منتج بلا عطر", "سنرسل" not in default_custom and "نؤكد" in default_custom)
+        check("شرائح التخصيص تبدأ بحالة إتاحة غير محددة",
+              scent.get_attribute("aria-pressed") == "false" and oil.get_attribute("aria-pressed") == "false")
+        scent.click()
+        oil.click()
+        custom_message = page.evaluate("window.__RAWAA_TEST__.buildOrderMessage()")
+        check("العطر والزيت المختاران يظهران في رسالة واتساب",
+              "فانيلا" in custom_message and "أرجان" in custom_message and "تأكيد خيارات العطر أو الزيت" in custom_message)
+        check("حالة الشرائح المحددة مفهومة لقارئ الشاشة",
+              scent.get_attribute("aria-pressed") == "true" and oil.get_attribute("aria-pressed") == "true")
+        scent.click()
+        oil.click()
+        check("إلغاء الاختيار يحدّث حالة الشرائح",
+              scent.get_attribute("aria-pressed") == "false" and oil.get_attribute("aria-pressed") == "false")
+
         # الأصول محمّلة محليًا
         check("لا أخطاء JavaScript في الصفحة", not page_errors, "; ".join(page_errors))
         check("لا طلبات فاشلة", not failed_requests, "; ".join(failed_requests))
@@ -643,7 +685,7 @@ def run(base: str) -> int:
                  .map(i => i.alt)"""
         )
         check("كل صور المنتج والتحريرية لها alt", all(a and a.strip() for a in alts), str(alts[:3]))
-        # الصور تصميمية: لا صورة منتج مُصنَّع بعد — الـalt يجب أن يقول ذلك صراحةً
+        # الصور الحالية تصميمية، لا صور للمنتج الفعلي — الـalt يوضح ذلك صراحةً
         check("alt لا يدّعي صورة منتج مُصنَّع",
               all(("مقترح" in a or "تصميم" in a) for a in alts), str(alts[:3]))
 

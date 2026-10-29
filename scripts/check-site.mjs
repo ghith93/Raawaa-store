@@ -469,7 +469,7 @@ async function checkContentClaims() {
 
   const requiredDisclaimers = [
     ['مرجعي', 'الإشارة إلى أن الأسعار مرجعية'],
-    [/ليست صورة لمنتج مُصنَّع|ليس صورة منتج مُصنَّع|تصور تصميمي/, 'تنبيه أن الصور تصورات تصميمية'],
+    [/ليست صورة للمنتج الفعلي|لا صورة للمنتج الفعلي|تصور تصميمي/, 'تنبيه أن الصور تصورات تصميمية'],
     ['لا يعني أن الطلب سُجِّل', 'تنبيه أن واتساب لا يسجّل الطلب'],
     [/لا يمرّ أي مبلغ عبره|بدون دفع إلكتروني/, 'الإشارة إلى أن الدفع لا يمرّ عبر الموقع']
   ];
@@ -1004,6 +1004,70 @@ async function checkPwa() {
   }
 }
 
+/**
+ * حارس قرارات المالك: يمنع رجوع النسب التي تبيّن أن ورقتها خاطئة، والمدة
+ * والشعبية غير المثبتة، ويتحقق من أسعار وقيود التوصيل في JSON-LD.
+ */
+async function checkOwnerDecisions(config) {
+  group('قرارات المالك وبيانات البحث');
+  const html = await read('index.html');
+  const source = await read('js/config.js');
+  const visibleHtml = html.replace(/<!--[\s\S]*?-->/g, ' ');
+  const configCopy = source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
+  const customerCopy = visibleHtml + '\n' + configCopy;
+  const expect = (ok, label, detail = '') => ok ? pass(label) : fail(label, detail);
+
+  expect(config.formula?.active === 'Panthenol', 'المكوّن المختار مثبت: Panthenol');
+  expect(config.formula?.percentagesVerified === false &&
+    !('declaredTotal' in config.formula) && !('inciList' in config.formula) && !('groups' in config.formula),
+  'لا نِسب أو قائمة INCI نهائية قبل تصحيح الورقة');
+  const section = visibleHtml.match(/<section[^>]*id="ingredients"[\s\S]*?<\/section>/)?.[0] || '';
+  expect(section.includes('البانثينول') && section.includes('ليست القائمة الكاملة'),
+    'مكوّنات مختارة مع تنبيه واضح أن القائمة غير كاملة');
+  expect(!/\d\s*[%٪]|[٠-٩]\s*[%٪]/.test(section), 'قسم التركيبة بلا نسب غير مؤكدة');
+  expect(!/(?:سيليكون\s*85|أرغان\s*3|بانثينول\s*1|99[.,٫]6)\s*[%٪]/i.test(customerCopy),
+    'النسب القديمة غير منشورة في النصوص والبيانات الوصفية');
+  expect(!/كيراتين|hydrolyzed\s+keratin/i.test(customerCopy), 'لا بديل كيراتين مناقض لاختيار المالك');
+  const size50 = config.products.find(p => p.id === 'serum-50');
+  expect(size50?.badge === 'الأنسب للاستعمال اليومي' && visibleHtml.includes('الأنسب للاستعمال اليومي'),
+    'وصف 50 مل مطابق لعبارة المالك');
+  expect(!/الأكثر اختيارًا|الأكثر طلبًا/.test(customerCopy), 'لا ادعاء شعبية بلا بيانات');
+  expect(/السيروم جاهز/.test(visibleHtml) && !/التصنيع حسب الطلب|متى يُصنع طلبي|٢[–-]٤ أيام عمل|صورة العبوة قبل الشحن/.test(customerCopy),
+    'الجاهزية معلنة بلا مدة تصنيع أو وعد بصورة قبل الشحن');
+  expect(visibleHtml.includes('ليست صورة للمنتج الفعلي'), 'التصميم التوضيحي ليس صورة المنتج الفعلي');
+
+  let schema;
+  try {
+    const raw = html.match(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+    if (!raw) throw new Error('JSON-LD مفقود');
+    schema = JSON.parse(raw);
+    pass('JSON-LD قابل للقراءة');
+  } catch (err) {
+    fail('JSON-LD غير صالح', err.message);
+    return;
+  }
+  const graph = schema['@graph'] || [];
+  const product = graph.find(x => x['@type'] === 'Product');
+  const offers = product?.offers?.offers || [];
+  const eachPrice = config.products.every(p => offers.some(o =>
+    o.name?.includes(String(p.sizeMl) + ' مل') && Number(o.price) === p.price));
+  expect(eachPrice && offers.length === config.products.length,
+    'كل سعر JSON-LD مطابق للحجم في الإعدادات');
+  expect(Number(product?.offers?.lowPrice) === Math.min(...config.products.map(p => p.price)) &&
+    Number(product?.offers?.highPrice) === Math.max(...config.products.map(p => p.price)),
+  'حدود أسعار JSON-LD مطابقة');
+  const faq = graph.find(x => x['@type'] === 'FAQPage')?.mainEntity || [];
+  const priceAnswer = faq.find(x => x.name === 'ما الأحجام والأسعار؟')?.acceptedAnswer?.text || '';
+  expect(config.products.every(p => priceAnswer.includes(p.sizeMl + ' مل بسعر ' + p.price)),
+    'أسعار إجابة البحث تطابق الأحجام الثلاثة');
+  const deliveryAnswer = faq.find(x => x.name === 'ما طرق الدفع المتاحة؟')?.acceptedAnswer?.text || '';
+  expect(deliveryAnswer.includes('داخل حماة فقط') && deliveryAnswer.includes('باقي المحافظات') &&
+    deliveryAnswer.includes('2 دولار') && deliveryAnswer.includes('4 دولارات'),
+  'إجابة البحث تقيّد التوصيل المجاني وتذكر رسوم المنطقتين');
+  expect(!product?.offers?.availability && offers.every(o => !o.availability),
+    'المخزون لكل حجم لا يُفترض في بيانات البحث');
+}
+
 try {
   const { config } = await loadConfig();
   await checkRequiredFiles();
@@ -1013,6 +1077,7 @@ try {
   await checkHtmlHooks();
   await checkLinks();
   await checkContentClaims();
+  await checkOwnerDecisions(config);
   await checkCartLogic();
   await checkAssets();
   await checkSecurity();

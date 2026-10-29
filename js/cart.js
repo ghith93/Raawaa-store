@@ -351,7 +351,7 @@
       if (srcAvif) srcAvif.setAttribute('srcset', setOf('avif'));
       if (srcWebp) srcWebp.setAttribute('srcset', setOf('webp'));
       img.setAttribute('src', product.image.src);
-      img.setAttribute('alt', 'عبوة سيروم زيوت رواء ' + product.sizeLabel + ' — تصميم مقترح، ليست صورة منتج مُصنَّع');
+      img.setAttribute('alt', 'عبوة سيروم زيوت رواء ' + product.sizeLabel + ' — تصميم مقترح، ليست صورة للمنتج الفعلي');
     }
 
     // زر الإضافة يتبع الحجم المختار — الـ id لا يُكتب في HTML
@@ -395,7 +395,7 @@
     var note = chosenScent && chosenScent.note ? chosenScent.note : '';
     host.textContent = parts.length
       ? parts.join(' · ') + (note ? ' · ' + note : '')
-      : 'العطر اختياري — وسنرسل السيروم بلا عطر إن لم تختبري شيئًا.';
+      : 'العطر والإضافة اختياريان — نؤكد الخيارات المتاحة في واتساب.';
   }
 
   /* ------------------------------ السلة ------------------------------ */
@@ -1218,107 +1218,6 @@
     if (note) note.textContent = cfg.note || '';
   }
 
-  /**
-   * جدول التركيبة — يُبنى من CONFIG.formula.
-   * لا رقم مكتوب في HTML: إن تغيّرت ورقة المصنع، يتغيّر الجدول من مكان واحد.
-   */
-  function renderFormula() {
-    var f = CONFIG.formula;
-    var host = document.querySelector('[data-formula]');
-    if (!f || !f.published || !host) return;
-
-    var wrap = host.querySelector('[data-formula-groups]');
-    if (wrap) {
-      wrap.textContent = '';
-      (f.groups || []).forEach(function (group) {
-        var card = document.createElement('section');
-        card.className = 'formula-group';
-
-        var head = document.createElement('div');
-        head.className = 'formula-group-head';
-
-        var title = document.createElement('h3');
-        title.className = 'formula-group-title';
-        title.textContent = group.title;
-
-        var pct = document.createElement('span');
-        pct.className = 'formula-group-pct';
-        pct.textContent = group.total + '%';
-
-        head.appendChild(title);
-        head.appendChild(pct);
-        card.appendChild(head);
-
-        var role = document.createElement('p');
-        role.className = 'formula-group-role';
-        role.textContent = group.role;
-        card.appendChild(role);
-
-        // <dl> شرعية: dt ثم dd فقط. الشرح والشريط داخل خلية <dd> ثانية،
-        // لأن <dl> لا يقبل <div> مباشرةً (مخالفة axe: definition-list).
-        var rows = document.createElement('dl');
-        rows.className = 'formula-rows';
-        (group.items || []).forEach(function (item) {
-          var row = document.createElement('div');
-          row.className = 'formula-row';
-
-          var dt = document.createElement('dt');
-          dt.className = 'formula-inci-name';
-          dt.textContent = item.inci;
-
-          var why = document.createElement('p');
-          why.className = 'formula-why';
-          why.textContent = item.why;
-
-          var detail = document.createElement('dd');
-          detail.className = 'formula-detail';
-          detail.appendChild(why);
-
-          // شريط نسبي بصري — عرضه من الرقم نفسه
-          var bar = document.createElement('div');
-          bar.className = 'formula-bar';
-          bar.setAttribute('aria-hidden', 'true');
-          var fill = document.createElement('span');
-          fill.className = 'formula-bar-fill';
-          fill.style.width = Math.max(1.5, item.pct) + '%';
-          bar.appendChild(fill);
-          detail.appendChild(bar);
-
-          var dd = document.createElement('dd');
-          dd.className = 'formula-pct';
-          dd.textContent = item.pct + '%';
-
-          row.appendChild(dd);
-          row.appendChild(dt);
-          row.appendChild(detail);
-          rows.appendChild(row);
-        });
-        card.appendChild(rows);
-        wrap.appendChild(card);
-      });
-    }
-
-    var totalNode = host.querySelector('[data-formula-total]');
-    if (totalNode) {
-      var asOf = f.asOf ? ' · معتمدة بتاريخ ' + f.asOf : '';
-      totalNode.textContent = 'مجموع النِسب المعلنة: ' + f.declaredTotal +
-        '% (الفرق 0.4%)' + asOf + ' — النِسب بالوزن كما في ورقة المصنع.';
-    }
-
-    var list = host.querySelector('[data-formula-honesty]');
-    if (list) {
-      list.textContent = '';
-      (f.honesty || []).forEach(function (line) {
-        var li = document.createElement('li');
-        li.textContent = line;
-        list.appendChild(li);
-      });
-    }
-
-    var inci = host.querySelector('[data-formula-inci]');
-    if (inci) inci.textContent = 'قائمة INCI: ' + f.inciList;
-  }
-
   /** يبني قائمة اختيار العطر والزيت من CONFIG — لا خيارات مكتوبة يدويًا. */
   function renderCustomPickers() {
     var cfg = CONFIG.customization;
@@ -1334,12 +1233,15 @@
         btn.type = 'button';
         btn.className = 'chip';
         btn.textContent = opt.label;
+        btn.setAttribute('aria-pressed', 'false');
         btn.setAttribute('data-custom-' + field, opt.id);
         btn.addEventListener('click', function () {
           var same = custom[field] === opt.id;
           setCustom(field, same ? '' : opt.id);
           Array.prototype.forEach.call(host.querySelectorAll('.chip'), function (c) {
-            c.classList.toggle('is-selected', c.getAttribute('data-custom-' + field) === custom[field]);
+            var selected = c.getAttribute('data-custom-' + field) === custom[field];
+            c.classList.toggle('is-selected', selected);
+            c.setAttribute('aria-pressed', selected ? 'true' : 'false');
           });
         });
         host.appendChild(btn);
@@ -1643,7 +1545,6 @@
     renderProducts();
     renderSizePicker();
     renderRoutines();
-    renderFormula();
     renderCustomPickers();
     renderCraft();
     renderPaymentCards();
@@ -1815,7 +1716,7 @@
     } catch (err) {
       if (window.console && console.error) console.error('[RAWAA] تعذّر تهيئة الواجهة:', err);
       // إعادة المحاولة محصورة في الميزات المستقلة عن العنصر المفقود
-      [renderSizePicker, renderRoutines, renderFormula, renderCustomPickers, renderCraft, renderPaymentCards,
+      [renderSizePicker, renderRoutines, renderCustomPickers, renderCraft, renderPaymentCards,
        renderTrust, renderCalculator].forEach(function (fn) {
         try { fn(); } catch { /* ميزة واحدة معطّلة لا تُسقط الباقي */ }
       });
