@@ -2699,3 +2699,51 @@ div[id="custom"] {
   .nav-desktop ul { gap: .6rem; }
   .nav-desktop a { font-size: .8rem; white-space: nowrap; }
 }
+
+/* الشاشة الأولى على الهاتف: العبوة تظهر مع الوعد والأسعار، لا بعد زري الشراء.
+   الصورة لا تزال تصوّرًا، مع تعليق ظاهر؛ والقراءة في DOM تبقى نصًا ثم صورة. */
+@media (max-width: 899px) {
+  .hero .shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(120px, .82fr);
+    grid-template-areas:
+      "kicker media"
+      "title media"
+      "lead lead"
+      "prices prices"
+      "price-note price-note"
+      "trust trust"
+      "actions actions"
+      "facts facts";
+    column-gap: .85rem;
+    align-items: start;
+  }
+  .hero-top { display: contents; }
+  .hero-top .eyebrow { grid-area: kicker; margin-bottom: .45rem; }
+  .hero-top h1 { grid-area: title; margin-bottom: .5rem; font-size: clamp(1.35rem, 6.1vw, 2.05rem); line-height: 1.35; }
+  .hero-lead { grid-area: lead; margin: .8rem 0 0; font-size: .9rem; }
+  .hero .hero-lead { padding-bottom: 0; }
+  .price-strip { grid-area: prices; margin-top: 1.1rem; width: 100%; }
+  .price-strip-note { grid-area: price-note; }
+  .trust-line { grid-area: trust; }
+  .hero-top .hero-actions { grid-area: actions; margin-top: 1.15rem; padding-bottom: 0; }
+  .hero-figure { grid-area: media; margin: 0; }
+  .hero-figure img { aspect-ratio: 1; object-fit: cover; }
+  .hero-figure figcaption { margin-top: .3rem; font-size: .67rem; line-height: 1.5; }
+  .hero-facts { grid-area: facts; }
+}
+
+/* عند تكبير النص، تلتف الترويسة وخيارات الحجم بدل خروج الأزرار من الشاشة. */
+@media (max-width: 899px) {
+  .header-inner { flex-wrap: wrap; column-gap: 8px; row-gap: 0; }
+  .site-header .brand { flex-wrap: wrap; max-width: 100%; }
+  .header-actions { flex-shrink: 0; margin-inline-start: auto; }
+}
+.size-picker { min-inline-size: 0; }
+.size-options { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.size-option { min-width: 0; }
+.size-option-body > span { max-width: 100%; overflow-wrap: anywhere; }
+.topbar p { white-space: normal; overflow: visible; text-overflow: clip; }
+.price-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.price-strip li { min-width: 0; }
+.price-strip .ps-size, .price-strip .ps-price, .price-strip .ps-tag { max-width: 100%; overflow-wrap: anywhere; }

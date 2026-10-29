@@ -209,7 +209,7 @@ async function checkNoScatteredPrices() {
 /* ------------------------- 3) صحة JavaScript ------------------------- */
 async function checkJsSyntax() {
   group('صحة JavaScript');
-  for (const file of ['js/config.js', 'js/cart.js', 'js/marketing.js']) {
+  for (const file of ['js/config.js', 'js/cart.js', 'js/marketing.js', 'js/serum-views.js']) {
     try {
       new vm.Script(await read(file), { filename: file });
       pass(`بناء سليم: ${file}`);
@@ -1039,8 +1039,9 @@ async function checkOwnerDecisions(config) {
   // لا نحمّل AVIF وWebP معًا بـpreload: المتصفحات تدعم الاثنين فتنزّل صورتين.
   const preloads = [...visibleHtml.matchAll(/<link[^>]*rel="preload"[^>]*as="image"[^>]*>/g)].map(m => m[0]);
   expect(preloads.length === 1 && preloads[0].includes('type="image/avif"') &&
-    preloads[0].includes('media="(min-width: 900px)"'),
-  'تحميل استباقي واحد لصورة الهيرو على سطح المكتب فقط');
+    preloads[0].includes('imagesizes="(min-width: 900px) 46vw, 42vw"') &&
+    preloads[0].includes('fetchpriority="high"') && !preloads[0].includes('media="(min-width: 900px)"'),
+  'تحميل استباقي واحد للصورة الظاهرة في هيرو الهاتف وسطح المكتب');
 
   let schema;
   try {
@@ -1099,7 +1100,7 @@ async function checkProductPage(config) {
     ritual.includes('ritual-v5-720.jpg'), 'لحظة استخدام بصورة تعبيرية مصارح بها ومحملة بكسل');
   const worker = await read('sw.js');
   ok(['ritual-v5-480.avif', 'ritual-v5-480.webp', 'ritual-v5-720.jpg'].every(f => worker.includes(f)) &&
-    worker.includes('const ritual = url.pathname.match'), 'بديل الصورة التعبيرية محفوظ بلا إنترنت لكل صيغة');
+    worker.includes('const visual = url.pathname.match') && worker.includes('ritual|trio|size-'), 'بدائل صور المشاهد والأحجام محفوظة بلا إنترنت لكل صيغة');
   ok(landing.includes('class="serum-size-guide"') && landing.includes('لكل ملليلتر') && landing.includes('$2') &&
     landing.includes('$4') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
   ok(visible.includes('id="returns"') && visible.includes('الاستفسار عن الشروط على واتساب'), 'سؤال الشروط دون اختلاق سياسة إرجاع');

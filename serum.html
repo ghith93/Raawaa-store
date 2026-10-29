@@ -35,6 +35,7 @@
 <script src="js/config.js" defer></script>
 <script src="js/marketing.js" defer></script>
 <script src="js/cart.js" defer></script>
+<script src="js/serum-views.js" defer></script>
 <script type="application/ld+json">{
   "@context": "https://schema.org",
   "@type": "Product",
@@ -152,14 +153,34 @@
           <h1 id="serum-title">لمسة نعومة،<br>ولمعة تليق بكِ</h1>
           <p class="serum-available">ثلاثة أحجام · تبدأ من <bdi>$10</bdi></p>
         </div>
-        <figure class="serum-photo">
-          <picture data-size-picture>
-            <source type="image/avif" data-size-avif srcset="assets/img/products/size-50-v5-480.avif 480w, assets/img/products/size-50-v5-720.avif 720w, assets/img/products/size-50-v5-900.avif 900w" sizes="(min-width: 900px) 43vw, 38vw">
-            <source type="image/webp" data-size-webp srcset="assets/img/products/size-50-v5-480.webp 480w, assets/img/products/size-50-v5-720.webp 720w, assets/img/products/size-50-v5-900.webp 900w" sizes="(min-width: 900px) 43vw, 38vw">
-            <img data-size-img src="assets/img/products/size-50-v5-720.jpg" width="1024" height="1024" fetchpriority="high" decoding="async" alt="عبوة سيروم زيوت رواء 50 مل — تصميم مقترح، ليست صورة للمنتج الفعلي">
-          </picture>
-          <figcaption>تصوّر تصميمي للعبوة.</figcaption>
-        </figure>
+        <div class="serum-media" data-serum-media>
+          <figure class="serum-photo">
+            <picture data-size-picture data-serum-view="bottle">
+              <source type="image/avif" data-size-avif srcset="assets/img/products/size-50-v5-480.avif 480w, assets/img/products/size-50-v5-720.avif 720w, assets/img/products/size-50-v5-900.avif 900w" sizes="(min-width: 900px) 43vw, 42vw">
+              <source type="image/webp" data-size-webp srcset="assets/img/products/size-50-v5-480.webp 480w, assets/img/products/size-50-v5-720.webp 720w, assets/img/products/size-50-v5-900.webp 900w" sizes="(min-width: 900px) 43vw, 42vw">
+              <img data-size-img src="assets/img/products/size-50-v5-720.jpg" width="1024" height="1024" fetchpriority="high" decoding="async" alt="عبوة سيروم زيوت رواء 50 مل — تصميم مقترح، ليست صورة للمنتج الفعلي">
+            </picture>
+            <picture data-serum-view="sizes" hidden>
+              <source type="image/avif" srcset="assets/img/products/trio-v5-480.avif 480w, assets/img/products/trio-v5-720.avif 720w, assets/img/products/trio-v5-1080.avif 1080w" sizes="(min-width: 900px) 43vw, 42vw">
+              <source type="image/webp" srcset="assets/img/products/trio-v5-480.webp 480w, assets/img/products/trio-v5-720.webp 720w, assets/img/products/trio-v5-1080.webp 1080w" sizes="(min-width: 900px) 43vw, 42vw">
+              <img src="assets/img/products/trio-v5-1080.jpg" width="1195" height="896" loading="lazy" decoding="async" alt="تصوّر فني لثلاث عبوات من رواء، لا يوضّح القياسات الفعلية للأحجام">
+            </picture>
+            <picture data-serum-view="ritual" hidden>
+              <source type="image/avif" srcset="assets/img/products/ritual-v5-480.avif 480w, assets/img/products/ritual-v5-720.avif 720w, assets/img/products/ritual-v5-1080.avif 1080w" sizes="(min-width: 900px) 43vw, 42vw">
+              <source type="image/webp" srcset="assets/img/products/ritual-v5-480.webp 480w, assets/img/products/ritual-v5-720.webp 720w, assets/img/products/ritual-v5-1080.webp 1080w" sizes="(min-width: 900px) 43vw, 42vw">
+              <img src="assets/img/products/ritual-v5-720.jpg" width="1264" height="848" loading="lazy" decoding="async" alt="مشهد تعبيري لامرأة ترتّب أطراف شعرها، لا يوضّح نتيجة استخدام المنتج">
+            </picture>
+            <figcaption data-serum-caption aria-live="polite">تصوّر تصميمي للعبوة، وليس صورة المنتج الفعلي.</figcaption>
+          </figure>
+          <div class="serum-view-rail">
+            <div class="serum-view-controls" data-serum-controls role="group" aria-label="مشاهد رواء التوضيحية" hidden>
+              <button type="button" data-serum-control="bottle" aria-pressed="true" aria-label="العبوة: عرض تصوّر الحجم المختار">العبوة</button>
+              <button type="button" data-serum-control="sizes" aria-pressed="false" aria-label="الأحجام: عرض تصوّر الأحجام الثلاثة">الأحجام</button>
+              <button type="button" data-serum-control="ritual" aria-pressed="false" aria-label="الروتين: عرض مشهد تعبيري">الروتين</button>
+            </div>
+            <noscript><p class="serum-view-fallback">صورة توضيحية للعبوة؛ تواصلي معنا لمعرفة التفاصيل.</p></noscript>
+          </div>
+        </div>
       </div>
 
       <div class="serum-purchase">
@@ -176,6 +197,14 @@
         <div class="serum-actions">
           <button type="button" class="btn btn-primary" data-add-to-cart="serum-50" data-add-current data-open-cart-after-add data-requires-js disabled>أضيفي وراجعي طلبك</button>
           <a class="btn btn-ghost" href="https://wa.me/963997310856?text=%D9%85%D8%B1%D8%AD%D8%A8%D9%8B%D8%A7%20%D8%B1%D9%88%D8%A7%D8%A1%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%A7%D9%84%D8%B3%D9%8A%D8%B1%D9%88%D9%85" rel="noopener" data-wa-direct>اسألينا على واتساب</a>
+        </div>
+        <div class="serum-view-rail serum-view-rail--small">
+          <div class="serum-view-controls" data-serum-controls role="group" aria-label="مشاهد رواء التوضيحية" hidden>
+            <button type="button" data-serum-control="bottle" aria-pressed="true" aria-label="العبوة: عرض تصوّر الحجم المختار">العبوة</button>
+            <button type="button" data-serum-control="sizes" aria-pressed="false" aria-label="الأحجام: عرض تصوّر الأحجام الثلاثة">الأحجام</button>
+            <button type="button" data-serum-control="ritual" aria-pressed="false" aria-label="الروتين: عرض مشهد تعبيري">الروتين</button>
+          </div>
+          <noscript><p class="serum-view-fallback">صورة توضيحية للعبوة؛ تواصلي معنا لمعرفة التفاصيل.</p></noscript>
         </div>
         <p class="product-hero-unit" data-unit-live>الأسعار مرجعية وتُؤكّد قبل الشحن.</p>
         <section class="serum-estimate" data-order-estimate aria-labelledby="estimate-title">

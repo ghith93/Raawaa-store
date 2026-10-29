@@ -7,7 +7,7 @@
  * هذا الفحص يطلب الموقع الحيّ نفسه ويعتبر أي 4xx/5xx عيبًا.
  */
 const BASE = process.argv[2] || 'https://raawaa-store.pages.dev';
-const targets = ['', '/serum', '/css/styles.css', '/css/serum.css', '/js/config.js', '/js/cart.js', '/js/marketing.js'];
+const targets = ['', '/serum', '/css/styles.css', '/css/serum.css', '/js/config.js', '/js/cart.js', '/js/marketing.js', '/js/serum-views.js', '/sw.js'];
 const seen = new Set();
 let bad = 0, total = 0;
 

@@ -30,6 +30,7 @@ const CORE = [
   './js/config.js',
   './js/marketing.js',
   './js/cart.js',
+  './js/serum-views.js',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/icons/apple-touch-icon.png',
@@ -49,12 +50,17 @@ const CORE = [
   './assets/img/products/trio-v5-480.avif',
   './assets/img/products/trio-v5-720.avif',
   './assets/img/products/trio-v5-480.webp',
+  './assets/img/products/trio-v5-480.jpg',
   './assets/img/products/size-30-v5-480.avif',
+  './assets/img/products/size-30-v5-480.webp',
+  './assets/img/products/size-30-v5-480.jpg',
   './assets/img/products/size-50-v5-480.avif',
   './assets/img/products/size-50-v5-720.avif',
   './assets/img/products/size-50-v5-480.webp',
   './assets/img/products/size-50-v5-720.jpg',
   './assets/img/products/size-100-v5-480.avif',
+  './assets/img/products/size-100-v5-480.webp',
+  './assets/img/products/size-100-v5-480.jpg',
   // مشهد رواء: نسخة صغيرة لكل صيغة، تكفي كبديل عند انقطاع الشبكة.
   './assets/img/products/ritual-v5-480.avif',
   './assets/img/products/ritual-v5-480.webp',
@@ -104,11 +110,13 @@ self.addEventListener('fetch', (event) => {
               if (hit) return hit;
               // إن طلبت شاشة عالية الكثافة نسخة أكبر دون إنترنت، أعطها المشهد
               // الصغير المحفوظ للصيغة نفسها بدل صورة مكسورة.
-              const ritual = url.pathname.match(/\/ritual-v5-\d+\.(avif|webp|jpg)$/i);
-              if (ritual) {
-                const ext = ritual[1].toLowerCase();
-                const width = ext === 'jpg' ? '720' : '480';
-                return caches.match('./assets/img/products/ritual-v5-' + width + '.' + ext);
+              const visual = url.pathname.match(/\/(ritual|trio|size-(?:30|50|100))-v5-\d+\.(avif|webp|jpg)$/i);
+              if (visual) {
+                const kind = visual[1].toLowerCase();
+                const ext = visual[2].toLowerCase();
+                // لنسخة JPG في الروتين و50 مل يوجد مقاس 720 محفوظ مسبقًا.
+                const width = ext === 'jpg' && (kind === 'ritual' || kind === 'size-50') ? '720' : '480';
+                return caches.match('./assets/img/products/' + kind + '-v5-' + width + '.' + ext);
               }
               return hit;
             });

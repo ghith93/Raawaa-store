@@ -84,7 +84,28 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             guide = page.locator('.serum-size-guide').inner_text()
             check("دليل الحجم يشرح التجربة والاستعمال والقيمة", all(x in guide for x in ['30 مل','50 مل','100 مل','الأنسب للاستعمال اليومي','لكل ملليلتر']))
             page.locator('.serum-size-guide summary').click()
+            # معرض بمشاهد موسومة وأزرار عادية تعمل بلوحة المفاتيح وفي اللمس.
+            buttons = page.locator('[data-serum-controls]:visible button')
+            check("مجموعة مشاهد واحدة ظاهرة وثلاثة أهداف لمس كافية",
+                  buttons.count() == 3 and all((b.bounding_box() or {}).get('height', 0) >= 44 for b in buttons.all()))
+            sizes_view = page.locator('[data-serum-control="sizes"]:visible')
+            sizes_view.focus(); sizes_view.press('Enter')
+            check("معرض الأحجام يعمل بلوحة المفاتيح ولا يدّعي مقياسًا فعليًا",
+                  page.locator('[data-serum-view="sizes"]').is_visible() and sizes_view.get_attribute('aria-pressed') == 'true' and
+                  'لا يوضّح القياسات' in page.locator('[data-serum-caption]').inner_text())
+            ritual_view = page.locator('[data-serum-control="ritual"]:visible')
+            ritual_view.focus(); ritual_view.press('Space')
+            check("المشهد التعبيري موسوم ولا يُعرض نتيجة للمنتج",
+                  page.locator('[data-serum-view="ritual"]').is_visible() and ritual_view.get_attribute('aria-pressed') == 'true' and
+                  'مولّد' in page.locator('[data-serum-caption]').inner_text() and 'لا يعرض المنتج' in page.locator('[data-serum-caption]').inner_text())
+            if width == 390:
+                audit(page, 'المشهد المفتوح')
+                sizes_view.tap()
+                check("تبديل المشهد باللمس المحاكى يعمل", page.locator('[data-serum-view="sizes"]').is_visible())
             page.locator('#products .size-option').nth(2).click()
+            check("اختيار حجم جديد يعيد صورته ويحدّث حالة المعرض",
+                  page.locator('[data-serum-view="bottle"]').is_visible() and
+                  page.locator('[data-serum-control="bottle"]:visible').get_attribute('aria-pressed') == 'true')
             check("السعر المختار يُعلن لقارئ الشاشة وتتبعه الصورة", '$15' in page.locator('[data-price-live]').inner_text() and '100 مل' in (page.locator('[data-size-img]').get_attribute('alt') or ''))
             check("التقدير يتبع الحجم المختار", page.locator('[data-estimate-total]').inner_text() == '$13.50' and '100 مل' in page.locator('[data-estimate-context]').inner_text())
             page.locator('#products .size-option').nth(1).click()
@@ -599,6 +620,39 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               setTimeout(() => resolve(false), 12000);
             })""")
             check("المشهد وخيار الشراء يعملان بلا إنترنت", offline_image and page.locator('[data-add-current]').is_enabled() and '— نسخة المحتوى: finish' in page.evaluate('window.rawaaSourceNote()'))
+            page.locator('[data-serum-control="sizes"]:visible').click()
+            size_scene_offline = page.locator('[data-serum-view="sizes"] img').evaluate("""el => new Promise(resolve => {
+              if (el.complete) return resolve(el.naturalWidth > 0);
+              el.addEventListener('load', () => resolve(el.naturalWidth > 0), {once:true});
+              el.addEventListener('error', () => resolve(false), {once:true});
+              setTimeout(() => resolve(false), 12000);
+            })""")
+            check("معرض الأحجام يعمل لأول مرة بلا إنترنت بدقة شاشة عالية", size_scene_offline and
+                  'لا يوضّح القياسات' in page.locator('[data-serum-caption]').inner_text())
+            page.locator('#products .size-option').nth(0).click()
+            bottle_offline = page.locator('[data-size-img]').evaluate("""el => new Promise(resolve => {
+              if (el.complete) return resolve(el.naturalWidth > 0);
+              el.addEventListener('load', () => resolve(el.naturalWidth > 0), {once:true});
+              el.addEventListener('error', () => resolve(false), {once:true});
+              setTimeout(() => resolve(false), 12000);
+            })""")
+            check("صورة 30 مل تتبع الاختيار وتعمل بلا إنترنت", bottle_offline and '30 مل' in (page.locator('[data-size-img]').get_attribute('alt') or ''))
+            # استدعاء مقاسات لم تُحفظ بحالة مطابقة، لضمان الرجوع للنسخة الصغيرة المحفوظة.
+            fallback_formats = page.evaluate("""async () => {
+              const paths = [
+                '/assets/img/products/trio-v5-1080.jpg',
+                '/assets/img/products/size-30-v5-720.jpg',
+                '/assets/img/products/size-100-v5-720.jpg',
+                '/assets/img/products/size-100-v5-900.webp',
+                '/assets/img/products/trio-v5-1080.avif'
+              ];
+              return Promise.all(paths.map(async (p) => {
+                try { const r = await fetch(p + '?offline-probe=1'); return r.ok && (await r.arrayBuffer()).byteLength > 0; }
+                catch { return false; }
+              }));
+            }""")
+            check("بدائل JPG وWebP وAVIF للأحجام والمشهد تعمل بلا إنترنت", all(fallback_formats), str(fallback_formats))
+            page.locator('#products .size-option').nth(1).click()
             check("تقدير العبوة يظهر بالقيم الصحيحة دون إنترنت", page.locator('[data-order-estimate]').is_visible() and page.locator('[data-estimate-total]').inner_text() == '$10.80')
             page.locator('#products .size-option').nth(2).click()
             page.locator('.serum-estimate-details summary').click()
@@ -615,10 +669,37 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                   'فانيلا' in page.locator('[data-cart-custom-summary]').inner_text())
             ctx.close()
 
+        # تكبير النص 200%: الترويسة وخيارات الأحجام والمشاهد لا تُقصّ أفقيًا.
+        for zoom_path in ['/', path]:
+            ctx = browser.new_context(viewport={"width":320,"height":844}, is_mobile=True, has_touch=True,
+                                      locale="ar", ignore_https_errors=ignore_https)
+            page = ctx.new_page(); page.goto(base + zoom_path, wait_until='load')
+            page.wait_for_selector('#products .size-option input')
+            page.add_style_tag(content='html { font-size: 200% !important; }')
+            target_selector = '.header-actions button, .price-strip li' if zoom_path == '/' else '.header-actions button, #products .size-option, [data-serum-controls]:visible button'
+            in_bounds = page.locator(target_selector).evaluate_all("""els => els.every(e => {
+              const r = e.getBoundingClientRect();
+              return r.width > 0 && r.left >= -1 && r.right <= innerWidth + 1 && e.scrollWidth <= e.clientWidth + 1;
+            })""")
+            check(f"{zoom_path}: تكبير النص 200% لا يقص الترويسة أو الاختيارات", in_bounds and
+                  page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1') and
+                  page.locator('.topbar-short').evaluate("e => getComputedStyle(e).whiteSpace === 'normal'"))
+            if zoom_path == path:
+                page.locator('[data-serum-control="ritual"]:visible').click()
+                page.locator('[data-size-for="serum-100"]').click()
+                page.locator('[data-add-current]').click()
+                check("عند تكبير النص: تبديل المشهد والحجم وفتح السلة ممكن", page.locator('#cart-dialog').evaluate('(e) => e.open') and
+                      '100 مل' in (page.locator('[data-size-img]').get_attribute('alt') or ''))
+            ctx.close()
+
         # لا JavaScript: أسعار حقيقية وزر واتساب يعمل، وزر السلة معطّل بدل وهم وظيفي.
         ctx = browser.new_context(java_script_enabled=False, ignore_https_errors=ignore_https, viewport={"width":390,"height":844})
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
         check("بدون JavaScript: الأسعار وواتساب ظاهرة وزر السلة معطّل", all(s in page.locator('#products').inner_text() for s in ['$10','$12','$15']) and page.locator('[data-add-current]').is_disabled() and page.locator('[data-wa-direct]').first.is_visible())
+        check("بدون JavaScript: صورة العبوة والبيان ظاهران وأزرار المعرض مخفية",
+              page.locator('[data-serum-view="bottle"]').is_visible() and
+              'تصوّر تصميمي' in page.locator('[data-serum-caption]').inner_text() and
+              page.locator('[data-serum-controls]:visible').count() == 0)
         check("دون JavaScript: لا مبلغ تقديري وهمي ويوجد بديل للاستفسار",
               page.locator('[data-estimate-interface]').is_hidden() and
               page.locator('[data-estimate-fallback]').is_visible() and

@@ -607,6 +607,14 @@ def run(base: str) -> int:
             check(f"لا تمرير أفقي عند {w}px ({label})", overflow <= 1, f"الفرق={overflow}px")
 
             if w <= 430:
+                pg.evaluate('window.scrollTo(0, 0)')
+                pg.wait_for_timeout(200)
+                visual = pg.locator('.hero-figure img').bounding_box()
+                primary = pg.locator('[data-discover-serum]').bounding_box()
+                check(f"العبوات وزر الاختيار ظاهران في الشاشة الأولى عند {w}px",
+                      bool(visual and primary and visual['y'] >= 0 and visual['y'] + visual['height'] <= h and
+                           primary['y'] >= 0 and primary['y'] + primary['height'] <= h),
+                      f"صورة={visual}; زر={primary}")
                 small = pg.evaluate(
                     """() => {
                         const el = [...document.querySelectorAll('button, a.btn, .faq-list summary')];
