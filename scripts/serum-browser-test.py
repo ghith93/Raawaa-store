@@ -68,9 +68,18 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             errors: list[str] = []
             bad: list[str] = []
             page.on("pageerror", lambda e: errors.append(str(e)))
+            page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
             page.on("response", lambda r: bad.append(f"{r.status} {r.url}") if r.status >= 400 else None)
             response = page.goto(base + path + "?utm_source=facebook&utm_medium=paid&utm_campaign=serum-oct&utm_content=moment", wait_until="load", timeout=45000)
-            page.wait_for_selector('#products .size-option input', state='attached')
+            try:
+                page.wait_for_selector('#products .size-option input', state='attached', timeout=10000)
+            except Exception:
+                if os.environ.get('GITHUB_ACTIONS') == 'true':
+                    for error in errors[:3]:
+                        safe = error.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')[:500]
+                        print(f'::error::Web browser console: {safe}', flush=True)
+                    print(f'::error::Configuration available: {page.evaluate("!!window.RAWAA_CONFIG")}; HTTP: {response.status if response else 0}', flush=True)
+                raise
             page.evaluate('document.fonts.ready')
             check("صفحة حقيقية HTTP 200", bool(response and response.status == 200), str(response.status if response else None))
             check("عنوان عربي واحد واتجاه RTL", page.locator('h1').count() == 1 and page.evaluate("getComputedStyle(document.body).direction") == 'rtl')
