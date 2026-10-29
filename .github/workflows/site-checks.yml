@@ -121,7 +121,7 @@ jobs:
       - name: تثبيت Playwright
         run: |
           python -m pip install --quiet playwright
-          python -m playwright install --with-deps chromium
+          python -m playwright install --with-deps chromium webkit
 
       - name: تشغيل خادم محلي
         run: |
@@ -134,3 +134,6 @@ jobs:
 
       - name: اختبار صفحة السيروم ومسار الإعلان
         run: python scripts/serum-browser-test.py --base http://127.0.0.1:8080 --path /serum.html
+
+      - name: اختبار صفحة السيروم بمحرك WebKit المشابه لسفاري
+        run: python scripts/serum-browser-test.py --base http://127.0.0.1:8080 --path /serum.html --browser webkit

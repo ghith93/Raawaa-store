@@ -168,6 +168,20 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("50 مل + استلام حماة = $14", page.locator('[data-cart-total]').inner_text() == '$14')
             audit(page, 'السلة المفتوحة')
             page.locator('[data-cart-close]').click()
+            if width < 600:
+                sticky = page.locator('[data-sticky-bar]')
+                check("شريط السلة يوضح أن المبلغ تقديري ويتبع المنطقة والدفع",
+                      sticky.is_visible() and 'تقديري' in sticky.inner_text() and
+                      page.locator('[data-sticky-total]').inner_text() == '$14')
+                check("تسمية التقدير وزر السلة مقروءان دون اقتطاع",
+                      sticky.locator('.sticky-bar-btn').evaluate("""e => {
+                        const bounds = e.getBoundingClientRect();
+                        return [...e.children].every(child => {
+                          const r = child.getBoundingClientRect();
+                          return r.left >= bounds.left - 1 && r.right <= bounds.right + 1 &&
+                            child.scrollWidth <= child.clientWidth + 1;
+                        });
+                      }"""))
             check("تغيير المنطقة والدفع في السلة يحدّث تقدير الصفحة",
                   page.locator('[data-estimate-total]').inner_text() == '$14' and
                   page.locator('[data-estimate-zone]').input_value() == 'hama' and

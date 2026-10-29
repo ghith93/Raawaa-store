@@ -528,6 +528,7 @@ def run(base: str) -> int:
         add_size(m, "serum-30")
         m.wait_for_timeout(400)
         check("شريط السلة اللاصق يظهر على الهاتف بعد الإضافة", m.locator("[data-sticky-bar]").is_visible())
+        check("شريط السلة يوضح أن المبلغ تقديري", "تقديري" in m.locator("[data-sticky-bar]").inner_text())
         check("الشريط يعرض عدد القطع", m.locator("[data-sticky-count]").inner_text() == "1",
               m.locator("[data-sticky-count]").inner_text())
         check("الشريط يعرض الإجمالي المرجعي مع خصم شام كاش ($10 − 10% = $9)",
