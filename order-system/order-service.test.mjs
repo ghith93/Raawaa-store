@@ -21,7 +21,7 @@ test('does not report success or notify on invalid input or storage failure', as
   let notified = false;
   const notificationRunner = { async kick() { notified = true; } };
   const repository = { async insertPending() { throw new Error('private database error'); } };
-  assert.deepEqual(await submitOrder({ input, idempotencyKey, config, repository, notificationRunner }), { ok: false, code: 'NOT_SAVED' });
+  assert.deepEqual(await submitOrder({ input, idempotencyKey, config, repository, notificationRunner }), { ok: false, code: 'SAVE_UNCERTAIN' });
   assert.deepEqual(await submitOrder({ input, idempotencyKey: 'bad', config, repository, notificationRunner }), { ok: false, code: 'INVALID_REQUEST' });
   assert.deepEqual(await submitOrder({ input: { ...input, phone: 'bad' }, idempotencyKey, config, repository, notificationRunner }), { ok: false, code: 'INVALID_REQUEST' });
   assert.equal(notified, false);
@@ -41,5 +41,5 @@ test('notification failure does not undo a saved order; duplicate request does n
 test('rejects malformed repository results without leaking details', async () => {
   const repository = { async insertPending() { return { reference: 'bad', result: 'created' }; } };
   const result = await submitOrder({ input, idempotencyKey, config, repository, notificationRunner: { async kick() { throw new Error('must not run'); } } });
-  assert.deepEqual(result, { ok: false, code: 'NOT_SAVED' });
+  assert.deepEqual(result, { ok: false, code: 'SAVE_UNCERTAIN' });
 });

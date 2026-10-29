@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
+import { createEdgePairing } from './edge-pairing-runtime.mjs';
+if (!process.env.PGLITE_MODULE) throw new Error('Set PGLITE_MODULE');
+const { PGlite } = await import(pathToFileURL(process.env.PGLITE_MODULE));
+const db = new PGlite();
+await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
+for (const file of ['001_private_orders.sql','002_telegram_pairing.sql']) await db.exec(await readFile(new URL(`./migrations/${file}`, import.meta.url),'utf8'));
+const owner='11111111-1111-4111-8111-111111111111', origin='https://store.example';
+const config={SUPABASE_URL:'https://example.supabase.co',SUPABASE_DB_URL:'postgres://private',SUPABASE_PUBLISHABLE_KEYS:'{"default":"public"}',RAWAA_OWNER_USER_ID:owner,RAWAA_OWNER_ORIGIN:origin,RAWAA_TELEGRAM_BOT_TOKEN:'12345:'+'x'.repeat(25)};
+let update;
+const fetchImpl=async (url,init)=>{
+ if (url.endsWith('/auth/v1/user')) return {ok:init.headers.authorization==='Bearer owner',json:async()=>({id:owner})};
+ assert.ok(url.startsWith('https://api.telegram.org/')); assert.ok(!JSON.parse(init.body).offset); return {ok:true,json:async()=>({ok:true,result:update?[update]:[]})};
+};
+const sql={unsafe:async(text,args)=>(await db.query(text,args)).rows,begin:async cb=>db.transaction(async tx=>cb({unsafe:async(text,args)=>(await tx.query(text,args)).rows}))};
+const handler=createEdgePairing({getEnv:key=>config[key],postgresFactory:()=>sql,fetchImpl});
+const req=(body,auth='owner')=>new Request('https://edge.example',{method:'POST',headers:{origin,authorization:`Bearer ${auth}`,'content-type':'application/json'},body:JSON.stringify(body)});
+assert.equal((await handler(req({action:'start'},'other'))).status,403);
+const res=await handler(req({action:'start'}));assert.equal(res.status,200);const start=await res.json();
+update={message:{text:start.message,date:Math.floor(Date.now()/1000),chat:{id:1234,type:'private'},from:{id:1234}}};
+const finish=await handler(req({action:'finish'}));assert.equal(finish.status,200);assert.deepEqual(await finish.json(),{ok:true});
+assert.equal((await db.query('select chat_id from rawaa_store.telegram_recipient')).rows[0].chat_id,1234);
+await db.close(); console.log('Edge pairing: owner verification and atomic private chat binding passed with mocked Telegram.');

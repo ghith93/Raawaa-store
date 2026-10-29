@@ -1,10 +1,15 @@
 /** Server-backed client, not connected to the demo. Holds the access token in memory only. */
-export function createOwnerClient({ supabaseUrl, publishableKey, ownerEndpoint, fetchImpl = fetch, now = Date.now }) {
+export function createOwnerClient({ supabaseUrl, publishableKey, ownerEndpoint, pairingEndpoint = null, fetchImpl = fetch, now = Date.now }) {
   const base = new URL(supabaseUrl);
   const endpoint = new URL(ownerEndpoint);
   if (base.protocol !== 'https:' || !/^[a-z0-9-]+\.supabase\.co$/.test(base.hostname) || base.pathname !== '/' || base.search || base.hash || base.username || base.password || base.port ||
       endpoint.protocol !== 'https:' || ![base.hostname, base.hostname.replace('.supabase.co', '.functions.supabase.co')].includes(endpoint.hostname) || endpoint.username || endpoint.password || endpoint.port || endpoint.search || endpoint.hash ||
       typeof publishableKey !== 'string' || !publishableKey || typeof fetchImpl !== 'function') throw new Error('INVALID_CONFIGURATION');
+  let pairingUrl = null;
+  if (pairingEndpoint !== null) {
+    pairingUrl = new URL(pairingEndpoint);
+    if (pairingUrl.protocol !== 'https:' || ![base.hostname, base.hostname.replace('.supabase.co', '.functions.supabase.co')].includes(pairingUrl.hostname) || pairingUrl.username || pairingUrl.password || pairingUrl.port || pairingUrl.search || pairingUrl.hash) throw new Error('INVALID_CONFIGURATION');
+  }
   const authUrl = `${base.origin}/auth/v1`;
   let token = null, expires = 0, generation = 0;
   const options = { credentials: 'omit', cache: 'no-store', redirect: 'error' };
@@ -37,10 +42,24 @@ export function createOwnerClient({ supabaseUrl, publishableKey, ownerEndpoint, 
       return data;
     } catch (err) { if (err.message === 'SESSION_EXPIRED') throw err; throw new Error('LOAD_FAILED'); }
   }
+  async function pair(action) {
+    if (!pairingUrl || !['start','finish'].includes(action)) throw new Error('PAIR_FAILED');
+    if (!token || now() >= expires) { token = null; expires = 0; throw new Error('SESSION_EXPIRED'); }
+    const current = generation, requestToken = token;
+    try {
+      const response = await fetchImpl(pairingUrl.href, { ...options, method:'POST', headers:{apikey:publishableKey,authorization:`Bearer ${requestToken}`,'content-type':'application/json'},body:JSON.stringify({action}) });
+      if (current !== generation) throw new Error('SESSION_EXPIRED');
+      if (response.status === 401 || response.status === 403) { token=null; expires=0; throw new Error('SESSION_EXPIRED'); }
+      const data=await response.json();
+      if (!response.ok) throw new Error(['invalid','not_found','ambiguous'].includes(data?.error) ? data.error : 'PAIR_FAILED');
+      if (data?.ok !== true || (action === 'start' && (typeof data.message !== 'string' || !/^\/pair [0-9a-f]{32}$/.test(data.message) || !Number.isFinite(data.expiresAt)))) throw new Error('PAIR_FAILED');
+      return data;
+    } catch (err) { if (['SESSION_EXPIRED','invalid','not_found','ambiguous'].includes(err.message)) throw err; throw new Error('PAIR_FAILED'); }
+  }
   async function logout() {
     const previous = token; token = null; expires = 0; generation++;
     if (!previous) return;
     try { await fetchImpl(`${authUrl}/logout`, { ...options, method: 'POST', headers: { apikey: publishableKey, authorization: `Bearer ${previous}` } }); } catch { /* local session is still cleared */ }
   }
-  return { login, list, logout };
+  return { login, list, pair, logout };
 }

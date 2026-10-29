@@ -11,7 +11,7 @@ for (const width of [320,390,430]) {
     page.on('pageerror', error => errors.push(error.message));
     let rejectNext = false, logoutCalls = 0;
     const cors = {'access-control-allow-origin':'*','access-control-allow-headers':'authorization, apikey, content-type','access-control-allow-methods':'GET, POST, OPTIONS'};
-    await page.route('**/settings.mjs', route => route.fulfill({contentType:'application/javascript',body:`export const settings={ownerOrigin:${JSON.stringify(new URL(process.env.OWNER_URL).origin)},supabaseUrl:'https://example.supabase.co',ownerEndpoint:'https://example.functions.supabase.co/orders',publishableKey:'fake-public-key'};`}));
+    await page.route('**/settings.mjs', route => route.fulfill({contentType:'application/javascript',body:`export const settings={ownerOrigin:${JSON.stringify(new URL(process.env.OWNER_URL).origin)},supabaseUrl:'https://example.supabase.co',ownerEndpoint:'https://example.functions.supabase.co/orders',pairingEndpoint:'https://example.functions.supabase.co/pair',publishableKey:'fake-public-key'};`}));
     await page.route('https://example.supabase.co/**', async route => {
       if(route.request().method()==='OPTIONS') return route.fulfill({status:204,headers:cors});
       if(route.request().url().includes('/logout')) {logoutCalls++; return route.fulfill({status:204,headers:cors});}
@@ -23,6 +23,10 @@ for (const width of [320,390,430]) {
       if(route.request().method()==='OPTIONS') return route.fulfill({status:204,headers:cors});
       assert.equal(route.request().headers().authorization,'Bearer fake.valid.jwt');
       if(rejectNext) return route.fulfill({status:401,headers:cors,contentType:'application/json',body:'{}'});
+      if (route.request().url().endsWith('/pair')) {
+        const data=route.request().postDataJSON();
+        return route.fulfill({status:200,headers:cors,contentType:'application/json',body:JSON.stringify(data.action==='start'?{ok:true,id:'11111111-1111-4111-8111-111111111111',message:'/pair '+ 'a'.repeat(32),expiresAt:Date.now()+600000}:{ok:true})});
+      }
       const page2=new URL(route.request().url()).searchParams.has('cursor');
       const order={reference:page2?'RAWAA-TEST002':'RAWAA-TEST001',name:'<img src=x onerror=alert(1)>',phone:'0990000000',address:'عنوان تجريبي',status:'pending_review',notification:'unknown',items:[{size:'50 مل',qty:1}],method:'cod',scent:'unscented',oil:'',totalCents:2240};
       return route.fulfill({status:200,headers:cors,contentType:'application/json',body:JSON.stringify({orders:[order],nextCursor:page2?null:'cGFnZTI',hasMore:!page2})});
@@ -36,6 +40,12 @@ for (const width of [320,390,430]) {
     assert.match(await page.locator('.card').first().innerText(),/22\.40/);
     assert.equal(await page.evaluate('document.documentElement.scrollWidth <= innerWidth'),true);
     assert.equal(await page.evaluate('localStorage.length + sessionStorage.length'),0);
+    if (await page.locator('#pair-start').count()) {
+      await page.locator('#pair-start').click(); await page.locator('#pair-code').waitFor();
+      await page.waitForFunction(() => document.querySelector('#pair-code').textContent.startsWith('/pair '));
+      await page.locator('#pair-finish').click(); await page.waitForFunction(() => document.querySelector('#pair-status').textContent.includes('تم ربط'));
+      assert.equal(await page.locator('#pair-code').innerText(),'');
+    }
     await page.addScriptTag({path:'scripts/vendor/axe.min.js'});
     const violations=await page.evaluate(async()=> (await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa']}})).violations.map(v=>v.id));
     assert.deepEqual(violations,[]);

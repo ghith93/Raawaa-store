@@ -13,10 +13,10 @@ export async function submitOrder({ input, idempotencyKey, config, repository, n
   try { order = prepareOrder(input, config); } catch { return { ok: false, code: 'INVALID_REQUEST' }; }
   let saved;
   try { saved = await repository.insertPending({ order, idempotencyKey }); }
-  catch { return { ok: false, code: 'NOT_SAVED' }; }
+  catch { return { ok: false, code: 'SAVE_UNCERTAIN' }; }
   // Don't report success unless storage returned a valid durable order reference.
   if (!saved || typeof saved.reference !== 'string' || !/^RAWAA-[A-Z0-9]{6,30}$/.test(saved.reference) ||
-      (saved.result !== 'created' && saved.result !== 'existing')) return { ok: false, code: 'NOT_SAVED' };
+      (saved.result !== 'created' && saved.result !== 'existing')) return { ok: false, code: 'SAVE_UNCERTAIN' };
   // The durable outbox is authoritative. Failed sends are recoverable separately;
   // an ambiguous Telegram timeout is not considered delivery, and needs review.
   if (saved.result === 'created') {
