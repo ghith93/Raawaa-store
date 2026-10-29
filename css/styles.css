@@ -971,6 +971,11 @@ bdi { unicode-bidi: isolate; }
   margin-bottom: var(--space-3);
 }
 .fallback-alt { margin-bottom: var(--space-3) !important; }
+.cart-copy-order { margin-top: var(--space-3); }
+.cart-copy-status:empty { display: none; }
+[data-cart-copy-manual][hidden] { display: none; }
+[data-cart-copy-manual] label { display: block; margin-bottom: var(--space-2); font-size: 0.82rem; }
+[data-cart-copy-text] { width: 100%; min-height: 10rem; padding: var(--space-3); border: 1px solid var(--sand); border-radius: var(--radius-sm); font: inherit; line-height: 1.6; color: var(--ink); background: var(--cream); }
 
 /* ---------- معاينة السعر النهائي في بطاقة المنتج ---------- */
 .product-pay-preview {
