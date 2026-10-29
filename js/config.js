@@ -248,7 +248,7 @@
      * ⚠ لا تُعرض مقارنة بـ«أرخص لكل مل من شامبو فاخر»: المقارنة تفشل،
      *    لأن Aesop يبيع 500 مل بـ£82/L. نقارن داخل خطنا فقط.
      */
-    showPricePerUnit: true,
+    showPricePerUnit: false,
 
     cart: {
       maxQuantityPerItem: 10,
@@ -332,21 +332,30 @@
      */
     customization: {
       title: 'رائحتك أنت',
+      scentPrice: 2,
       note: 'استفسري عن خيارات العطر والإضافات المتوفّرة عبر واتساب.',
       scentOptions: [
         { id: 'unscented', label: 'بلا عطر', note: 'خيار بلا عطر، نؤكد توفّره عند الطلب.' },
         { id: 'vanilla', label: 'فانيلا دافئة', note: 'رائحة حلوة وهادئة.' },
         { id: 'rose', label: 'ورد', note: 'أنثوية كلاسيكية، تلائم المناسبات.' },
         { id: 'oud', label: 'عود شرقي', note: 'رائحة شرقية دافئة.' },
+        { id: 'lavender', label: 'لافندر' },
+        { id: 'rosemary', label: 'إكليل الجبل' },
+        { id: 'jasmine', label: 'ياسمين' },
+        { id: 'ylang', label: 'إيلانغ إيلانغ' },
+        { id: 'mint', label: 'نعناع' },
         { id: 'custom', label: 'عطر آخر — أذكره في واتساب' }
       ],
       oilAdditions: [
         { id: 'argan', label: 'أرجان', note: 'الأنسب للشعر الجاف والمتقصّف.' },
         { id: 'castor', label: 'خروع', note: 'غني وثقيل — للأطراف شديدة الجفاف.' },
-        { id: 'almond', label: 'لوز', note: 'خفيف ويسهل توزيعه.' },
+        { id: 'almond', label: 'لوز حلو' },
+        { id: 'jojoba', label: 'جوجوبا' },
+        { id: 'coconut', label: 'جوز الهند' },
+        { id: 'grapeseed', label: 'بذور العنب' },
         { id: 'other', label: 'زيت آخر — أذكره في واتساب' }
       ],
-      /** تُضاف الزيوت بلا رسوم إضافية حتى الآن — يُراجع مع المصنع. */
+      /** سعر إضافة الزيت يؤكد مع المصنع ولا يدخل في الإجمالي التقديري. */
       extraOilNote: 'توفّر الخيارات وإمكان إضافتها يُؤكَّدان عبر واتساب.'
     },
 

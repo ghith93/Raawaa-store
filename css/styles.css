@@ -2801,3 +2801,12 @@ details[id="returns"] {
 @media (min-width: 900px) {
   .hero-figure img { aspect-ratio: 1195 / 896; object-fit: contain; }
 }
+
+/* رواء: تفاصيل مستوحاة من دفء الحِرفة العربية دون زخرفة تزاحم الشراء. */
+.serum-card { border: 1px solid #d9c8ac; box-shadow: 0 18px 50px rgba(70, 45, 25, .08); }
+.serum-heading .eyebrow, .section-head .eyebrow { letter-spacing: .035em; color: #79562d; }
+.serum-photo { border: 1px solid #dfd0ba; }
+.custom-block { border: 1px solid #d9c8ac; border-radius: 14px; background: #faf6ef; padding: clamp(20px, 4vw, 36px); }
+.custom-block h3::before { content: '✦'; color: #967344; margin-inline-end: .55em; }
+.custom-block .chip { border-color: #c8b392; }
+.custom-block .chip.is-selected { background: #5a3a27; border-color: #5a3a27; color: #fff; }

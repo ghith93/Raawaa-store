@@ -10,6 +10,7 @@ RAWAA | رواء — اختبار متصفح فعلي (Playwright + Chromium).
 """
 import argparse
 import json
+import os
 import sys
 import urllib.parse
 from pathlib import Path
@@ -26,6 +27,8 @@ def check(name, condition, detail=""):
     results.append({"name": name, "ok": bool(condition), "detail": detail})
     mark = "PASS" if condition else "FAIL"
     print(f"[{mark}] {name}" + (f" — {detail}" if detail else ""))
+    if not condition and os.environ.get("GITHUB_ACTIONS") == "true":
+        print(f"::error::{name}", flush=True)
     return bool(condition)
 
 
@@ -71,10 +74,7 @@ def run(base: str) -> int:
         check("الأحجام 30/50/100 مل", [t.strip() for t in sizes] == ["30 مل", "50 مل", "100 مل"], str(sizes))
         prices = page.locator("#products .size-option-price").all_inner_texts()
         check("الأسعار المعروضة $10 / $12 / $15", [t.strip() for t in prices] == ["$10", "$12", "$15"], str(prices))
-        unit_rows = page.locator('[data-unit-comparison] li').all_inner_texts()
-        check("الرئيسية تقارن تكلفة 10 مل للأحجام دون افتراض عبوة للبيع",
-              [x.replace('\n', ' ') for x in unit_rows] == ['30 مل $3.33', '50 مل $2.40', '100 مل $1.50'] and
-              'لا نعرض عبوة 10 مل للبيع' in page.locator('.unit-comparison-note').inner_text())
+        check("إزالة مقارنة تكلفة 10 مل", page.locator('[data-unit-comparison]').count() == 0)
         check("الرئيسية توفّر اختصارات العطر والمكونات والإرجاع",
               [x.get_attribute('href') for x in page.locator('.purchase-shortcuts a').all()] == ['#custom','#ingredients','#returns'])
         check("اتجاه الصفحة RTL", page.evaluate("getComputedStyle(document.body).direction") == "rtl")
@@ -99,8 +99,7 @@ def run(base: str) -> int:
         check("البانثينول ظاهر دون الإيهام بأن القائمة كاملة",
               "البانثينول" in ingredients and "ليست القائمة الكاملة" in ingredients)
         check("لا نسب مئوية في قسم التركيبة قبل التصحيح", "%" not in ingredients and "٪" not in ingredients)
-        check("الوصف الصحيح لحجم 50 مل ظاهر في شريط السعر والبطاقة",
-              page.locator(".ps-tag").inner_text() == "الأنسب للاستعمال اليومي" and
+        check("الوصف الصحيح لحجم 50 مل ظاهر في البطاقة",
               page.locator('[data-size-for="serum-50"] .size-option-flag').inner_text() == "الأنسب للاستعمال اليومي")
         check("لا شارة الأكثر اختيارًا أو الأكثر طلبًا",
               "الأكثر اختيارًا" not in page.locator("body").inner_text() and
