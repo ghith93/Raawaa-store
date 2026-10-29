@@ -902,7 +902,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.close()
 
         # فحص الموافقة على بكسل وهمي في الذاكرة فقط؛ كل طلب Meta يُعترض محليًا.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https, service_workers='block')
         seen_meta: list[str] = []
         def mock_config(route):
             response = route.fetch()
