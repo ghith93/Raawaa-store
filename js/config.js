@@ -332,7 +332,7 @@
      */
     customization: {
       title: 'رائحتك أنت',
-      scentPrice: 3.4,
+      scentPrice: 2,
       note: 'استفسري عن خيارات العطر والإضافات المتوفّرة عبر واتساب.',
       scentOptions: [
         { id: 'unscented', label: 'بلا عطر', note: 'خيار بلا عطر، نؤكد توفّره عند الطلب.' },
