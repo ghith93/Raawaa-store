@@ -30,10 +30,11 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
+          check-latest: true
           cache: 'npm'
 
       - name: تثبيت الاعتماديات
-        run: npm ci --ignore-scripts || npm install --ignore-scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: فحص الموقع قبل النشر
         run: node scripts/check-site.mjs

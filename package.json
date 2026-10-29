@@ -1,11 +1,12 @@
 {
   "devDependencies": {
-    "wrangler": "^4.154.0",
-    "eslint": "^9.39.5",
-    "html-validate": "^9.7.1",
-    "repomix": "^1.14.0",
-    "lighthouse": "^12.8.2",
-    "chrome-launcher": "^1.2.1"
+    "axe-core": "^4.14.0",
+    "chrome-launcher": "^1.2.1",
+    "eslint": "^10.13.0",
+    "html-validate": "^11.17.0",
+    "lighthouse": "^13.6.0",
+    "repomix": "^1.18.1",
+    "wrangler": "^4.154.0"
   },
   "name": "rawaa-store",
   "private": true,
@@ -21,5 +22,8 @@
     "verify": "npm run gates && npm run build",
     "perf": "node scripts/perf-budget.mjs",
     "assets": "node scripts/asset-audit.mjs"
+  },
+  "engines": {
+    "node": "^22.22.0 || >=24.8.0"
   }
 }

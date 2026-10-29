@@ -1,6 +1,6 @@
-# Dependabot — تحديثات أمنية تلقائية، مجانية تمامًا للمستودعات العامة.
-# التنبيهات مفعّلة. هذا الملف يغطي أدوات Actions المستخدمة في السير العمل،
-# وهي سطح الهجوم الوحيد الحقيقي في هذا المشروع (لا تبعيات npm/pip في الموقع نفسه).
+# Dependabot — طلبات تحديث دورية للأدوات المستخدمة في تطوير الموقع ونشره.
+# أدوات npm وPython لا تُنشر مع ملفات الموقع، لكن تبعياتها تظل سطح هجوم
+# محتملًا لبيئة التطوير والنشر وتحتاج إلى متابعة أمنية.
 
 version: 2
 updates:
@@ -13,6 +13,23 @@ updates:
       prefix: "ci"
     labels:
       - "dependencies"
+
+  # أدوات التطوير، مع تجميع التحديثات الصغيرة لتقليل طلبات الدمج المتكررة.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "dev"
+    labels:
+      - "dependencies"
+    groups:
+      development-minor-patch:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
 
   # حزم بايثون موجودة فقط في سكربتات التوليد والاختبار المحلية،
   # وليست جزءًا من الموقع المنشور — تُحدَّث يدويًا عند الحاجة.
