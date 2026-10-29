@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
+import { createEdgeOwner } from './edge-owner-runtime.mjs';
+if (!process.env.PGLITE_MODULE) throw new Error('Set PGLITE_MODULE');
+const { PGlite } = await import(pathToFileURL(process.env.PGLITE_MODULE));
+const db = new PGlite();
+await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
+await db.exec(await readFile(new URL('./migrations/001_private_orders.sql',import.meta.url),'utf8'));
+await db.query(`insert into rawaa_store.orders(id,reference,idempotency_key,request_hash,details) values($1,$2,$3,$4,$5::jsonb)`, [crypto.randomUUID(),'RAWAA-TEST999',crypto.randomUUID(),'a'.repeat(64),JSON.stringify({name:'تجريب',phone:'0990000000',address:'تجريب',entries:[],totalCents:1700})]);
+const owner='11111111-1111-4111-8111-111111111111';
+const config={ SUPABASE_URL:'https://example.supabase.co', SUPABASE_DB_URL:'postgres://private', SUPABASE_PUBLISHABLE_KEYS:'{"default":"fake-public"}', RAWAA_OWNER_USER_ID:owner, RAWAA_OWNER_ORIGIN:'https://store.example' };
+const handle=createEdgeOwner({getEnv:key=>config[key],fetchImpl:async()=>({ok:true,json:async()=>({id:owner})}),postgresFactory:()=>({unsafe:async(sql,params)=>(await db.query(sql,params)).rows})});
+const res=await handle(new Request('https://edge.example', {headers:{authorization:'Bearer valid.token',origin:'https://store.example'}}));
+assert.equal(res.status,200); const data=await res.json(); assert.equal(data.orders[0].reference,'RAWAA-TEST999'); assert.equal(data.orders[0].name,'تجريب');
+assert.equal((await handle(new Request('https://edge.example'))).status,401);
+await db.close(); console.log('Edge runtime verified owner and read synthetic data from private ephemeral PostgreSQL.');

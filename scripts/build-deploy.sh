@@ -21,7 +21,7 @@ for f in index.html serum.html privacy.html check.html 404.html manifest.webmani
 done
 
 # 2) مجلدات الموقع
-for d in css js assets; do
+for d in css js assets owner; do
   [ -d "$ROOT/$d" ] && cp -R "$ROOT/$d" "$OUT/"
 done
 

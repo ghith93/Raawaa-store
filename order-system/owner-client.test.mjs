@@ -1,0 +1,40 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { createOwnerClient } from './owner-client.mjs';
+const base = { supabaseUrl:'https://example.supabase.co', ownerEndpoint:'https://example.functions.supabase.co/orders', publishableKey:'public-test-key' };
+const response = data => ({ok:true, status:200, json:async()=>data});
+test('login, authenticated list and logout use private in-memory token with safe fetch options', async () => {
+  const calls=[];
+  const client=createOwnerClient({ ...base, fetchImpl:async (url, init) => { calls.push({url,init}); if(url.includes('/token?')) return response({access_token:'abc.def.ghi',expires_in:3600}); if(url.endsWith('/logout')) return response({}); return response({orders:[],nextCursor:null}); } });
+  await client.login(' test@example.org ', 'dummy-password');
+  await client.list(); await client.logout();
+  assert.equal(calls[1].init.headers.authorization, 'Bearer abc.def.ghi');
+  assert.equal(calls[1].init.cache, 'no-store');
+  assert.equal(calls[1].init.credentials, 'omit');
+  assert.equal(calls[1].init.redirect, 'error');
+  await assert.rejects(client.list(), /SESSION_EXPIRED/);
+});
+test('rejects foreign, insecure or malformed endpoints', () => {
+  for(const override of [{ownerEndpoint:'https://evil.example/orders'}, {supabaseUrl:'http://example.supabase.co'}, {supabaseUrl:'https://example.supabase.co/path'}, {ownerEndpoint:'https://example.functions.supabase.co/orders?bad=1'}]) assert.throws(()=>createOwnerClient({...base,...override}));
+});
+test('expires sessions and suppresses underlying network errors', async () => {
+  let time=0;
+  const client=createOwnerClient({...base, now:()=>time, fetchImpl:async url => url.includes('/token?') ? response({access_token:'valid.jwt',expires_in:1}) : Promise.reject(new Error('private data'))});
+  await client.login('a@b.com','dummy');
+  await assert.rejects(client.list(), /LOAD_FAILED/);
+  time=1000; await assert.rejects(client.list(), /SESSION_EXPIRED/);
+});
+test('401 and malformed server results do not expose error details', async () => {
+  let mode='login';
+  const client=createOwnerClient({...base, fetchImpl:async ()=> mode==='login' ? response({access_token:'valid.jwt',expires_in:1}) : mode==='unauthorized' ? {ok:false,status:401} : response({orders:'bad',nextCursor:null})});
+  await client.login('a@b.com','dummy'); mode='invalid'; await assert.rejects(client.list(), /LOAD_FAILED/);
+  mode='unauthorized'; await assert.rejects(client.list(), /SESSION_EXPIRED/);
+  await assert.rejects(client.list(), /SESSION_EXPIRED/);
+});
+test('logout while login is in flight cannot restore the session', async () => {
+  let resolveLogin;
+  const client=createOwnerClient({...base, fetchImpl:()=>new Promise(resolve=>{resolveLogin=resolve;})});
+  const pending=client.login('a@b.com','dummy');
+  await client.logout(); resolveLogin(response({access_token:'late.jwt',expires_in:60}));
+  await assert.rejects(pending,/LOGIN_FAILED/); await assert.rejects(client.list(),/SESSION_EXPIRED/);
+});

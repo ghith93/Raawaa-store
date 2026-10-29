@@ -1,0 +1,47 @@
+import { readFile } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import { pathToFileURL } from 'node:url';
+import { createPostgresRepository } from './postgres-repository.mjs';
+import { submitOrder } from './order-service.mjs';
+import { createOwnerHandler } from './owner-api.mjs';
+import vm from 'node:vm';
+if (!process.env.PGLITE_MODULE) throw new Error('Set PGLITE_MODULE');
+const { PGlite } = await import(pathToFileURL(process.env.PGLITE_MODULE));
+const db = new PGlite();
+await db.exec('create role anon; create role authenticated; create role service_role bypassrls;');
+await db.exec(await readFile(new URL('./migrations/001_private_orders.sql', import.meta.url), 'utf8'));
+const repository = createPostgresRepository(db);
+const idempotencyKey = 'e231547a-1e5e-4c4d-af55-f06686a30341';
+const order = { test: 'synthetic', totalCents: 2000, entries: [] };
+const first = await repository.insertPending({ idempotencyKey, order });
+const second = await repository.insertPending({ idempotencyKey, order });
+assert.equal(first.result, 'created');
+assert.equal(second.result, 'existing');
+assert.equal(second.reference, first.reference);
+await assert.rejects(repository.insertPending({ idempotencyKey, order: { ...order, totalCents: 1000 } }), /IDEMPOTENCY_CONFLICT/);
+assert.equal((await db.query('select count(*)::int as n from rawaa_store.orders')).rows[0].n, 1);
+assert.equal((await db.query('select count(*)::int as n from rawaa_store.notification_outbox')).rows[0].n, 1);
+// Full local orchestration against the private schema, with a mock notification failure.
+const sandbox = { window: {} };
+vm.runInNewContext(await readFile(new URL('../js/config.js', import.meta.url), 'utf8'), sandbox);
+const input = { name: 'تجربة', phone: '0991234567', address: 'حماة', items: [{ id: 'serum-30', qty: 1 }], zone: 'hama', method: 'cod' };
+const args = { input, idempotencyKey: '33333333-3333-4333-8333-333333333333', config: sandbox.window.RAWAA_CONFIG, repository, notificationRunner: { async kick() { throw new Error('offline'); } } };
+const saved = await submitOrder(args);
+assert.equal(saved.ok, true);
+assert.equal((await submitOrder(args)).reference, saved.reference);
+assert.equal((await db.query('select count(*)::int as n from rawaa_store.notification_outbox')).rows[0].n, 2);
+// Owner authorization against the real local schema and persisted synthetic order.
+const ownerId = '55555555-5555-4555-8555-555555555555';
+const handler = createOwnerHandler({ ownerId, allowedOrigin: 'https://store.example', repository,
+  verifyUser: async token => token === 'valid' ? { id: ownerId } : null });
+const authorized = await handler(new Request('https://backend.example/orders', { headers: { authorization: 'Bearer valid' } }));
+assert.equal(authorized.status, 200);
+const visible = await authorized.json();
+assert.ok(visible.orders.some(o => o.reference === saved.reference && o.phone === '0991234567'));
+assert.equal((await handler(new Request('https://backend.example/orders'))).status, 401);
+// Trigger forces failure at the outbox step, verifying the order rolls back too.
+await db.exec(`create function rawaa_store.fail_outbox() returns trigger language plpgsql as $$ begin raise exception 'test failure'; end $$; create trigger fail_outbox before insert on rawaa_store.notification_outbox for each row execute function rawaa_store.fail_outbox();`);
+await assert.rejects(repository.insertPending({ idempotencyKey: '11111111-1111-4111-8111-111111111111', order }));
+assert.equal((await db.query('select count(*)::int as n from rawaa_store.orders')).rows[0].n, 2);
+await db.close();
+console.log('Ephemeral PostgreSQL: atomic insert/outbox, duplicates, conflict and rollback passed.');
