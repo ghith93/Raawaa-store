@@ -64,6 +64,22 @@ def run(base: str) -> int:
         page.on("requestfailed", lambda r: failed_requests.append(f"{r.url} — {r.failure}"))
         wait_ready(page, base)
 
+        # UTM attribution: identify campaign and ad creative from WhatsApp inquiries without a paid analytics service.
+        utm_ctx = browser.new_context(viewport={"width": 1280, "height": 800}, locale="ar")
+        utm_page = utm_ctx.new_page()
+        utm_page.goto(
+            base + "/index.html?utm_source=facebook&utm_medium=paid_social&utm_campaign=rawaa-v3&utm_content=hero-a",
+            wait_until="load",
+        )
+        utm_tag = utm_page.evaluate("window.rawaaSrcTag()")
+        utm_link = utm_page.locator('a[href^="https://wa.me/"]').first.get_attribute("href") or ""
+        decoded_utm_link = urllib.parse.unquote(utm_link)
+        check("وسم واتساب يحفظ الحملة والمصدر والمادة الإعلانية",
+              all(v in utm_tag for v in ("campaign=rawaa-v3", "source=facebook/paid_social", "creative=hero-a")) and
+              all(v in decoded_utm_link for v in ("campaign=rawaa-v3", "source=facebook/paid_social", "creative=hero-a")),
+              utm_tag)
+        utm_ctx.close()
+
         # 1) المحتوى الأساسي
         check("بطاقة المنتج الواحدة معروضة", page.locator(".product-hero").count() == 1,
               f"العدد={page.locator('.product-hero').count()}")
