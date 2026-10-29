@@ -17,7 +17,12 @@ export function createPostgresRepository(db) {
     },
     async insertPending({ order, idempotencyKey }) {
       const payload = JSON.stringify(order);
-      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(payload));
+      // Fingerprint the customer's intent, not prices that may have changed
+      // between the first submission and a retry after a lost response.
+      const intent = JSON.stringify({ name: order.name, phone: order.phone, address: order.address,
+        entries: order.entries.map(({ id, qty }) => ({ id, qty })).sort((a, b) => a.id.localeCompare(b.id)),
+        scent: order.scent, oil: order.oil, zone: order.zone, method: order.method });
+      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(intent));
       const hash = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('');
       const id = crypto.randomUUID();
       const reference = `RAWAA-${crypto.randomUUID().replaceAll('-', '').slice(0, 24).toUpperCase()}`;

@@ -38,3 +38,12 @@ test('logout while login is in flight cannot restore the session', async () => {
   await client.logout(); resolveLogin(response({access_token:'late.jwt',expires_in:60}));
   await assert.rejects(pending,/LOGIN_FAILED/); await assert.rejects(client.list(),/SESSION_EXPIRED/);
 });
+test('pairing uses authenticated requests and never permits foreign endpoint',async()=>{
+  assert.throws(()=>createOwnerClient({...base,pairingEndpoint:'https://evil.example/pair'}));
+  const calls=[];const client=createOwnerClient({...base,pairingEndpoint:'https://example.functions.supabase.co/pair',fetchImpl:async(url,init)=>{
+    calls.push({url,init}); if(url.includes('/token?'))return response({access_token:'valid.jwt',expires_in:60});
+    return response(JSON.parse(init.body).action==='start'?{ok:true,message:'/pair '+'a'.repeat(32),expiresAt:Date.now()+1000}:{ok:true});
+  }});
+  await client.login('a@b.com','dummy');assert.match((await client.pair('start')).message,/^\/pair /);await client.pair('finish');
+  assert.equal(calls[1].init.headers.authorization,'Bearer valid.jwt');assert.equal(calls[1].init.cache,'no-store');assert.deepEqual(JSON.parse(calls[2].init.body),{action:'finish'});
+});

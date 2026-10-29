@@ -12,13 +12,16 @@ await db.exec('create role anon; create role authenticated; create role service_
 await db.exec(await readFile(new URL('./migrations/001_private_orders.sql', import.meta.url), 'utf8'));
 const repository = createPostgresRepository(db);
 const idempotencyKey = 'e231547a-1e5e-4c4d-af55-f06686a30341';
-const order = { test: 'synthetic', totalCents: 2000, entries: [] };
+const order = { name: 'Synthetic', phone: '0990000000', address: 'Synthetic', entries: [], scent: '', oil: '', zone: 'hama', method: 'cod', totalCents: 2000 };
 const first = await repository.insertPending({ idempotencyKey, order });
 const second = await repository.insertPending({ idempotencyKey, order });
 assert.equal(first.result, 'created');
 assert.equal(second.result, 'existing');
 assert.equal(second.reference, first.reference);
-await assert.rejects(repository.insertPending({ idempotencyKey, order: { ...order, totalCents: 1000 } }), /IDEMPOTENCY_CONFLICT/);
+const priceChanged = await repository.insertPending({ idempotencyKey, order: { ...order, totalCents: 1000 } });
+assert.equal(priceChanged.reference, first.reference);
+assert.equal(priceChanged.result, 'existing');
+await assert.rejects(repository.insertPending({ idempotencyKey, order: { ...order, address: 'Different' } }), /IDEMPOTENCY_CONFLICT/);
 assert.equal((await db.query('select count(*)::int as n from rawaa_store.orders')).rows[0].n, 1);
 assert.equal((await db.query('select count(*)::int as n from rawaa_store.notification_outbox')).rows[0].n, 1);
 // Full local orchestration against the private schema, with a mock notification failure.

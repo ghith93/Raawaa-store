@@ -12,7 +12,7 @@ const repo = createPostgresRepository(db);
 const token = '123456:' + 'x'.repeat(25), chatId = '123456789';
 const ids = ['11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222','33333333-3333-4333-8333-333333333333','44444444-4444-4444-8444-444444444444'];
 const saved = [];
-for (const idempotencyKey of ids) saved.push(await repo.insertPending({ idempotencyKey, order: { fake: true } }));
+for (const idempotencyKey of ids) saved.push(await repo.insertPending({ idempotencyKey, order: { name: 'Test', phone: '0990000000', address: 'Test', entries: [], scent: '', oil: '', zone: 'hama', method: 'cod' } }));
 let sends = 0;
 const successFetch = async (_url, init) => {
   sends++;

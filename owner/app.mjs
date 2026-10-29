@@ -29,6 +29,7 @@ function card(order) {
 
 function closeSession(message = '') {
   generation++; busy=false; authenticated=false; cursor=null;
+  $('pair-code').textContent=''; $('pair-copy').hidden=true; $('pair-status').textContent='';
   $('orders').replaceChildren(); $('message').textContent=''; $('more').hidden=true;
   $('dashboard').hidden=true; $('logout').hidden=true; $('entry').hidden=false;
   $('password').value=''; $('login').disabled=!client; $('login-message').textContent=message;
@@ -70,3 +71,24 @@ $('refresh').addEventListener('click',()=>load()); $('more').addEventListener('c
 $('logout').addEventListener('click',()=>{closeSession(); $('email').focus();});
 // Do not retain a live session or customer data in the browser back/forward cache.
 window.addEventListener('pagehide',()=>closeSession());
+
+let pairingBusy=false;
+async function pairingAction(action) {
+  if (!authenticated || pairingBusy) return;
+  pairingBusy=true; const current=generation;
+  $('pair-start').disabled=true; $('pair-finish').disabled=true;
+  $('pair-status').textContent='جارٍ التحقق…';
+  try {
+    const result=await client.pair(action);
+    if (current!==generation || !authenticated) return;
+    if (action==='start') { $('pair-code').textContent=result.message; $('pair-copy').hidden=false; $('pair-status').textContent='انسخ الرسالة وأرسلها للبوت في محادثة خاصة، ثم اضغط تحقق.'; }
+    else { $('pair-code').textContent=''; $('pair-copy').hidden=true; $('pair-status').textContent='تم ربط المحادثة. إرسال تنبيهات الطلبات لم يُفعّل بعد.'; }
+  } catch (error) {
+    if (current!==generation) return;
+    if (error.message==='SESSION_EXPIRED') { closeSession('انتهت الجلسة، يرجى تسجيل الدخول مجددًا.'); return; }
+    $('pair-status').textContent=error.message==='not_found' ? 'لم نجد رسالة الربط بعد. تأكد من إرسالها في المحادثة الخاصة ثم حاول مجددًا.' : error.message==='invalid' ? 'انتهى الرمز أو استُخدم. أنشئ رمزًا جديدًا.' : error.message==='ambiguous' ? 'تعذر تحديد المحادثة بأمان. أنشئ رمزًا جديدًا ولا تشاركه.' : 'تعذر الربط حاليًا. حاول مجددًا.';
+  } finally { pairingBusy=false; $('pair-start').disabled=false; $('pair-finish').disabled=false; }
+}
+$('pair-start').addEventListener('click',()=>pairingAction('start'));
+$('pair-finish').addEventListener('click',()=>pairingAction('finish'));
+$('pair-copy').addEventListener('click',async()=>{ try { await navigator.clipboard.writeText($('pair-code').textContent); $('pair-status').textContent='نُسخت الرسالة. أرسلها للبوت ثم عد واضغط تحقق.'; } catch { $('pair-status').textContent='انسخ الرسالة الظاهرة يدويًا وأرسلها للبوت.'; } });
