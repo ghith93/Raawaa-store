@@ -21,9 +21,11 @@ checks: list[tuple[str, bool, str]] = []
 def report_exception(exc_type, value, traceback):
     if os.environ.get('GITHUB_ACTIONS') == 'true':
         frame = traceback
-        while frame and frame.tb_next:
+        location = 'unknown'
+        while frame:
+            if Path(frame.tb_frame.f_code.co_filename).name == 'serum-browser-test.py':
+                location = f'serum-browser-test.py:{frame.tb_lineno}'
             frame = frame.tb_next
-        location = f'{Path(frame.tb_frame.f_code.co_filename).name}:{frame.tb_lineno}' if frame else 'unknown'
         print(f'::error::اختبار المتصفح توقف باستثناء {exc_type.__name__} ({location})', flush=True)
     sys.__excepthook__(exc_type, value, traceback)
 
