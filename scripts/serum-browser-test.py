@@ -70,7 +70,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             page.on("pageerror", lambda e: errors.append(str(e)))
             page.on("response", lambda r: bad.append(f"{r.status} {r.url}") if r.status >= 400 else None)
             response = page.goto(base + path + "?utm_source=facebook&utm_medium=paid&utm_campaign=serum-oct&utm_content=moment", wait_until="load", timeout=45000)
-            page.wait_for_selector('#products .size-option input')
+            page.wait_for_selector('#products .size-option input', state='attached')
             page.evaluate('document.fonts.ready')
             check("صفحة حقيقية HTTP 200", bool(response and response.status == 200), str(response.status if response else None))
             check("عنوان عربي واحد واتجاه RTL", page.locator('h1').count() == 1 and page.evaluate("getComputedStyle(document.body).direction") == 'rtl')
@@ -238,7 +238,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("زر واتساب يقيس النقرة فقط لا الشراء", 'InitiateCheckout' in events and 'Contact' in events and 'Purchase' not in events, str(events))
             page.locator('[data-cart-close]').click()
             page.goto(base + '/', wait_until='load')
-            page.wait_for_selector('#products .size-option input')
+            page.wait_for_selector('#products .size-option input', state='attached')
             check("السلة والمصدر ينتقلان للرئيسية في التبويب نفسه", page.locator('[data-cart-count]').inner_text() == '3' and page.evaluate('window.rawaaSrcTag()') == 'serum-oct')
             check("لا أخطاء JavaScript", not errors, '; '.join(errors[:3]))
             check("لا استجابات فاشلة", not bad, '; '.join(bad[:3]))
@@ -256,7 +256,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         check("الرئيسية تربط الحاجة بخطوة اختيار الحجم", all(x in page.locator('.hero-lead').inner_text() for x in ['الباهت','المتطاير']) and page.locator('[data-discover-serum]').get_attribute('href') == '/serum')
         with page.expect_navigation(wait_until='load'):
             page.locator('[data-discover-serum]').click()
-        page.wait_for_selector('#products .size-option input')
+        page.wait_for_selector('#products .size-option input', state='attached')
         check("زر الرئيسية يفتح صفحة المنتج ويحفظ المصدر", urlparse(page.url).path == '/serum' and page.evaluate('window.rawaaSrcTag()') == 'home_bridge')
         page.locator('#products .size-option').nth(2).click()
         page.locator('[data-add-current]').click()
@@ -273,7 +273,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                                   reduced_motion="reduce", ignore_https_errors=ignore_https)
         page = ctx.new_page()
         page.goto(base + path + '?utm_campaign=estimate_test&utm_content=proof', wait_until='load')
-        page.wait_for_selector('#products .size-option input')
+        page.wait_for_selector('#products .size-option input', state='attached')
         page.locator('.serum-estimate-details summary').click()
         audit(page, 'التقدير المفتوح')
         cases = [
@@ -395,7 +395,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.locator('[data-remove-item="serum-100"]').click()
         page.locator('[data-cart-close]').click()
         page.go_back(wait_until='load')
-        page.wait_for_selector('#products .size-option input')
+        page.wait_for_selector('#products .size-option input', state='attached')
         check("العودة للمنتج تعكس أحدث اختيارات الحجم والعطر والزيت",
               '$10' in page.locator('[data-price-live]').text_content() and
               page.locator('[data-custom-scent="rose"]').get_attribute('aria-pressed') == 'true' and
@@ -723,7 +723,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             ctx.set_offline(True)
             with page.expect_navigation(wait_until='load'):
                 page.locator('[data-discover-serum]').click()
-            page.wait_for_selector('#products .size-option input')
+            page.wait_for_selector('#products .size-option input', state='attached')
             page.locator('#ritual img').scroll_into_view_if_needed()
             offline_image = page.locator('#ritual img').evaluate("""el => new Promise(resolve => {
               if (el.complete) return resolve(el.naturalWidth > 0);
@@ -786,7 +786,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             ctx = browser.new_context(viewport={"width":320,"height":844}, is_mobile=True, has_touch=True,
                                       locale="ar", ignore_https_errors=ignore_https)
             page = ctx.new_page(); page.goto(base + zoom_path, wait_until='load')
-            page.wait_for_selector('#products .size-option input')
+            page.wait_for_selector('#products .size-option input', state='attached')
             page.add_style_tag(content='html { font-size: 200% !important; }')
             target_selector = ('.header-actions button, .price-strip li' if zoom_path == '/' else
                                '.header-actions button, #products .size-option, [data-serum-controls]:visible button')
