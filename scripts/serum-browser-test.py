@@ -63,6 +63,15 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("زر الاختيار ظاهر في الشاشة الأولى", bool(add_box and add_box['y'] >= 0 and add_box['y'] + add_box['height'] <= height), str(add_box))
             check("الأحجام والأسعار من الإعدادات", page.locator('#products .size-option-size').all_inner_texts() == ['30 مل','50 مل','100 مل'] and page.locator('#products .size-option-price').all_inner_texts() == ['$10','$12','$15'])
             check("شارة 50 مل مطابقة لتوجيه المالك", page.locator('[data-size-for="serum-50"] .size-option-flag').inner_text() == 'الأنسب للاستعمال اليومي')
+            units = page.locator('[data-unit-comparison] li')
+            check("تكلفة 10 مل ظاهرة لكل الأحجام ومحسوبة قبل الرسوم",
+                  units.count() == 3 and [x.inner_text().replace('\n', ' ') for x in units.all()] ==
+                  ['30 مل $3.33', '50 مل $2.40', '100 مل $1.50'] and
+                  all(x in page.locator('.unit-comparison-note').inner_text() for x in ['تقريبية','قبل الخصم والتوصيل','لا نعرض عبوة 10 مل']))
+            quick = page.locator('.purchase-shortcuts a')
+            check("روابط العطر والمكونات والإرجاع قرب الشراء بأهداف لمس كافية",
+                  quick.count() == 3 and [x.get_attribute('href') for x in quick.all()] == ['#custom','#ingredients','#returns'] and
+                  all((x.bounding_box() or {}).get('height', 0) >= 44 for x in quick.all()))
             check("لا تمرير أفقي", page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'))
             if width < 600:
                 check("عرض شام كاش مقروء بلا اقتطاع", page.locator('.topbar-short').evaluate('(e) => e.scrollWidth <= e.clientWidth + 1'))
@@ -74,7 +83,10 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("المصدر محفوظ في الجلسة", page.evaluate('window.rawaaSrcTag()') == 'serum-oct')
             direct = page.locator('[data-wa-direct]').first.get_attribute('href') or ''
             direct_msg = parse_qs(urlparse(direct).query).get('text', [''])[0]
-            check("الحملة ونسخة المحتوى في واتساب المباشر", all(x in direct_msg for x in ['— المصدر: serum-oct','— القناة: facebook','— نسخة المحتوى: moment']))
+            check("الحملة ونسخة المحتوى في واتساب المباشر", all(x in direct_msg for x in ['— المصدر: serum-oct','— القناة: facebook','— نسخة المحتوى: moment']) and direct_msg.count('— المصدر: serum-oct') == 1)
+            check("استفسار واتساب يوضح الحجم الافتراضي والسعر المرجعي وموعد التجهيز",
+                  all(x in direct_msg for x in ['50 مل','$12','قبل الخصم والتوصيل','موعد تجهيز العبوة']) and
+                  page.locator('[data-wa-context]').is_visible() and 'راجعي الرسالة' in page.locator('[data-wa-context]').inner_text())
             check("رسوم التوصيل وشروطها قرب الشراء", all(x in page.locator('.serum-trust').inner_text() for x in ['حماة فقط','$4','$2','بلا خصم']))
             estimate = page.locator('[data-order-estimate]')
             check("تقدير العبوة الواحدة يظهر بافتراضاته قبل فتح السلة",
@@ -111,6 +123,10 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                   page.locator('[data-serum-control="bottle"]:visible').get_attribute('aria-pressed') == 'true')
             check("السعر المختار يُعلن لقارئ الشاشة وتتبعه الصورة", '$15' in page.locator('[data-price-live]').inner_text() and '100 مل' in (page.locator('[data-size-img]').get_attribute('alt') or ''))
             check("تبديل الحجم يحدّث ملفات الصور الجديدة", 'size-100-v6-' in (page.locator('[data-size-img]').get_attribute('src') or '') and 'size-100-v6-' in (page.locator('[data-size-avif]').get_attribute('srcset') or ''))
+            selected_msg = parse_qs(urlparse(page.locator('[data-wa-selected]').get_attribute('href') or '').query).get('text', [''])[0]
+            check("استفسار واتساب يتبع 100 مل دون تكرار مصدر الحملة",
+                  '100 مل' in selected_msg and '$15' in selected_msg and '50 مل' not in selected_msg and
+                  selected_msg.count('— المصدر: serum-oct') == 1)
             check("التقدير يتبع الحجم المختار", page.locator('[data-estimate-total]').inner_text() == '$13.50' and '100 مل' in page.locator('[data-estimate-context]').inner_text())
             page.locator('#products .size-option').nth(1).click()
             check("لا بكسل مفعّل بلا معرّف", not page.evaluate('!!window.fbq') and page.locator('[data-consent-bar]').is_hidden())
@@ -275,6 +291,10 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.locator('[data-estimate-method]').select_option('cod')
         page.locator('[data-custom-scent="vanilla"]').click()
         page.locator('[data-custom-oil="argan"]').click()
+        selected_msg = parse_qs(urlparse(page.locator('[data-wa-selected]').get_attribute('href') or '').query).get('text', [''])[0]
+        check("الاستفسار المباشر يعكس العطر والزيت المختارين دون إرسال",
+              all(x in selected_msg for x in ['100 مل','$15','فانيلا','أرجان','تأكيد التوفّر']) and
+              selected_msg.count('— المصدر: continuity') == 1 and not page.evaluate('window.__waCalls.length'))
         page.locator('[data-add-current]').click()
         check("قبل التحديث: 100 مل والاستلام للمحافظات = $19",
               page.locator('[data-cart-total]').inner_text() == '$19' and
@@ -296,6 +316,9 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               page.locator('[data-estimate-method]').input_value() == 'cod' and
               page.locator('[data-custom-scent="vanilla"]').get_attribute('aria-pressed') == 'true' and
               page.locator('[data-custom-oil="argan"]').get_attribute('aria-pressed') == 'true')
+        restored_msg = parse_qs(urlparse(page.locator('[data-wa-selected]').get_attribute('href') or '').query).get('text', [''])[0]
+        check("الاستفسار المباشر يستعيد الاختيارات والمصدر مرة واحدة بعد التحديث",
+              all(x in restored_msg for x in ['100 مل','$15','فانيلا','أرجان']) and restored_msg.count('— المصدر: continuity') == 1)
         stored = page.evaluate("JSON.parse(sessionStorage.getItem('rawaa:choices:v1'))")
         check("ذاكرة الجلسة تحفظ رموز الاختيارات فقط لا معلومات اتصال",
               set(stored) == {'size','zone','method','scent','oil'} and
@@ -681,7 +704,9 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             page = ctx.new_page(); page.goto(base + zoom_path, wait_until='load')
             page.wait_for_selector('#products .size-option input')
             page.add_style_tag(content='html { font-size: 200% !important; }')
-            target_selector = '.header-actions button, .price-strip li' if zoom_path == '/' else '.header-actions button, #products .size-option, [data-serum-controls]:visible button'
+            target_selector = ('.header-actions button, .price-strip li' if zoom_path == '/' else
+                               '.header-actions button, #products .size-option, [data-serum-controls]:visible button')
+            target_selector += ', .unit-comparison-list li, .purchase-shortcuts a'
             in_bounds = page.locator(target_selector).evaluate_all("""els => els.every(e => {
               const r = e.getBoundingClientRect();
               return r.width > 0 && r.left >= -1 && r.right <= innerWidth + 1 && e.scrollWidth <= e.clientWidth + 1;
@@ -697,10 +722,64 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                       '100 مل' in (page.locator('[data-size-img]').get_attribute('alt') or ''))
             ctx.close()
 
+        # الإلغاء يزيل الخيارات من الاستفسار؛ رابط الشروط يبقى مستقلاً عنه.
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx.add_init_script('window.__waCalls = []; window.open = url => { window.__waCalls.push(url); return null; };')
+        page = ctx.new_page(); page.goto(base + path + '?utm_campaign=reset', wait_until='load')
+        page.locator('[data-size-for="serum-30"]').click()
+        page.locator('[data-custom-scent="vanilla"]').click()
+        page.locator('[data-custom-oil="argan"]').click()
+        page.locator('[data-custom-scent="vanilla"]').click()
+        page.locator('[data-custom-oil="argan"]').click()
+        cleared = parse_qs(urlparse(page.locator('[data-wa-selected]').get_attribute('href') or '').query).get('text', [''])[0]
+        terms = parse_qs(urlparse(page.locator('#returns [data-wa-direct]').get_attribute('href') or '').query).get('text', [''])[0]
+        check("إلغاء العطر والزيت يزيلهما من رسالة الحجم، ولا يرسل شيئًا",
+              all(x in cleared for x in ['30 مل','$10']) and all(x not in cleared for x in ['فانيلا','أرجان']) and
+              cleared.count('— المصدر: reset') == 1 and not page.evaluate('window.__waCalls.length'))
+        check("رابط سؤال الإرجاع منفصل عن اختيار الحجم",
+              'شروط الاستبدال والإرجاع' in terms and '30 مل' not in terms and terms.count('— المصدر: reset') == 1)
+        ctx.close()
+
+        # الرابط يفتح سؤال الإرجاع بلوحة المفاتيح، بلا اختلاق سياسة.
+        ctx = browser.new_context(viewport={"width":320,"height":640}, locale="ar", ignore_https_errors=ignore_https)
+        page = ctx.new_page(); page.goto(base + path, wait_until='load')
+        return_link = page.locator('.purchase-shortcuts a[href="#returns"]')
+        return_link.focus(); page.keyboard.press('Enter')
+        check("اختصار الإرجاع يفتح السؤال بلوحة المفاتيح دون اختلاق سياسة",
+              urlparse(page.url).fragment == 'returns' and page.locator('#returns').evaluate('(e) => e.open') and
+              'الاستفسار عن الشروط على واتساب' in page.locator('#returns').inner_text())
+        ctx.close()
+
+        # تغيير الإعدادات أثناء الاختبار فقط يثبت أن الحاسبة ورابط السؤال لا يخمّنان السعر.
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        def mock_prices(route):
+            response = route.fetch()
+            code = response.text()
+            marker = 'price: 10,'
+            if marker not in code: raise RuntimeError('اختبار الحساب: لم نجد سعر 30 مل المرجعي')
+            route.fulfill(response=response, body=code.replace(marker, 'price: 11,', 1))
+        ctx.route('**/js/config.js', mock_prices)
+        page = ctx.new_page(); page.goto(base + path, wait_until='load')
+        page.locator('[data-size-for="serum-30"]').click()
+        fake_msg = parse_qs(urlparse(page.locator('[data-wa-selected]').get_attribute('href') or '').query).get('text', [''])[0]
+        check("تغيير سعر اختباري في الذاكرة يحدّث المقارنة والاستفسار من الإعدادات",
+              page.locator('[data-unit-for="serum-30"] bdi').inner_text() == '$3.67' and
+              '30 مل' in fake_msg and '$11' in fake_msg and page.locator('[data-size-for="serum-30"] .size-option-price').inner_text() == '$11')
+        ctx.close()
+
         # لا JavaScript: أسعار حقيقية وزر واتساب يعمل، وزر السلة معطّل بدل وهم وظيفي.
         ctx = browser.new_context(java_script_enabled=False, ignore_https_errors=ignore_https, viewport={"width":390,"height":844})
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
         check("بدون JavaScript: الأسعار وواتساب ظاهرة وزر السلة معطّل", all(s in page.locator('#products').inner_text() for s in ['$10','$12','$15']) and page.locator('[data-add-current]').is_disabled() and page.locator('[data-wa-direct]').first.is_visible())
+        check("دون JavaScript: مقارنة الأحجام كاملة ورابط التخصيص بديل مباشر",
+              [x.inner_text().replace('\n', ' ') for x in page.locator('[data-unit-comparison] li').all()] ==
+              ['30 مل $3.33', '50 مل $2.40', '100 مل $1.50'] and
+              page.locator('[data-wa-context]').is_visible() and 'قد تتضمن' in page.locator('[data-wa-context]').inner_text() and
+              page.locator('#custom noscript a').count() == 1)
+        page.locator('.purchase-shortcuts a[href="#returns"]').click()
+        page.locator('#returns summary').click()
+        check("دون JavaScript: رابط الإرجاع والأسئلة يعملان",
+              urlparse(page.url).fragment == 'returns' and 'الاستفسار عن الشروط على واتساب' in page.locator('#returns').inner_text())
         check("بدون JavaScript: صورة العبوة والبيان ظاهران وأزرار المعرض مخفية",
               page.locator('[data-serum-view="bottle"]').is_visible() and
               'تصوّر تصميمي' in page.locator('[data-serum-caption]').inner_text() and
@@ -709,6 +788,14 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               page.locator('[data-estimate-interface]').is_hidden() and
               page.locator('[data-estimate-fallback]').is_visible() and
               'واتساب' in page.locator('[data-estimate-fallback]').inner_text())
+        ctx.close()
+        ctx = browser.new_context(java_script_enabled=False, ignore_https_errors=ignore_https, viewport={"width":390,"height":844})
+        page = ctx.new_page(); page.goto(base + '/', wait_until='load')
+        check("الرئيسية دون JavaScript تعرض المقارنة وبديل التخصيص",
+              [x.inner_text().replace('\n', ' ') for x in page.locator('[data-unit-comparison] li').all()] ==
+              ['30 مل $3.33', '50 مل $2.40', '100 مل $1.50'] and page.locator('#custom noscript a').count() == 1 and
+              page.locator('#products [data-add-current]').is_disabled() and
+              page.locator('#products noscript a[href^="https://wa.me/"]').count() >= 1)
         ctx.close()
 
         # فحص الموافقة على بكسل وهمي في الذاكرة فقط؛ كل طلب Meta يُعترض محليًا.

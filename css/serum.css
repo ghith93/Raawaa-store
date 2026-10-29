@@ -33,6 +33,7 @@
 .serum-purchase .product-hero-unit { margin: .65rem 0 0; padding-bottom: 0; }
 .serum-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin-top: .85rem; }
 .serum-actions .btn { width: 100%; text-align: center; font-size: .85rem; }
+.serum-wa-context { margin: .6rem 0 0; color: var(--ink-soft); font-size: .74rem; line-height: 1.6; }
 /* إجمالي عبوة واحدة قرب الشراء، مع تفاصيل الشروط دون مزاحمة الزر. */
 .serum-estimate { min-height: 170px; margin-top: .8rem; padding: .8rem .9rem; border: 1px solid var(--line); border-radius: 10px; background: var(--ivory); }
 .serum-estimate [hidden] { display: none; }

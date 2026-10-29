@@ -365,16 +365,32 @@
           </fieldset>
 
           <p class="product-hero-price" data-price-live aria-live="polite"></p>
-          <p class="product-hero-unit" data-unit-live></p>
+          <p class="sr-only" data-unit-live></p>
 
           <div class="hero-actions product-hero-actions">
-            <button type="button" class="btn btn-primary" data-add-to-cart="serum-50" data-add-current>
+            <button type="button" class="btn btn-primary" data-add-to-cart="serum-50" data-add-current data-requires-js disabled>
               أضيفي إلى السلة
             </button>
             <a class="btn btn-ghost" href="#custom">خيارات العطر</a>
           </div>
 
+          <noscript><p class="notice">اختيار الحجم والسلة يحتاجان JavaScript. الأسعار مرجعية؛ يمكنك <a href="https://wa.me/963997310856">السؤال عبر واتساب</a> عن الأحجام والأسعار المتاحة.</p></noscript>
           <p class="product-hero-feedback" data-product-feedback role="status"></p>
+          <nav class="purchase-shortcuts" aria-label="معلومات قبل الطلب">
+            <a href="#custom">العطر والإضافة</a>
+            <a href="#ingredients">المكوّنات</a>
+            <a href="#returns" data-expand-target>اسألي عن الإرجاع</a>
+          </nav>
+
+          <section class="unit-comparison" aria-labelledby="home-unit-comparison-title">
+            <h4 class="unit-comparison-title" id="home-unit-comparison-title">قارني تكلفة كل 10 مل</h4>
+            <ul class="unit-comparison-list" data-unit-comparison>
+              <li data-unit-for="serum-30"><span>30 مل</span><strong><bdi>$3.33</bdi></strong></li>
+              <li data-unit-for="serum-50"><span>50 مل</span><strong><bdi>$2.40</bdi></strong></li>
+              <li data-unit-for="serum-100"><span>100 مل</span><strong><bdi>$1.50</bdi></strong></li>
+            </ul>
+            <p class="unit-comparison-note">أرقام تقريبية للمقارنة من سعر العبوة، قبل الخصم والتوصيل؛ لا نعرض عبوة 10 مل للبيع.</p>
+          </section>
 
           <ul class="product-hero-facts">
             <li>السيروم جاهز؛ العبوة تُجهَّز عند الطلب، ونؤكد موعدها معك.</li>
@@ -393,13 +409,6 @@
         <ul class="routine-list" data-routine-list></ul>
         <p class="routine-note" data-routine-note></p>
       </section>
-
-      <noscript>
-        <p class="notice">
-          لعرض الأسعار وإضافة أي حجم إلى السلة، يلزم تفعيل JavaScript في متصفحك.
-          يمكنك أيضًا مراسلتنا عبر <a href="https://wa.me/963997310856">واتساب</a> وسنؤكد لك الأحجام والأسعار المتاحة.
-        </p>
-      </noscript>
 
       <p class="fine-print">
         صور العبوات تصوّرات تصميمية أُنشئت لرواء.
@@ -447,8 +456,9 @@
         <div class="chips" data-oil-options role="group" aria-label="إضافة زيت"></div>
 
         <p class="custom-summary" data-custom-summary role="status"></p>
+        <noscript><p class="custom-note">لاختيار العطر أو الاستفسار عن إضافة زيت دون JavaScript، <a href="https://wa.me/963997310856">اسألينا على واتساب</a>؛ نؤكد الإمكان والتوفّر معك.</p></noscript>
         <p class="custom-disclaimer">
-          هذه اختيارات للاستفسار عن الطلب ككل، تظهر في رسالة السلة وليست وعدًا بتوفّر كل عطر أو إضافة؛ نؤكدها معك قبل الشحن.
+          هذه اختيارات للاستفسار عن الطلب ككل، تظهر في رسالة السلة أو استفسار الحجم بصفحة السيروم، وليست وعدًا بتوفّر كل عطر أو إضافة؛ نؤكدها معك قبل الشحن.
         </p>
       </div>
 

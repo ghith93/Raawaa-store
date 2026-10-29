@@ -2222,7 +2222,8 @@ figcaption {
 
 /* ═══ راحة التمرير — لا يختفي العنوان تحت أي شريط ═══ */
 section[id],
-div[id="custom"] {
+div[id="custom"],
+details[id="returns"] {
   scroll-margin-top: 5rem;
 }
 @media (max-width: 719px) {
@@ -2425,6 +2426,44 @@ div[id="custom"] {
   font-weight: 700;
   letter-spacing: 0.04em;
 }
+
+.btn:disabled, .btn:disabled:hover { cursor: not-allowed; background: #E5DED4; border-color: #CFC5B9; color: #41372D; }
+
+.purchase-shortcuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 4.5rem), 1fr)); gap: .4rem; margin-top: .8rem; }
+.purchase-shortcuts a { min-width: 0; min-height: 44px; display: flex; align-items: center; justify-content: center; padding: .4rem .25rem; border: 1px solid #D9CCBA; border-radius: 8px; color: #41372D; font-size: .75rem; font-weight: 700; line-height: 1.45; text-align: center; text-decoration: none; }
+.purchase-shortcuts a:hover { border-color: #75512D; background: #F1E9DE; }
+.purchase-shortcuts a:focus-visible { outline: 3px solid #75512D; outline-offset: 2px; }
+
+/* مقارنة الأحجام قبل الخصم والتوصيل؛ تبقى مقروءة دون JavaScript. */
+.unit-comparison {
+  margin-top: .85rem;
+  padding: .75rem .85rem;
+  border: 1px solid var(--line, #E4DCD0);
+  border-radius: 10px;
+  background: var(--ivory, #F7F2EA);
+}
+.unit-comparison-title { margin: 0 0 .5rem; font-size: .83rem; line-height: 1.5; }
+.unit-comparison-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 4rem), 1fr));
+  gap: .35rem;
+  padding: 0;
+  margin: 0;
+}
+.unit-comparison-list li {
+  display: grid;
+  gap: .1rem;
+  min-width: 0;
+  padding: .35rem .2rem;
+  border-radius: 6px;
+  background: var(--surface, #FFFDFA);
+  text-align: center;
+  line-height: 1.45;
+}
+.unit-comparison-list span { color: var(--ink-soft, #4A443C); font-size: .75rem; }
+.unit-comparison-list strong { font-size: .88rem; }
+.unit-comparison-note { margin: .55rem 0 0; color: var(--ink-soft, #4A443C); font-size: .73rem; line-height: 1.6; }
 
 /* ── السعر الحيّ ── */
 .product-hero-price {
