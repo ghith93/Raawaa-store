@@ -1,0 +1,38 @@
+name: اختبار مراقبة إعدادات الطلب قبل النشر
+
+# فحص للفرع فقط: لا ينشر ولا يغيّر بيانات الموقع أو إعدادات GitHub.
+# عند تغيير سعر في الفرع عمدًا قد يفشل لأن الموقع ما زال يعرض إصدار main؛
+# هذه إشارة للمراجعة، وليس دليلًا بذاته على عطل الإنتاج.
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - 'js/config.js'
+      - 'scripts/order-config-monitor.mjs'
+      - 'scripts/order-config-monitor.test.mjs'
+      - '.github/workflows/live-order-preview.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-order-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compare:
+    name: اختبار المقارنة مع الموقع الحي
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          check-latest: true
+      - name: اختبار منطق المراقب
+        run: node --test scripts/order-config-monitor.test.mjs
+      - name: مقارنة إعدادات الطلب بالإصدار الحي
+        run: node scripts/order-config-monitor.mjs
