@@ -1,0 +1,50 @@
+name: تنبيه عند فشل مراقبة الموقع
+
+# يعمل فقط بعد تفعيل هذا الملف على الفرع الافتراضي ووقوع فشل حقيقي للمراقبة.
+# لا يصلح الأعطال تلقائيًا ولا يضمن وصول إشعار بريد؛ إعدادات GitHub والصلاحيات مهمة.
+on:
+  workflow_run:
+    workflows: ['المراقبة الدورية للموقع الحيّ']
+    types: [completed]
+    branches: [main]
+
+permissions:
+  issues: write
+  contents: read
+
+concurrency:
+  group: uptime-alert
+  cancel-in-progress: false
+
+jobs:
+  alert:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.head_branch == 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: فتح تنبيه واحد للمراجعة
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const title = '⚠️ فشل مراقبة رواء — يلزم التحقق';
+            const { owner, repo } = context.repo;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open', per_page: 100
+            });
+            if (issues.some(issue => !issue.pull_request && issue.title === title)) {
+              core.info('يوجد تنبيه مفتوح بالفعل؛ لن ننشئ نسخة مكررة.');
+              return;
+            }
+            const run = context.payload.workflow_run;
+            await github.rest.issues.create({
+              owner, repo, title,
+              body: [
+                'فشل تشغيل المراقبة الدورية. قد يكون السبب عطلًا في الموقع أو في اختبار أو خدمة خارجية؛ تحقّق قبل الاستنتاج.',
+                '',
+                `تشغيل المراقبة: ${run.html_url}`,
+                '',
+                'افحص الخطوات الفاشلة، ثم تحقّق من الموقع ورحلة الطلب. أغلق التنبيه بعد المعالجة والتحقق.',
+                '',
+                'هذا التنبيه لا يؤكد وصول إشعار إلى صاحب المشروع ولا يثبت استلام طلبات واتساب.'
+              ].join('\n')
+            });
