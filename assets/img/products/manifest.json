@@ -1,118 +1,118 @@
 {
- "detail-label": {
-  "sizes": [
-   {
-    "avif": "detail-label-v5-480.avif",
-    "webp": "detail-label-v5-480.webp"
-   },
-   {
-    "avif": "detail-label-v5-720.avif",
-    "jpg": "detail-label-v5-720.jpg",
-    "webp": "detail-label-v5-720.webp"
-   },
-   {
-    "avif": "detail-label-v5-900.avif",
-    "webp": "detail-label-v5-900.webp"
-   }
-  ],
-  "fallback": "detail-label-v5-720.jpg"
- },
- "editorial": {
-  "sizes": [
-   {
-    "avif": "editorial-v5-480.avif",
-    "webp": "editorial-v5-480.webp"
-   },
-   {
-    "avif": "editorial-v5-720.avif",
-    "jpg": "editorial-v5-720.jpg",
-    "webp": "editorial-v5-720.webp"
-   },
-   {
-    "avif": "editorial-v5-900.avif",
-    "webp": "editorial-v5-900.webp"
-   }
-  ],
-  "fallback": "editorial-v5-720.jpg"
- },
- "size-100": {
-  "sizes": [
-   {
-    "avif": "size-100-v5-480.avif",
-    "webp": "size-100-v5-480.webp"
-   },
-   {
-    "avif": "size-100-v5-720.avif",
-    "jpg": "size-100-v5-720.jpg",
-    "webp": "size-100-v5-720.webp"
-   },
-   {
-    "avif": "size-100-v5-900.avif",
-    "webp": "size-100-v5-900.webp"
-   }
-  ],
-  "fallback": "size-100-v5-720.jpg"
- },
- "size-30": {
-  "sizes": [
-   {
-    "avif": "size-30-v5-480.avif",
-    "webp": "size-30-v5-480.webp"
-   },
-   {
-    "avif": "size-30-v5-720.avif",
-    "jpg": "size-30-v5-720.jpg",
-    "webp": "size-30-v5-720.webp"
-   },
-   {
-    "avif": "size-30-v5-900.avif",
-    "webp": "size-30-v5-900.webp"
-   }
-  ],
-  "fallback": "size-30-v5-720.jpg"
- },
- "size-50": {
-  "sizes": [
-   {
-    "avif": "size-50-v5-480.avif",
-    "webp": "size-50-v5-480.webp"
-   },
-   {
-    "avif": "size-50-v5-720.avif",
-    "jpg": "size-50-v5-720.jpg",
-    "webp": "size-50-v5-720.webp"
-   },
-   {
-    "avif": "size-50-v5-900.avif",
-    "webp": "size-50-v5-900.webp"
-   }
-  ],
-  "fallback": "size-50-v5-720.jpg"
- },
- "trio": {
-  "sizes": [
-   {
-    "avif": "trio-v5-480.avif",
-    "webp": "trio-v5-480.webp"
-   },
-   {
-    "avif": "trio-v5-720.avif",
-    "webp": "trio-v5-720.webp"
-   },
-   {
-    "avif": "trio-v5-1080.avif",
-    "jpg": "trio-v5-1080.jpg",
-    "webp": "trio-v5-1080.webp"
-   },
-   {
-    "avif": "trio-v5-1195.avif",
-    "webp": "trio-v5-1195.webp"
-   },
-   {
-    "avif": "trio-v5-1400.avif",
-    "webp": "trio-v5-1400.webp"
-   }
-  ],
-  "fallback": "trio-v5-1080.jpg"
- }
+  "detail-label": {
+    "sizes": [
+      {
+        "avif": "detail-label-v5-480.avif",
+        "webp": "detail-label-v5-480.webp"
+      },
+      {
+        "avif": "detail-label-v5-720.avif",
+        "jpg": "detail-label-v5-720.jpg",
+        "webp": "detail-label-v5-720.webp"
+      },
+      {
+        "avif": "detail-label-v5-900.avif",
+        "webp": "detail-label-v5-900.webp"
+      }
+    ],
+    "fallback": "detail-label-v5-720.jpg"
+  },
+  "editorial": {
+    "sizes": [
+      {
+        "avif": "editorial-v5-480.avif",
+        "webp": "editorial-v5-480.webp"
+      },
+      {
+        "avif": "editorial-v5-720.avif",
+        "jpg": "editorial-v5-720.jpg",
+        "webp": "editorial-v5-720.webp"
+      },
+      {
+        "avif": "editorial-v5-900.avif",
+        "webp": "editorial-v5-900.webp"
+      }
+    ],
+    "fallback": "editorial-v5-720.jpg"
+  },
+  "size-100": {
+    "sizes": [
+      {
+        "avif": "size-100-v6-480.avif",
+        "webp": "size-100-v6-480.webp",
+        "jpg": "size-100-v6-480.jpg"
+      },
+      {
+        "avif": "size-100-v6-720.avif",
+        "webp": "size-100-v6-720.webp",
+        "jpg": "size-100-v6-720.jpg"
+      },
+      {
+        "avif": "size-100-v6-900.avif",
+        "webp": "size-100-v6-900.webp"
+      }
+    ],
+    "fallback": "size-100-v6-720.jpg"
+  },
+  "size-30": {
+    "sizes": [
+      {
+        "avif": "size-30-v6-480.avif",
+        "webp": "size-30-v6-480.webp",
+        "jpg": "size-30-v6-480.jpg"
+      },
+      {
+        "avif": "size-30-v6-720.avif",
+        "webp": "size-30-v6-720.webp",
+        "jpg": "size-30-v6-720.jpg"
+      },
+      {
+        "avif": "size-30-v6-900.avif",
+        "webp": "size-30-v6-900.webp"
+      }
+    ],
+    "fallback": "size-30-v6-720.jpg"
+  },
+  "size-50": {
+    "sizes": [
+      {
+        "avif": "size-50-v6-480.avif",
+        "webp": "size-50-v6-480.webp",
+        "jpg": "size-50-v6-480.jpg"
+      },
+      {
+        "avif": "size-50-v6-720.avif",
+        "webp": "size-50-v6-720.webp",
+        "jpg": "size-50-v6-720.jpg"
+      },
+      {
+        "avif": "size-50-v6-900.avif",
+        "webp": "size-50-v6-900.webp"
+      }
+    ],
+    "fallback": "size-50-v6-720.jpg"
+  },
+  "trio": {
+    "sizes": [
+      {
+        "avif": "trio-v6-480.avif",
+        "webp": "trio-v6-480.webp",
+        "jpg": "trio-v6-480.jpg"
+      },
+      {
+        "avif": "trio-v6-720.avif",
+        "webp": "trio-v6-720.webp"
+      },
+      {
+        "avif": "trio-v6-1080.avif",
+        "webp": "trio-v6-1080.webp",
+        "jpg": "trio-v6-1080.jpg"
+      },
+      {
+        "avif": "trio-v6-1195.avif",
+        "webp": "trio-v6-1195.webp"
+      }
+    ],
+    "fallback": "trio-v6-1080.jpg"
+  }
 }

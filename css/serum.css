@@ -51,6 +51,7 @@
 .serum-estimate-note, .serum-estimate-fallback { margin: .3rem 0 0; color: var(--ink-soft); font-size: .72rem; line-height: 1.65; }
 @media (max-width: 420px) { .serum-estimate-fields { grid-template-columns: 1fr; } }
 @media (min-width: 600px) { .serum-estimate { min-height: 151px; } }
+.serum-packaging-note { font-size: .76rem; color: var(--ink-soft); line-height: 1.65; margin: .65rem 0 0; }
 .serum-order-note { font-size: .76rem; color: var(--ink-soft); line-height: 1.65; margin: .75rem 0 0; }
 .serum-trust { list-style: none; border-top: 1px solid var(--line-soft); padding: .75rem 0 0; margin: .75rem 0 0; display: grid; gap: .2rem; color: var(--ink-soft); font-size: .75rem; }
 .serum-trust li::before { content: '·'; color: var(--brown); font-weight: 700; padding-inline-end: .45rem; }

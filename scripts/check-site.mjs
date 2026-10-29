@@ -55,12 +55,12 @@ async function read(rel) {
 async function checkRequiredFiles() {
   group('الملفات المطلوبة');
   const required = [
-    'assets/img/products/trio-v5-1080.jpg',
-    'assets/img/products/trio-v5-1080.webp',
-    'assets/img/products/trio-v5-1080.avif',
-    'assets/img/products/size-50-v5-720.jpg',
-    'assets/img/products/size-50-v5-720.webp',
-    'assets/img/products/size-50-v5-720.avif'
+    'assets/img/products/trio-v6-1080.jpg',
+    'assets/img/products/trio-v6-1080.webp',
+    'assets/img/products/trio-v6-1080.avif',
+    'assets/img/products/size-50-v6-720.jpg',
+    'assets/img/products/size-50-v6-720.webp',
+    'assets/img/products/size-50-v6-720.avif'
   ];
   for (const file of required) {
     if (await exists(file)) pass(`موجود: ${file}`);
@@ -713,7 +713,7 @@ async function checkBrandAssets() {
   // لكل حجم: مشهد مولّد بثلاث صيغ — وهذا ما تعرضه الصفحة فعليًا
   for (const ml of [30, 50, 100]) {
     const base = `assets/img/products/size-${ml}`;
-    for (const f of [`${base}-v5-720.avif`, `${base}-v5-720.webp`, `${base}-v5-720.jpg`]) {
+    for (const f of [`${base}-v6-720.avif`, `${base}-v6-720.webp`, `${base}-v6-720.jpg`]) {
       if (await exists(f)) pass(`مشهد ${ml} مل — ${f.split('.').pop()}`);
       else fail(`مفقود: ${f}`);
     }
@@ -1100,7 +1100,8 @@ async function checkProductPage(config) {
     ritual.includes('ritual-v5-720.jpg'), 'لحظة استخدام بصورة تعبيرية مصارح بها ومحملة بكسل');
   const worker = await read('sw.js');
   ok(['ritual-v5-480.avif', 'ritual-v5-480.webp', 'ritual-v5-720.jpg'].every(f => worker.includes(f)) &&
-    worker.includes('const visual = url.pathname.match') && worker.includes('ritual|trio|size-'), 'بدائل صور المشاهد والأحجام محفوظة بلا إنترنت لكل صيغة');
+    worker.includes('const visual = url.pathname.match') && worker.includes('ritual-v5|trio-v6|size-'), 'بدائل صور المشاهد والأحجام محفوظة بلا إنترنت لكل صيغة');
+  ok([home, landing].every(page => page.includes('السيروم جاهز') && page.includes('العبوة تُجهَّز عند الطلب') && page.includes('موعد')), 'جاهزية السيروم وتجهيز العبوة وموعدها المعلّق مذكورة في مسار الشراء');
   ok(landing.includes('class="serum-size-guide"') && landing.includes('لكل ملليلتر') && landing.includes('$2') &&
     landing.includes('$4') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
   ok(visible.includes('id="returns"') && visible.includes('الاستفسار عن الشروط على واتساب'), 'سؤال الشروط دون اختلاق سياسة إرجاع');
@@ -1124,6 +1125,7 @@ async function checkProductPage(config) {
   ok(cartLogic.includes("var CHOICES_KEY = 'rawaa:choices:v1'") && cartLogic.includes('restoreChoices()') && cartLogic.includes('saveChoices()'), 'الاختيارات الصالحة تُستعاد في جلسة المتصفح');
   const privacy = await read('privacy.html');
   ok(privacy.includes('العطر والزيت') && privacy.includes('التبويب نفسه') && privacy.includes('الكميات فقط'), 'الخصوصية تشرح حفظ الاختيارات وحدود رابط المشاركة');
+  ok(config.order.confirmationPoints.some(point => point.includes('موعد تجهيز العبوة')), 'رسالة واتساب تطلب تأكيد موعد تجهيز العبوة');
   ok(visible.includes('لا يسجّل طلبًا تلقائيًا ولا يؤكّده'), 'فتح واتساب ليس إتمام طلب');
   ok((await read('sitemap.xml')).includes('https://raawaa-store.pages.dev/serum</loc>'), 'صفحة السيروم في خريطة الموقع');
   ok((await read('scripts/build-deploy.sh')).includes('index.html serum.html'), 'صفحة السيروم تدخل حزمة النشر');

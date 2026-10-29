@@ -2747,3 +2747,8 @@ div[id="custom"] {
 .price-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .price-strip li { min-width: 0; }
 .price-strip .ps-size, .price-strip .ps-price, .price-strip .ps-tag { max-width: 100%; overflow-wrap: anywhere; }
+
+/* صورة العائلة الجديدة تُعرض كاملة على سطح المكتب؛ القصّ 2:1 كان يخفي رؤوس العبوات وقواعدها. */
+@media (min-width: 900px) {
+  .hero-figure img { aspect-ratio: 1195 / 896; object-fit: contain; }
+}

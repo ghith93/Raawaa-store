@@ -341,8 +341,9 @@
     if (img && base) {
       var widths = (product.image.widths || [480, 720, 900]);
       var setOf = function (ext) {
-        return widths.map(function (w) {
-          return 'assets/img/products/' + base + '-v5-' + w + '.' + ext + ' ' + w + 'w';
+        var files = product.image[ext] || [];
+        return widths.map(function (w, i) {
+          return 'assets/img/products/' + files[i] + ' ' + w + 'w';
         }).join(', ');
       };
       if (srcAvif) srcAvif.setAttribute('srcset', setOf('avif'));

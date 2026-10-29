@@ -67,6 +67,9 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             if width < 600:
                 check("عرض شام كاش مقروء بلا اقتطاع", page.locator('.topbar-short').evaluate('(e) => e.scrollWidth <= e.clientWidth + 1'))
             check("الصورة توضيحية وليست صورة منتج", 'ليست صورة للمنتج الفعلي' in (page.locator('[data-size-img]').get_attribute('alt') or '') and 'تصوّر تصميمي' in page.locator('.serum-photo figcaption').inner_text())
+            package_note = page.locator('.serum-packaging-note').inner_text()
+            check("السيروم جاهز والعبوة تُجهّز عند الطلب والموعد بالتأكيد", all(x in package_note for x in ['السيروم جاهز','العبوة تُجهَّز عند الطلب','موعد التجهيز والتوصيل']))
+            check("صورة الحجم المختار من تصميم العبوة الجديد", 'size-50-v6-' in (page.locator('[data-size-img]').get_attribute('src') or ''))
             check("المكوّنات غير مكتملة ولا نِسب فيها", 'البانثينول' in page.locator('#ingredients').inner_text() and 'ليست القائمة الكاملة' in page.locator('#ingredients').inner_text() and '%' not in page.locator('#ingredients').inner_text())
             check("المصدر محفوظ في الجلسة", page.evaluate('window.rawaaSrcTag()') == 'serum-oct')
             direct = page.locator('[data-wa-direct]').first.get_attribute('href') or ''
@@ -107,6 +110,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                   page.locator('[data-serum-view="bottle"]').is_visible() and
                   page.locator('[data-serum-control="bottle"]:visible').get_attribute('aria-pressed') == 'true')
             check("السعر المختار يُعلن لقارئ الشاشة وتتبعه الصورة", '$15' in page.locator('[data-price-live]').inner_text() and '100 مل' in (page.locator('[data-size-img]').get_attribute('alt') or ''))
+            check("تبديل الحجم يحدّث ملفات الصور الجديدة", 'size-100-v6-' in (page.locator('[data-size-img]').get_attribute('src') or '') and 'size-100-v6-' in (page.locator('[data-size-avif]').get_attribute('srcset') or ''))
             check("التقدير يتبع الحجم المختار", page.locator('[data-estimate-total]').inner_text() == '$13.50' and '100 مل' in page.locator('[data-estimate-context]').inner_text())
             page.locator('#products .size-option').nth(1).click()
             check("لا بكسل مفعّل بلا معرّف", not page.evaluate('!!window.fbq') and page.locator('[data-consent-bar]').is_hidden())
@@ -178,6 +182,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             msg = parse_qs(urlparse(url).query).get('text', [''])[0]
             check("رابط الطلب للرقم الصحيح، دون إرسال", url.startswith('https://wa.me/963997310856?') and bool(msg))
             check("الرسالة تحمل الخيارات والمصدر والمجموع", all(x in msg for x in ['30 مل','50 مل','100 مل','فانيلا','أرجان','$37.30','— المصدر: serum-oct','— القناة: facebook','— نسخة المحتوى: moment']))
+            check("الرسالة تطلب موعد تجهيز العبوة بدل افتراضه", 'تأكيد موعد تجهيز العبوة' in msg)
             check("الرابط البديل يظهر إذا تعذّر فتح النافذة", page.locator('[data-cart-fallback]').is_visible() and page.locator('[data-cart-fallback-link]').get_attribute('href') == url)
             events = page.evaluate("JSON.parse(sessionStorage.getItem('rawaa_events') || '[]').map(x => x.e)")
             check("زر واتساب يقيس النقرة فقط لا الشراء", 'InitiateCheckout' in events and 'Contact' in events and 'Purchase' not in events, str(events))
@@ -640,11 +645,11 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             # استدعاء مقاسات لم تُحفظ بحالة مطابقة، لضمان الرجوع للنسخة الصغيرة المحفوظة.
             fallback_formats = page.evaluate("""async () => {
               const paths = [
-                '/assets/img/products/trio-v5-1080.jpg',
-                '/assets/img/products/size-30-v5-720.jpg',
-                '/assets/img/products/size-100-v5-720.jpg',
-                '/assets/img/products/size-100-v5-900.webp',
-                '/assets/img/products/trio-v5-1080.avif'
+                '/assets/img/products/trio-v6-1080.jpg',
+                '/assets/img/products/size-30-v6-720.jpg',
+                '/assets/img/products/size-100-v6-720.jpg',
+                '/assets/img/products/size-100-v6-900.webp',
+                '/assets/img/products/trio-v6-1080.avif'
               ];
               return Promise.all(paths.map(async (p) => {
                 try { const r = await fetch(p + '?offline-probe=1'); return r.ok && (await r.arrayBuffer()).byteLength > 0; }

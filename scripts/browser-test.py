@@ -100,8 +100,8 @@ def run(base: str) -> int:
               "الأكثر اختيارًا" not in page.locator("body").inner_text() and
               "الأكثر طلبًا" not in page.locator("body").inner_text())
         ready_faq = page.locator("details").filter(has_text="هل السيروم جاهز ومتى يصل؟").text_content() or ""
-        check("الأسئلة تؤكد أن السيروم جاهز وتترك موعد التوصيل للمحادثة",
-              "السيروم جاهز" in ready_faq and "موعد التوصيل" in ready_faq and "التصنيع" in ready_faq)
+        check("الأسئلة تميّز جاهزية السيروم وتجهيز العبوة وتترك الموعد للمحادثة",
+              "السيروم جاهز" in ready_faq and "العبوة تُجهَّز عند الطلب" in ready_faq and "موعد التجهيز والتوصيل" in ready_faq)
         all_faq = page.locator("#faq").text_content() or ""
         check("لا مدة تصنيع مختلقة أو وعد بصورة قبل الشحن",
               "٢–٤ أيام" not in all_faq and "التصنيع حسب الطلب" not in all_faq and "صورة العبوة قبل الشحن" not in all_faq)
@@ -381,6 +381,7 @@ def run(base: str) -> int:
                 "الرسالة تطلب تأكيد التوفّر": "توفّر" in decoded or "التوفر" in decoded,
                 "الرسالة تطلب تأكيد السعر النهائي": "السعر النهائي" in decoded,
                 "الرسالة تطلب تأكيد رسوم التوصيل": "رسوم التوصيل" in decoded,
+                "الرسالة تطلب تأكيد موعد تجهيز العبوة دون وعد بمدة": "تأكيد موعد تجهيز العبوة" in decoded,
                 "الرسالة تطلب تأكيد الدفع": "الدفع" in decoded,
                 "الرسالة تُوضّح أنها ليست طلبًا مؤكدًا": "لا يُعد طلبًا مؤكدًا" in decoded or "طلبًا مؤكدًا" in decoded,
             }
@@ -625,6 +626,15 @@ def run(base: str) -> int:
                     }"""
                 )
                 check(f"أهداف اللمس ≥44px عند {w}px", len(small) == 0, str(small))
+
+            if w >= 900:
+                whole = pg.locator('.hero-figure img').evaluate("""img => {
+                    const r = img.getBoundingClientRect();
+                    const fit = getComputedStyle(img).objectFit;
+                    return img.naturalWidth > 0 && (fit === 'contain' ||
+                      Math.abs(r.width / r.height - img.naturalWidth / img.naturalHeight) < 0.02);
+                }""")
+                check(f"صورة العبوات لا تُقصّ على الشاشة الكبيرة {w}px", whole)
 
             if w != 390:
                 pg.screenshot(path=str(SHOTS / f"viewport-{w}.png"), full_page=(w >= 768))

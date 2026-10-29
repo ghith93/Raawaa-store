@@ -49,10 +49,10 @@
         price: 10,
         image: {
           base: 'size-30',
-          avif: ['size-30-v5-480.avif', 'size-30-v5-720.avif', 'size-30-v5-900.avif'],
-          webp: ['size-30-v5-480.webp', 'size-30-v5-720.webp', 'size-30-v5-900.webp'],
+          avif: ['size-30-v6-480.avif', 'size-30-v6-720.avif', 'size-30-v6-900.avif'],
+          webp: ['size-30-v6-480.webp', 'size-30-v6-720.webp', 'size-30-v6-900.webp'],
           widths: [480, 720, 900],
-          src: 'assets/img/products/size-30-v5-720.jpg',
+          src: 'assets/img/products/size-30-v6-720.jpg',
           width: 1024,  /* المصدر الأصلي */
           height: 1024,
           alt: 'صورة توضيحية لعبوة سيروم رواء 30 مل — زجاج كهرماني وملصق عاجي باسم RAWAA ورواء، وليست صورة للمنتج الفعلي'
@@ -69,10 +69,10 @@
         badge: 'الأنسب للاستعمال اليومي',
         image: {
           base: 'size-50',
-          avif: ['size-50-v5-480.avif', 'size-50-v5-720.avif', 'size-50-v5-900.avif'],
-          webp: ['size-50-v5-480.webp', 'size-50-v5-720.webp', 'size-50-v5-900.webp'],
+          avif: ['size-50-v6-480.avif', 'size-50-v6-720.avif', 'size-50-v6-900.avif'],
+          webp: ['size-50-v6-480.webp', 'size-50-v6-720.webp', 'size-50-v6-900.webp'],
           widths: [480, 720, 900],
-          src: 'assets/img/products/size-50-v5-720.jpg',
+          src: 'assets/img/products/size-50-v6-720.jpg',
           width: 1024,  /* المصدر الأصلي */
           height: 1024,
           alt: 'صورة توضيحية لعبوة سيروم رواء 50 مل — زجاج كهرماني وغطاء قطّارة أسود وملصق عاجي، وليست صورة للمنتج الفعلي'
@@ -89,10 +89,10 @@
         badge: 'أفضل قيمة',
         image: {
           base: 'size-100',
-          avif: ['size-100-v5-480.avif', 'size-100-v5-720.avif', 'size-100-v5-900.avif'],
-          webp: ['size-100-v5-480.webp', 'size-100-v5-720.webp', 'size-100-v5-900.webp'],
+          avif: ['size-100-v6-480.avif', 'size-100-v6-720.avif', 'size-100-v6-900.avif'],
+          webp: ['size-100-v6-480.webp', 'size-100-v6-720.webp', 'size-100-v6-900.webp'],
           widths: [480, 720, 900],
-          src: 'assets/img/products/size-100-v5-720.jpg',
+          src: 'assets/img/products/size-100-v6-720.jpg',
           width: 1024,  /* المصدر الأصلي */
           height: 1024,
           alt: 'صورة توضيحية لعبوة سيروم رواء 100 مل — أكبر أحجام العلامة، وليست صورة للمنتج الفعلي'
@@ -359,7 +359,7 @@
         'تأكيد توفّر الأحجام المطلوبة',
         'تأكيد خيارات العطر أو الزيت إن طُلبت',
         'تأكيد السعر النهائي لهذا الطلب',
-        'تأكيد رسوم التوصيل وموعده',
+        'تأكيد موعد تجهيز العبوة ورسوم التوصيل وموعده',
         'تأكيد تفاصيل الدفع'
       ],
       greeting: 'مرحبًا رواء،',
