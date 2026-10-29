@@ -894,7 +894,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         # فشل القياس الاختياري لا يعطّل إضافة المنتج.
         ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
-        page.evaluate("window.rawaaTrack = () => { throw new Error('test tracking failure'); }")
+        page.evaluate("() => { window.rawaaTrack = () => { throw new Error('test tracking failure'); }; }")
         page.locator('[data-add-current]').click()
         check('فشل القياس لا يمنع إضافة المنتج أو فتح السلة',
               page.locator('[data-cart-count]').first.inner_text() == '1' and
