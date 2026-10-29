@@ -58,6 +58,7 @@ jobs:
           node order-system/order-http-pg-test.mjs
           node order-system/telegram-pairing-pg-test.mjs
           node order-system/edge-pairing-pg-test.mjs
+          node order-system/edge-test-pg-test.mjs
 
       - name: عرض الأدوات المستخدمة (بلا نشر)
         run: echo "لا توجد خطوة نشر في هذا السير العمل."

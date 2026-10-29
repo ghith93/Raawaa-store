@@ -4,5 +4,6 @@ export const settings = Object.freeze({
   supabaseUrl: 'https://oyoyozdugicmnkfhjovo.supabase.co',
   ownerEndpoint: 'https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-owner-orders',
   pairingEndpoint: 'https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-telegram-pair',
+  telegramTestEndpoint: 'https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-telegram-test',
   publishableKey: 'sb_publishable_WtaxbQDb4FrtlGXt-w377w_RoNSfVJP'
 });

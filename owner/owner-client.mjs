@@ -1,5 +1,5 @@
 /** Server-backed client, not connected to the demo. Holds the access token in memory only. */
-export function createOwnerClient({ supabaseUrl, publishableKey, ownerEndpoint, pairingEndpoint = null, fetchImpl = fetch, now = Date.now }) {
+export function createOwnerClient({ supabaseUrl, publishableKey, ownerEndpoint, pairingEndpoint = null, telegramTestEndpoint = null, fetchImpl = fetch, now = Date.now }) {
   const base = new URL(supabaseUrl);
   const endpoint = new URL(ownerEndpoint);
   if (base.protocol !== 'https:' || !/^[a-z0-9-]+\.supabase\.co$/.test(base.hostname) || base.pathname !== '/' || base.search || base.hash || base.username || base.password || base.port ||
@@ -9,6 +9,11 @@ export function createOwnerClient({ supabaseUrl, publishableKey, ownerEndpoint, 
   if (pairingEndpoint !== null) {
     pairingUrl = new URL(pairingEndpoint);
     if (pairingUrl.protocol !== 'https:' || ![base.hostname, base.hostname.replace('.supabase.co', '.functions.supabase.co')].includes(pairingUrl.hostname) || pairingUrl.username || pairingUrl.password || pairingUrl.port || pairingUrl.search || pairingUrl.hash) throw new Error('INVALID_CONFIGURATION');
+  }
+  let testUrl = null;
+  if (telegramTestEndpoint !== null) {
+    testUrl = new URL(telegramTestEndpoint);
+    if (testUrl.protocol !== 'https:' || ![base.hostname, base.hostname.replace('.supabase.co', '.functions.supabase.co')].includes(testUrl.hostname) || testUrl.username || testUrl.password || testUrl.port || testUrl.search || testUrl.hash) throw new Error('INVALID_CONFIGURATION');
   }
   const authUrl = `${base.origin}/auth/v1`;
   let token = null, expires = 0, generation = 0;
@@ -56,10 +61,23 @@ export function createOwnerClient({ supabaseUrl, publishableKey, ownerEndpoint, 
       return data;
     } catch (err) { if (['SESSION_EXPIRED','invalid','not_found','ambiguous'].includes(err.message)) throw err; throw new Error('PAIR_FAILED'); }
   }
+  async function sendTest() {
+    if (!testUrl) throw new Error('TEST_FAILED');
+    if (!token || now() >= expires) { token=null; expires=0; throw new Error('SESSION_EXPIRED'); }
+    const current=generation, requestToken=token;
+    try {
+      const response=await fetchImpl(testUrl.href,{...options,method:'POST',headers:{apikey:publishableKey,authorization:`Bearer ${requestToken}`}});
+      if(current!==generation) throw new Error('SESSION_EXPIRED');
+      if(response.status===401||response.status===403){token=null;expires=0;throw new Error('SESSION_EXPIRED');}
+      const data=await response.json();
+      if(current!==generation) throw new Error('SESSION_EXPIRED');
+      if(!response.ok||data?.ok!==true) throw new Error(data?.error==='unknown'?'TEST_UNKNOWN':'TEST_FAILED');
+    }catch(err){if(['SESSION_EXPIRED','TEST_UNKNOWN'].includes(err.message))throw err;throw new Error('TEST_FAILED');}
+  }
   async function logout() {
     const previous = token; token = null; expires = 0; generation++;
     if (!previous) return;
     try { await fetchImpl(`${authUrl}/logout`, { ...options, method: 'POST', headers: { apikey: publishableKey, authorization: `Bearer ${previous}` } }); } catch { /* local session is still cleared */ }
   }
-  return { login, list, pair, logout };
+  return { login, list, pair, sendTest, logout };
 }
