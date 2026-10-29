@@ -68,7 +68,7 @@ jobs:
           for i in 1 2 3 4 5; do
             HOME_HTML=$(curl -fsSL --max-time 25 https://raawaa-store.pages.dev/ || true)
             PRODUCT_HTML=$(curl -fsSL --max-time 25 https://raawaa-store.pages.dev/serum || true)
-            if grep -qF "price-strip" <<< "$HOME_HTML" && grep -qF "data-open-cart-after-add" <<< "$PRODUCT_HTML"; then
+            if grep -qF "data-size-options" <<< "$HOME_HTML" && grep -qF "data-open-cart-after-add" <<< "$PRODUCT_HTML"; then
               echo "✓ الموقع الحي يعرض الرئيسية وصفحة المنتج الجديدة"; exit 0
             fi
             echo "انتظار انتشار الإصدار ($i/5)…"; sleep 15
