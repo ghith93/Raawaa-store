@@ -253,6 +253,60 @@
     return getProduct(id) || CONFIG.products[0];
   }
 
+  /** سعر 10 مل مجرد مقياس مقارنة؛ الأرقام والأحجام من الإعدادات. */
+  function unitPriceForTen(product) {
+    if (!product || !Number.isFinite(product.price) || !Number.isFinite(product.sizeMl) || product.sizeMl <= 0) return '—';
+    return CONFIG.currency.symbol + (product.price * 10 / product.sizeMl).toFixed(2);
+  }
+
+  function renderUnitComparisons() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-unit-comparison]'), function (list) {
+      list.textContent = '';
+      CONFIG.products.forEach(function (product) {
+        var item = document.createElement('li');
+        item.setAttribute('data-unit-for', product.id);
+        var size = document.createElement('span');
+        size.textContent = product.sizeLabel;
+        var amount = document.createElement('strong');
+        var value = document.createElement('bdi');
+        value.textContent = unitPriceForTen(product);
+        amount.appendChild(value);
+        item.appendChild(size);
+        item.appendChild(amount);
+        list.appendChild(item);
+      });
+    });
+  }
+
+  /** رابط السؤال يتبع الاختيار دون فتح واتساب أو إرسال رسالة. */
+  function updateSelectedInquiry(product) {
+    var links = document.querySelectorAll('[data-wa-selected]');
+    if (!links.length || !product) return;
+    var lines = [
+      'مرحبًا رواء، أود الاستفسار عن ' + product.name + ' بحجم ' + product.sizeLabel + '.',
+      'سعر العبوة المرجعي: ' + money(product.price) + ' قبل الخصم والتوصيل.'
+    ];
+    var cfg = CONFIG.customization || {};
+    var scent = (cfg.scentOptions || []).filter(function (o) { return o.id === custom.scent; })[0];
+    var oil = (cfg.oilAdditions || []).filter(function (o) { return o.id === custom.oil; })[0];
+    if (scent) lines.push('العطر الذي أستفسر عنه: ' + scent.label + '.');
+    if (oil) lines.push('إضافة الزيت التي أستفسر عنها: ' + oil.label + '.');
+    lines.push('هل يمكن تأكيد التوفّر والسعر النهائي وموعد تجهيز العبوة والتوصيل؟');
+    var href = waLink(lines.join('\n'));
+    Array.prototype.forEach.call(links, function (link) { link.setAttribute('href', href); });
+  }
+
+  /** تُفتح الإجابة عند الوصول إليها بالاختصار، والرابط يعمل أيضًا دون نص برمجي. */
+  function initProductShortcuts() {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-expand-target]'), function (link) {
+      link.addEventListener('click', function () {
+        var id = (link.getAttribute('href') || '').replace(/^#/, '');
+        var target = document.getElementById(id);
+        if (target && target.tagName === 'DETAILS') target.open = true;
+      });
+    });
+  }
+
   function renderSizePicker() {
     var host = document.querySelector('[data-size-options]');
     if (!host || !CONFIG.products.length) return;
@@ -302,6 +356,7 @@
       host.appendChild(label);
     });
 
+    renderUnitComparisons();
     syncSizeUI();
   }
 
@@ -330,7 +385,7 @@
     var unitNode = document.querySelector('[data-unit-live]');
     if (unitNode && product.sizeMl && product.price) {
       var per = product.price / product.sizeMl;
-      unitNode.innerHTML = '<bdi>$' + (per >= 0.1 ? per.toFixed(2) : per.toFixed(3)) + '</bdi> لكل مل — كل حجم أوفر من الذي قبله';
+      unitNode.innerHTML = '<bdi>' + CONFIG.currency.symbol + (per >= 0.1 ? per.toFixed(2) : per.toFixed(3)) + '</bdi> تقريبًا لكل مل قبل الخصم والتوصيل.';
     }
 
     // صورة البطاقة تتبع الحجم المختار — ترى الزائنة العبوة التي تختارها فعلًا
@@ -357,6 +412,7 @@
       btn.setAttribute('data-add-to-cart', selectedSize);
       if (btn.hasAttribute('data-requires-js')) btn.disabled = false;
     });
+    updateSelectedInquiry(product);
     refreshOrderEstimate();
   }
 
@@ -382,6 +438,7 @@
     saveChoices();
     syncCustomChips();
     renderCustomSummary();
+    updateSelectedInquiry(selectedProduct());
     if (el.items) renderCart();
   }
 
@@ -1768,6 +1825,7 @@
     renderTrust();
     renderCalculator();
     initOrderEstimate();
+    initProductShortcuts();
 
     // شريط الشراء المبكّر يتبع التمرير
     if (!window.__rawaaShopBarScroll) {

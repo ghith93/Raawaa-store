@@ -13,24 +13,70 @@
   var CONSENT_KEY = 'rawaa_tracking_consent';
   var PIXEL_ID = (window.RAWAA_CONFIG && window.RAWAA_CONFIG.marketing && window.RAWAA_CONFIG.marketing.facebookPixelId) || '';
 
-  /* ── ١) التقاط مصدر الزيارة ─────────────────────────────────── */
-  function readSource() {
-    var q = new URLSearchParams(location.search);
-    var src = {
-      utm_source: q.get('utm_source'),
-      utm_medium: q.get('utm_medium'),
-      utm_campaign: q.get('utm_campaign'),
-      utm_content: q.get('utm_content')
-    };
-    var has = Object.keys(src).some(function (k) { return src[k]; });
-    if (has) {
-      try { sessionStorage.setItem(STORE_KEY, JSON.stringify(src)); } catch { /* تجاهل: لا شيء نفعله بالخطأ */ }
-      return src;
-    }
-    try { return JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null') || {}; }
-    catch { return {}; }
+  /* ── ١) تقليل البيانات في رموز الحملات قبل الحفظ أو المشاركة ─── */
+  var SOURCE_FIELDS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'];
+
+  /** ترشيح احتياطي: لا يكتشف كل البيانات الشخصية ولا ينظّف الرابط الأصلي. */
+  function cleanCampaignLabel(value, limit) {
+    if (typeof value !== 'string' || value.length > 512) return '';
+    var label = value.replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060\u2066-\u2069\ufeff]/g, ' ').trim();
+    if (!label || /@|＠|%40/i.test(label)) return '';
+    if (/(?:access[_-]?token|token|api[_-]?key|password|secret)\s*[:=]/i.test(label)) return '';
+    var numbers = label.match(/[0-9\u0660-\u0669\u06f0-\u06f9][0-9\u0660-\u0669\u06f0-\u06f9\s().+/-]{7,}[0-9\u0660-\u0669\u06f0-\u06f9]/g) || [];
+    if (numbers.some(function (chunk) {
+      return (chunk.match(/[0-9\u0660-\u0669\u06f0-\u06f9]/g) || []).length >= 9;
+    })) return '';
+    return label.slice(0, limit);
   }
 
+  function cleanSource(raw) {
+    var result = {};
+    SOURCE_FIELDS.forEach(function (key) {
+      var value = cleanCampaignLabel(raw && raw[key], key === 'utm_campaign' ? 120 : 80);
+      if (value) result[key] = value;
+    });
+    return result;
+  }
+
+  /** تُنظّف أيضًا بقايا جلسة قديمة قبل عرضها أو استخدامها في الأحداث. */
+  function cleanStoredEvents() {
+    try {
+      var raw = sessionStorage.getItem('rawaa_events');
+      if (!raw) return;
+      var entries = JSON.parse(raw);
+      if (!Array.isArray(entries)) { sessionStorage.removeItem('rawaa_events'); return; }
+      var safe = entries.slice(-40).map(function (entry) {
+        if (!entry || typeof entry !== 'object') return null;
+        var name = cleanCampaignLabel(entry.e, 64);
+        if (!name) return null;
+        return { e: name, t: Number.isFinite(entry.t) ? entry.t : null,
+          src: cleanCampaignLabel(entry.src, 120) || null };
+      }).filter(Boolean);
+      sessionStorage.setItem('rawaa_events', JSON.stringify(safe));
+    } catch {
+      try { sessionStorage.removeItem('rawaa_events'); } catch { /* التخزين اختياري */ }
+    }
+  }
+
+  function readSource() {
+    var q = new URLSearchParams(location.search);
+    var raw = {};
+    SOURCE_FIELDS.forEach(function (key) { raw[key] = q.get(key); });
+    var has = SOURCE_FIELDS.some(function (key) { return raw[key]; });
+    try {
+      if (!has) raw = JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null') || {};
+      var safe = cleanSource(raw);
+      if (Object.keys(safe).length) sessionStorage.setItem(STORE_KEY, JSON.stringify(safe));
+      else sessionStorage.removeItem(STORE_KEY);
+      return safe;
+    } catch {
+      // حتى عندما يمنع المتصفح التخزين لا تُستخدم القيم الخام.
+      try { sessionStorage.removeItem(STORE_KEY); } catch { /* التخزين اختياري */ }
+      return cleanSource(raw);
+    }
+  }
+
+  cleanStoredEvents();
   var source = readSource();
 
   /* ── ٢) موافقة التتبّع — البكسل لا يُحمَّل بلا إذن ──────────── */
@@ -118,19 +164,14 @@
   }, true);
 
   /* ── ٥) مصدر مختصر وآمن في رسالة واتساب ───────────────────── */
-  function safeLabel(value, limit) {
-    return String(value || '')
-      .replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, ' ')
-      .trim().slice(0, limit);
-  }
   function sourceTag() {
-    return safeLabel(source.utm_campaign || source.utm_source, 120);
+    return cleanCampaignLabel(source.utm_campaign || source.utm_source, 120);
   }
   function sourceNote() {
     var lines = [];
     var campaign = sourceTag();
-    var channel = safeLabel(source.utm_source, 80);
-    var creative = safeLabel(source.utm_content, 80);
+    var channel = cleanCampaignLabel(source.utm_source, 80);
+    var creative = cleanCampaignLabel(source.utm_content, 80);
     if (campaign) lines.push('— المصدر: ' + campaign);
     if (channel && channel !== campaign) lines.push('— القناة: ' + channel);
     if (creative) lines.push('— نسخة المحتوى: ' + creative);
@@ -142,7 +183,8 @@
   function decorateDirectLinks() {
     var note = sourceNote();
     if (!note) return;
-    document.querySelectorAll('a[href^="https://wa.me/"]:not([data-cart-fallback-link])')
+    // رابط الحجم المختار يبنيه cart.js مع المصدر؛ لا نضيفه إليه مرتين.
+    document.querySelectorAll('a[href^="https://wa.me/"]:not([data-cart-fallback-link]):not([data-wa-selected])')
       .forEach(function (link) {
         var url = new URL(link.href);
         var text = url.searchParams.get('text') || 'مرحبًا رواء، أريد الاستفسار عن السيروم.';

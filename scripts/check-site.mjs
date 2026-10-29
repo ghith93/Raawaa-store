@@ -196,7 +196,8 @@ async function checkNoScatteredPrices() {
 
   for (const file of files) {
     if (!(await exists(file))) continue;
-    const text = stripNonCopy(await read(file));
+    // أسعار الوحدة مشتقة لا أسعار بيع، ونتحقق من كل واحدة على حدة أدناه.
+    const text = stripNonCopy(await read(file)).replace(/<ul class="unit-comparison-list" data-unit-comparison>[\s\S]*?<\/ul>/g, ' ');
     for (const re of pricePatterns) {
       for (const m of text.matchAll(new RegExp(re.source, 'g'))) {
         const value = m[1];
@@ -1111,10 +1112,31 @@ async function checkProductPage(config) {
   ok([home, landing].every(page => page.includes('السيروم جاهز') && page.includes('العبوة تُجهَّز عند الطلب') && page.includes('موعد')), 'جاهزية السيروم وتجهيز العبوة وموعدها المعلّق مذكورة في مسار الشراء');
   ok(landing.includes('class="serum-size-guide"') && landing.includes('لكل ملليلتر') && landing.includes('$2') &&
     landing.includes('$4') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
+  for (const [label, page] of [['الرئيسية', home], ['المنتج', visible]]) {
+    const lists = [...page.matchAll(/<ul class="unit-comparison-list" data-unit-comparison>([\s\S]*?)<\/ul>/g)];
+    const list = lists.length === 1 ? lists[0][1] : '';
+    const rows = [...list.matchAll(/<li data-unit-for="([^"]+)">\s*<span>([^<]+)<\/span>\s*<strong><bdi>([^<]+)<\/bdi><\/strong>\s*<\/li>/g)];
+    const valid = lists.length === 1 && rows.length === config.products.length && config.products.every(product =>
+      rows.some(row => row[1] === product.id && row[2] === product.sizeLabel &&
+        row[3] === config.currency.symbol + (product.price * 10 / product.sizeMl).toFixed(2)));
+    ok(valid && page.includes('أرقام تقريبية للمقارنة') && page.includes('لا نعرض عبوة 10 مل للبيع'),
+      `${label}: بديل مقارنة سعر الوحدة محسوب من الإعدادات وموضح الحدود`);
+  }
+  ok([home, landing].every(page => page.includes('class="purchase-shortcuts"') &&
+      ['#custom', '#ingredients', '#returns'].every(href => page.includes(`href="${href}"`)) && page.includes('data-expand-target')) &&
+    landing.includes('data-wa-selected') && landing.includes('data-wa-context') &&
+    (await read('js/marketing.js')).includes(':not([data-wa-selected])'),
+    'اختصارات قرار الشراء واستفسار الحجم موضّحة، دون تكرار مصدر الحملة');
   ok(visible.includes('id="returns"') && visible.includes('الاستفسار عن الشروط على واتساب'), 'سؤال الشروط دون اختلاق سياسة إرجاع');
   ok((await read('js/marketing.js')).includes('window.rawaaSourceNote = sourceNote') &&
     (await read('js/cart.js')).includes('window.rawaaSourceNote()') &&
     (await read('privacy.html')).includes('نسخة المحتوى'), 'نسخة الحملة تنتقل لواتساب وتُذكر في الخصوصية');
+  const marketingLogic = await read('js/marketing.js');
+  const privacySource = await read('privacy.html');
+  ok(marketingLogic.includes('function cleanCampaignLabel') && marketingLogic.includes('function cleanStoredEvents') &&
+    marketingLogic.includes('var safe = cleanSource(raw)') && privacySource.includes('ترشيح تقريبي') &&
+    privacySource.includes('لا يحذف الترشيح الرابط الأصلي'),
+    'رموز الحملات تُرشّح قبل التخزين مع شرح حدود الحماية');
   for (const hook of ['data-size-options', 'data-add-current', 'data-open-cart-after-add', 'data-cart-checkout', 'data-wa-direct']) {
     ok(visible.includes(hook), `مسار المنتج والسلة: ${hook}`);
   }
