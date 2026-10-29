@@ -40,6 +40,9 @@ jobs:
       - name: الفحص الآلي للموقع
         run: node scripts/check-site.mjs
 
+      - name: اختبار مراقب إعدادات الطلب
+        run: node --test scripts/order-config-monitor.test.mjs
+
       - name: عرض الأدوات المستخدمة (بلا نشر)
         run: echo "لا توجد خطوة نشر في هذا السير العمل."
 

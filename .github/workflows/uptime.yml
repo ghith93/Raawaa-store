@@ -93,15 +93,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: الأسعار الحيّة مطابقة للإعداد
-        run: |
-          BODY=$(curl -s --max-time 20 https://raawaa-store.pages.dev/js/config.js)
-          FAIL=0
-          for pair in "price: 10:30" "price: 12:50" "price: 15:100"; do
-            NEEDLE="${pair%:*}"
-            if grep -qF "$NEEDLE" <<< "$BODY"; then echo "✓ $pair"; else echo "✗ سعر مفقود: $pair"; FAIL=1; fi
-          done
-          exit $FAIL
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          check-latest: true
+      - name: اختبار مراقب إعدادات الطلب
+        run: node --test scripts/order-config-monitor.test.mjs
+      - name: مطابقة الأسعار وأحجامها والتوصيل ورقم واتساب مع المصدر
+        run: node scripts/order-config-monitor.mjs
       - name: الخط الجديد منشور فعلًا
         run: |
           CODE=$(curl -s -o /dev/null -w "%{http_code}" https://raawaa-store.pages.dev/assets/fonts/plexar-400.subset.woff2)
