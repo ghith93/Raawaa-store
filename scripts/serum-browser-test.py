@@ -891,6 +891,16 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               page.locator('#products noscript a[href^="https://wa.me/"]').count() >= 1)
         ctx.close()
 
+        # فشل القياس الاختياري لا يعطّل إضافة المنتج.
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        page = ctx.new_page(); page.goto(base + path, wait_until='load')
+        page.evaluate("window.rawaaTrack = () => { throw new Error('test tracking failure'); }")
+        page.locator('[data-add-current]').click()
+        check('فشل القياس لا يمنع إضافة المنتج أو فتح السلة',
+              page.locator('[data-cart-count]').first.inner_text() == '1' and
+              page.locator('#cart-dialog').evaluate('(d) => d.open'))
+        ctx.close()
+
         # فحص الموافقة على بكسل وهمي في الذاكرة فقط؛ كل طلب Meta يُعترض محليًا.
         ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         seen_meta: list[str] = []
@@ -907,16 +917,39 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.route('https://connect.facebook.net/**', fake_meta)
         page = ctx.new_page(); page.goto(base + path + '?' + urlencode({'utm_source':'facebook','utm_campaign':'demo@example.invalid'}), wait_until='load')
         check('عند تهيئة معرّف تجريبي: لا بكسل قبل الموافقة', page.locator('[data-consent-bar]').is_visible() and not seen_meta and not page.evaluate('!!window.fbq'))
+        page.locator('[data-add-current]').click()
+        check('الإضافة قبل الموافقة لا تحمّل بكسلًا', not seen_meta and not page.evaluate('!!window.fbq'))
+        page.locator('[data-cart-close]').click()
         with page.expect_response('https://connect.facebook.net/**', timeout=10000):
             page.locator('[data-consent-bar] button').first.click()
         check('الموافقة تشغّل مكتبة تجريبية معترضة محليًا فقط', len(seen_meta) == 1 and page.evaluate('!!window.fbq') and page.locator('[data-consent-bar]').is_hidden(), f"طلبات={len(seen_meta)} fbq={page.evaluate('!!window.fbq')} مخفي={page.locator('[data-consent-bar]').is_hidden()}")
         page.evaluate("window.rawaaTrack('ViewContent', {})")
         queued = page.evaluate("JSON.stringify(window.fbq.queue || [])")
         check('بيانات الحدث التجريبي لا تتضمن البريد المستبعد', 'demo@example.invalid' not in queued)
+        page.locator('#products .size-option').nth(2).click()
+        page.locator('[data-add-current]').click()
+        pixel_adds = page.evaluate("""() => (window.fbq.queue || []).map(x => Array.from(x))
+          .filter(x => x[0] === 'track' && x[1] === 'AddToCart').map(x => x[2])""")
+        check('إضافة 100 مل الناجحة ترسل معرّف الحجم الصحيح مرة واحدة للبكسل الوهمي',
+              len(pixel_adds) == 1 and pixel_adds[0].get('content_ids') == ['serum-100'] and
+              pixel_adds[0].get('content_type') == 'product', str(pixel_adds))
+        page.locator('[data-cart-close]').click()
+        page.goto(base + path + '?cart=serum-30x10', wait_until='load')
+        page.wait_for_selector('#products .size-option input', state='attached')
+        page.locator('#products .size-option').nth(0).click()
+        before = page.evaluate("JSON.parse(sessionStorage.getItem('rawaa_events') || '[]').filter(x => x.e === 'AddToCart').length")
+        page.locator('[data-add-current]').click()
+        after = page.evaluate("JSON.parse(sessionStorage.getItem('rawaa_events') || '[]').filter(x => x.e === 'AddToCart').length")
+        pixel_adds = page.evaluate("""() => (window.fbq.queue || []).map(x => Array.from(x))
+          .filter(x => x[0] === 'track' && x[1] === 'AddToCart').length""")
+        check('الإضافة المرفوضة عند الحد الأقصى لا تسجّل حدث إضافة', before == after and pixel_adds == 0)
+        if page.locator('#cart-dialog').evaluate('(d) => d.open'):
+            page.locator('[data-cart-close]').click()
         page.locator('[data-consent-settings]').click()
+        seen_before_revoke = len(seen_meta)
         with page.expect_navigation(wait_until='load'):
             page.locator('[data-consent-bar] button').nth(1).click()
-        check('سحب الموافقة يوقف البكسل بعد إعادة التحميل', page.evaluate("localStorage.getItem('rawaa_tracking_consent')") == 'no' and not page.evaluate('!!window.fbq') and len(seen_meta) == 1, f"طلبات={len(seen_meta)} fbq={page.evaluate('!!window.fbq')}")
+        check('سحب الموافقة يوقف البكسل بعد إعادة التحميل', page.evaluate("localStorage.getItem('rawaa_tracking_consent')") == 'no' and not page.evaluate('!!window.fbq') and len(seen_meta) == seen_before_revoke, f"طلبات={len(seen_meta)} fbq={page.evaluate('!!window.fbq')}")
         ctx.close(); browser.close()
     failed = [x for x in checks if not x[1]]
     print(f"\nالنتيجة: {len(checks) - len(failed)} نجح · {len(failed)} فشل · {len(checks)} إجمالي")
