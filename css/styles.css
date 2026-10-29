@@ -2660,3 +2660,13 @@ div[id="custom"] {
   color: var(--taupe, #6E6053);
   word-break: break-word;
 }
+
+/* يظهر فقط بعد إعداد قياس اختياري، لإمكانية تغيير قرار الموافقة. */
+.consent-settings { padding: 0; min-height: 44px; border: 0; background: transparent; color: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.consent-settings[hidden] { display: none; }
+
+/* تمنع ازدحام التنقل بعد إضافة صفحة المنتج على الشاشات المتوسطة. */
+@media (min-width: 900px) and (max-width: 1099px) {
+  .nav-desktop ul { gap: .6rem; }
+  .nav-desktop a { font-size: .8rem; white-space: nowrap; }
+}

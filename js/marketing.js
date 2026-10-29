@@ -1,20 +1,17 @@
 /**
  * RAWAA | رواء — طبقة القياس التسويقي.
  *
- * المبدأ: نريد معرفة أي إعلان فيسبوك يجلب طلبات فعلية، وبأي تكلفة.
- * لكن الزائرة تكمل الطلب في واتساب — خارج موقعنا — فلا نرى الإتمام.
- * الحلّ: نخزّن رمز المصدر (utm) في الرابط، ونُعيد إرساله إلى فيسبوك لحظةَ
- * الضغط على واتساب. فيسبوك يقارن الرمز بالحملة ويعرف: هذا الإعلان أنتج محادثة.
- *
- * الخصوصية: لا كوكيز منّا، لا بيانات شخصية، لا تتبّع عبر المواقع.
- * البكسل نفسه يعمل بكوكيز من طرف فيسبوك — لذلك لا يُحمَّل قبل موافقة صريحة.
+ * نستطيع قياس التفاعل مع الموقع وفتح رابط واتساب فقط، لا استلام الرسالة
+ * ولا الطلب المكتمل. يُحفَظ مصدر الحملة مؤقتًا داخل الجلسة ويمكن إرفاقه
+ * برسالة واتساب لتقرأه صاحبة المتجر. لا بيانات تُرسل إلى خادم المتجر.
+ * البكسل اختياري وغير مفعّل بدون معرّف، ولا يُحمَّل قبل موافقة صريحة.
  */
 (function () {
   'use strict';
 
   var STORE_KEY = 'rawaa_src';
   var CONSENT_KEY = 'rawaa_tracking_consent';
-  var PIXEL_ID = (window.RAWAA_MARKETING && window.RAWAA_MARKETING.pixelId) || '';
+  var PIXEL_ID = (window.RAWAA_CONFIG && window.RAWAA_CONFIG.marketing && window.RAWAA_CONFIG.marketing.facebookPixelId) || '';
 
   /* ── ١) التقاط مصدر الزيارة ─────────────────────────────────── */
   function readSource() {
@@ -23,8 +20,7 @@
       utm_source: q.get('utm_source'),
       utm_medium: q.get('utm_medium'),
       utm_campaign: q.get('utm_campaign'),
-      utm_content: q.get('utm_content'),
-      fbclid: q.get('fbclid')
+      utm_content: q.get('utm_content')
     };
     var has = Object.keys(src).some(function (k) { return src[k]; });
     if (has) {
@@ -47,6 +43,8 @@
     if (granted) loadPixel();
     var bar = document.querySelector('[data-consent-bar]');
     if (bar) bar.hidden = true;
+    // بعد سحب الموافقة، إعادة التحميل توقف مكتبة Meta التي حُمّلت مسبقًا.
+    if (!granted && window.fbq) location.reload();
   };
 
   function loadPixel() {
@@ -108,26 +106,46 @@
     }
   }, true);
 
-  /* بدء الطلب: فتح السلة أو الضغط على أي رابط واتساب */
+  /* فتح السلة ليس تواصلًا. الحدث هنا نقرٌ للانتقال، لا رسالة مستلمة. */
   document.addEventListener('click', function (e) {
     if (!e.target.closest) return;
-    if (e.target.closest('[data-cart-open],[data-wa-direct],a[href*="wa.me"]')) {
+    if (e.target.closest('[data-cart-checkout]')) {
       once('checkout', 'InitiateCheckout', { content_type: 'product' });
+      track('Contact', { method: 'whatsapp' });
+    } else if (e.target.closest('a[href*="wa.me"]')) {
       track('Contact', { method: 'whatsapp' });
     }
   }, true);
 
-  /* ── ٥) إعادة رمز المصدر إلى رسالة واتساب ──────────────────── */
-  /* الرسالة تصل للمالك وعليها اسم الحملة — يعرف من أين جاءت الزبونة دون أي أداة */
-  window.rawaaSrcTag = function () {
-    return source.utm_campaign || source.utm_source || '';
-  };
-
-  /* ── ٦) شريط الموافقة — يظهر مرة واحدة فقط ────────────────── */
-  if (consent() === null && PIXEL_ID) {
-    document.addEventListener('DOMContentLoaded', function () {
-      var bar = document.querySelector('[data-consent-bar]');
-      if (bar) bar.hidden = false;
-    });
+  /* ── ٥) مصدر مختصر وآمن في رسالة واتساب ───────────────────── */
+  function sourceTag() {
+    return String(source.utm_campaign || source.utm_source || '')
+      .replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 120);
   }
+  window.rawaaSrcTag = sourceTag;
+
+  function decorateDirectLinks() {
+    var tag = sourceTag();
+    if (!tag) return;
+    document.querySelectorAll('a[href^="https://wa.me/"]:not([data-cart-fallback-link])')
+      .forEach(function (link) {
+        var url = new URL(link.href);
+        var text = url.searchParams.get('text') || 'مرحبًا رواء، أريد الاستفسار عن السيروم.';
+        url.searchParams.set('text', text + '\n\n— المصدر: ' + tag);
+        link.href = url.href;
+      });
+  }
+
+  /* ── ٦) إظهار الموافقة وإتاحة تغييرها فقط عند تهيئة البكسل ──── */
+  document.addEventListener('DOMContentLoaded', function () {
+    decorateDirectLinks();
+    if (!PIXEL_ID) return;
+    var bar = document.querySelector('[data-consent-bar]');
+    var settings = document.querySelector('[data-consent-settings]');
+    if (settings) {
+      settings.hidden = false;
+      settings.addEventListener('click', function () { if (bar) bar.hidden = false; });
+    }
+    if (consent() === null && bar) bar.hidden = false;
+  });
 })();

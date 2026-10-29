@@ -14,18 +14,21 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'v1793234044';
+const CACHE_VERSION = 'v1793264343';
 const RUNTIME = 'rawaa-runtime-v5';
 
 /** الأصول التي يجب أن تعمل بلا إنترنت */
 const CORE = [
   './',
   './index.html',
+  './serum',
   './privacy.html',
   './404.html',
   './manifest.webmanifest',
   './css/styles.css',
+  './css/serum.css',
   './js/config.js',
+  './js/marketing.js',
   './js/cart.js',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
@@ -42,17 +45,16 @@ const CORE = [
   // الهوية البصرية (الجيل الثاني)
   './assets/brand/logo-mark-v2.svg',
   './assets/brand/logo-primary-v2.svg',
-  // الصور الجديدة المضغوطة (AVIF + WebP + JPG احتياطي)
-  './assets/img/products/hero-wide-v3-v4-1080.avif',
-  './assets/img/products/trio-v4-1080.avif',
-  './assets/img/products/size-30-v4-720.webp',
-  './assets/img/products/size-50-v4-720.webp',
-  './assets/img/products/size-100-v4-720.webp',
-  './assets/img/products/size-30-v4-720.jpg',
-  './assets/img/products/size-50-v4-720.jpg',
-  './assets/img/products/size-100-v4-720.jpg',
-  './assets/img/products/editorial-v4-720.jpg',
-  './assets/img/products/detail-label-v4-720.jpg'
+  // الأصول المستخدمة حاليًا في الصفحة الرئيسية وصفحة المنتج
+  './assets/img/products/trio-v5-480.avif',
+  './assets/img/products/trio-v5-720.avif',
+  './assets/img/products/trio-v5-480.webp',
+  './assets/img/products/size-30-v5-480.avif',
+  './assets/img/products/size-50-v5-480.avif',
+  './assets/img/products/size-50-v5-720.avif',
+  './assets/img/products/size-50-v5-480.webp',
+  './assets/img/products/size-50-v5-720.jpg',
+  './assets/img/products/size-100-v5-480.avif'
 ];
 
 self.addEventListener('install', (event) => {
@@ -88,7 +90,7 @@ self.addEventListener('fetch', (event) => {
   if (/\.(avif|webp|jpe?g|png|svg|woff2?)$/i.test(url.pathname)) {
     event.respondWith(
       caches.open(RUNTIME).then((cache) =>
-        cache.match(req).then((hit) => {
+        cache.match(req).then((hit) => hit || caches.match(req)).then((hit) => {
           const network = fetch(req)
             .then((res) => {
               if (res && res.ok) cache.put(req, res.clone());

@@ -21,7 +21,7 @@ from playwright.sync_api import sync_playwright
 
 AXE = (Path(__file__).parent / "vendor" / "axe.min.js").read_text(encoding="utf-8")
 
-PAGES = ["/", "/privacy.html", "/404.html"]
+PAGES = ["/", "/serum.html", "/privacy.html", "/404.html"]
 SEVERITY = {"critical": 3, "serious": 2, "moderate": 1, "minor": 0}
 
 
@@ -35,7 +35,9 @@ def audit(base: str, threshold: str, viewport: tuple[int, int]) -> int:
         for path in PAGES:
             page = ctx.new_page()
             try:
-                page.goto(base.rstrip("/") + path, wait_until="load", timeout=45000)
+                response = page.goto(base.rstrip("/") + path, wait_until="load", timeout=45000)
+                if not response or (response.status >= 400 and path != "/404.html"):
+                    raise RuntimeError(f"HTTP {response.status if response else 'no response'}")
                 page.wait_for_timeout(900)
                 page.add_script_tag(content=AXE)
                 res = page.evaluate("""async () => {

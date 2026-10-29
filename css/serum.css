@@ -1,0 +1,49 @@
+/* صفحة منتج مستقلة: تسعير واضح على الهاتف مع صورة توضيحية صغيرة. */
+.serum-landing { padding: 1rem 0 2.7rem; }
+.serum-breadcrumb { font-size: .74rem; color: var(--taupe); margin-bottom: .9rem; }
+.serum-breadcrumb a { color: inherit; }
+.serum-card { background: var(--surface, #FFFDFA); border: 1px solid var(--line, #E4DCD0); border-radius: 16px; padding: clamp(1rem, 3vw, 2rem); }
+.serum-overview { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(110px, .82fr); gap: 1rem; align-items: start; }
+.serum-heading .eyebrow { font-size: .67rem; letter-spacing: .04em; margin-bottom: .55rem; }
+.serum-heading h1 { font-size: clamp(1.65rem, 5.6vw, 2.75rem); line-height: 1.27; margin: 0 0 .55rem; }
+.serum-intro { color: var(--ink-soft); font-size: .85rem; line-height: 1.7; margin: 0 0 .7rem; }
+.serum-available { font-size: .78rem; color: var(--brown); font-weight: 700; margin: 0; }
+.serum-photo { margin: 0; min-width: 0; }
+.serum-photo picture { display: block; }
+.serum-photo img { width: 100%; height: auto; aspect-ratio: 1; display: block; object-fit: cover; border-radius: 10px; }
+.serum-photo figcaption { color: var(--taupe); font-size: .68rem; line-height: 1.55; margin-top: .4rem; }
+.serum-purchase { min-width: 0; margin-top: 1.3rem; }
+.serum-purchase .product-hero-price { margin-top: .85rem; }
+.serum-purchase .product-hero-unit { margin-bottom: .7rem; }
+.serum-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+.serum-actions .btn { width: 100%; text-align: center; font-size: .85rem; }
+.serum-order-note { font-size: .76rem; color: var(--ink-soft); line-height: 1.65; margin: .75rem 0 0; }
+.serum-trust { list-style: none; border-top: 1px solid var(--line-soft); padding: .75rem 0 0; margin: .75rem 0 0; display: grid; gap: .2rem; color: var(--ink-soft); font-size: .75rem; }
+.serum-trust li::before { content: '·'; color: var(--brown); font-weight: 700; padding-inline-end: .45rem; }
+.serum-steps { list-style: none; padding: 0; margin: 1.5rem 0; display: grid; gap: 1rem; counter-reset: steps; }
+.serum-steps li { counter-increment: steps; background: var(--surface, #FFFDFA); border: 1px solid var(--line); border-radius: 12px; padding: 1rem; }
+.serum-steps li::before { content: '0' counter(steps); color: var(--brown); display: block; font-size: .72rem; margin-bottom: .4rem; }
+.serum-steps strong, .serum-steps span { display: block; }
+.serum-steps span { margin-top: .3rem; color: var(--ink-soft); font-size: .85rem; }
+.serum-delivery { background: var(--cream); }
+.serum-delivery-inner { display: grid; gap: .4rem; }
+.serum-delivery-inner p { margin: 0 0 .9rem; }
+@media (max-width: 360px) {
+  .serum-overview { grid-template-columns: minmax(0, 1.12fr) minmax(98px, .88fr); gap: .65rem; }
+  .serum-heading h1 { font-size: 1.5rem; }
+  .serum-actions { grid-template-columns: 1fr; }
+}
+@media (min-width: 700px) {
+  .serum-steps { grid-template-columns: repeat(3, 1fr); }
+  .serum-delivery-inner { grid-template-columns: 1fr 1.3fr; gap: 2rem; }
+}
+@media (min-width: 900px) {
+  .serum-landing { padding: 1.5rem 0 4rem; }
+  .serum-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .95fr); column-gap: clamp(2rem, 4vw, 4rem); align-items: start; }
+  .serum-overview { display: contents; }
+  .serum-heading { grid-column: 1; grid-row: 1; }
+  .serum-photo { grid-column: 2; grid-row: 1 / span 2; }
+  .serum-purchase { grid-column: 1; grid-row: 2; margin-top: 1.6rem; }
+  .serum-heading h1 { font-size: clamp(2.3rem, 4vw, 3.5rem); }
+  .serum-intro { font-size: 1rem; max-width: 42ch; }
+}

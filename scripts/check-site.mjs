@@ -87,7 +87,7 @@ async function checkRequiredFiles() {
     [/BEGIN (?:RSA|OPENSSH|PGP) PRIVATE KEY/, 'private key'],
     [/sk-[A-Za-z0-9]{20,}/, 'API secret']
   ];
-  const scan = ['index.html', 'privacy.html', 'js/config.js', 'js/cart.js', 'scripts/check-site.mjs'];
+  const scan = ['index.html', 'serum.html', 'privacy.html', 'js/config.js', 'js/cart.js', 'scripts/check-site.mjs'];
   let leak = null;
   for (const f of scan) {
     if (!(await exists(f))) continue;
@@ -165,7 +165,7 @@ function stripNonCopy(text) {
 
 async function checkNoScatteredPrices() {
   group('الإعدادات والأسعار');
-  const files = ['index.html', 'privacy.html', 'js/cart.js', 'css/styles.css'];
+  const files = ['index.html', 'serum.html', 'privacy.html', 'js/cart.js', 'css/styles.css'];
 
   /**
    * الصفحة صار فيها شرح مرئي لطرق الدفع، ومن حقّه ذكر رقم السعر لعرض مثال.
@@ -209,7 +209,7 @@ async function checkNoScatteredPrices() {
 /* ------------------------- 3) صحة JavaScript ------------------------- */
 async function checkJsSyntax() {
   group('صحة JavaScript');
-  for (const file of ['js/config.js', 'js/cart.js']) {
+  for (const file of ['js/config.js', 'js/cart.js', 'js/marketing.js']) {
     try {
       new vm.Script(await read(file), { filename: file });
       pass(`بناء سليم: ${file}`);
@@ -266,7 +266,7 @@ async function checkHtmlHooks() {
 /* ------------------------- 5) سلامة الروابط والملفات المشار إليها ------------------------- */
 async function checkLinks() {
   group('الروابط والأصول');
-  for (const page of ['index.html', 'privacy.html']) {
+  for (const page of ['index.html', 'serum.html', 'privacy.html']) {
     const html = await read(page);
     const isPrivacy = page === 'privacy.html';
 
@@ -295,10 +295,11 @@ async function checkLinks() {
     }
 
     for (const ref of localRefs) {
-      if (!ref) continue;
+      if (!ref || ref === '/') continue;
       const base = path.dirname(page);
-      const rel = path.normalize(path.join(base, ref));
-      if (await exists(rel)) pass(`${page} → ${ref}`);
+      const rel = path.normalize(path.join(base, ref.replace(/^\//, '')));
+      // Cloudflare Pages تقدّم serum.html على الرابط النظيف /serum.
+      if (await exists(rel) || (!path.extname(rel) && await exists(`${rel}.html`))) pass(`${page} → ${ref}`);
       else fail(`${page} → ${ref} (ملف مفقود)`);
     }
 
@@ -387,7 +388,8 @@ async function checkContentClaims() {
   const stripComments = (src) => src
     .replace(/\/\*[\s\S]*?\*\//g, ' ')
     .replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
-  const all = index + privacy + stripComments(config);
+  const serum = await read('serum.html');
+  const all = index + serum + privacy + stripComments(config);
 
   /** الادعاء يُعدّ مخالفًا فقط إذا لم يسبقه نفي (لا / ولا / دون / بدون / غير). */
   const NEGATIONS = ['لا', 'ولا', 'دون', 'بدون', 'غير', 'بلا', 'لم'];
@@ -428,9 +430,8 @@ async function checkContentClaims() {
   const allowedPercents = new Set();
   for (const m of cfgText.matchAll(/discountPercent:\s*(\d+)/g)) allowedPercents.add(m[1]);
   /**
-   * نِسب التركيبة — صارت موثّقة رسميًا (ورقة المصنع 2026-10-28).
-   * القاعدة باقية: لا نسبة في الصفحة إلا إذا كانت معرَّفة في config.js.
-   * الفرق أن المصدر الآن أوسع: formula.items[].pct + formula.declaredTotal + formula.groups[].total
+   * لا نِسب تركيبة منشورة حتى تصل الورقة المصحّحة. الاستثناء الحالي هو
+   * الخصم المعرّف في إعدادات الدفع؛ لا يُستنتج إجمالي أو INCI.
    */
   for (const m of cfgText.matchAll(/pct:\s*([\d.]+)/g)) allowedPercents.add(String(parseFloat(m[1])));
   for (const m of cfgText.matchAll(/total:\s*([\d.]+)/g)) allowedPercents.add(String(parseFloat(m[1])));
@@ -1073,6 +1074,45 @@ async function checkOwnerDecisions(config) {
     'المخزون لكل حجم لا يُفترض في بيانات البحث');
 }
 
+
+/** صفحة إعلان فعلية، مرتبطة بالإعدادات وبنفس السلة؛ تحرس التسعير والحقائق. */
+async function checkProductPage(config) {
+  group('صفحة السيروم للإعلانات');
+  const ok = (condition, label) => condition ? pass(label) : fail(label);
+  if (!(await exists('serum.html'))) { fail('صفحة serum.html مفقودة'); return; }
+  const html = await read('serum.html');
+  const visible = html.replace(/<!--[\s\S]*?-->/g, ' ');
+  ok(visible.includes('rel="canonical" href="https://raawaa-store.pages.dev/serum"'), 'رابط canonical مستقل');
+  for (const hook of ['data-size-options', 'data-add-current', 'data-open-cart-after-add', 'data-cart-checkout', 'data-wa-direct']) {
+    ok(visible.includes(hook), `مسار المنتج والسلة: ${hook}`);
+  }
+  ok(visible.includes('البانثينول') && visible.includes('ليست القائمة الكاملة'), 'المكوّنات المختارة ليست قائمة كاملة');
+  const ingredients = visible.match(/<section[^>]*id="ingredients"[\s\S]*?<\/section>/)?.[0] || '';
+  ok(!/\d\s*[%٪]|[٠-٩]\s*[%٪]/.test(ingredients), 'لا نسب تركيبة غير مصححة');
+  ok(/ليست صورة للمنتج الفعلي/.test(visible) && /تصميم مقترح/.test(visible), 'الصورة موصوفة كتصوّر لا تصوير حقيقي');
+  ok(!/الأكثر اختيارًا|الأكثر طلبًا|التصنيع حسب الطلب|كيراتين/.test(visible), 'لا شعبية أو مدة تصنيع أو تركيبة متناقضة');
+  ok(visible.includes('توصيل مجاني داخل حماة فقط') && visible.includes('$4'), 'قيود ورسوم التوصيل واضحة');
+  ok(visible.includes('لا يسجّل طلبًا تلقائيًا ولا يؤكّده'), 'فتح واتساب ليس إتمام طلب');
+  ok((await read('sitemap.xml')).includes('https://raawaa-store.pages.dev/serum</loc>'), 'صفحة السيروم في خريطة الموقع');
+  ok((await read('scripts/build-deploy.sh')).includes('index.html serum.html'), 'صفحة السيروم تدخل حزمة النشر');
+  const pixel = String(config.marketing?.facebookPixelId || '');
+  ok((!pixel || /^\d{10,20}$/.test(pixel)) && (await read('js/marketing.js')).includes('RAWAA_CONFIG.marketing.facebookPixelId'), 'معرّف البكسل فارغ أو رقمي، وله مصدر إعداد واحد');
+  if (pixel) ok(!(await read('privacy.html')).includes('لا يوجد بكسل إعلاني مفعّل حاليًا'), 'تُراجع الخصوصية عند تفعيل البكسل');
+  const headers = await read('_headers');
+  ok(/script-src[^;]*https:\/\/connect\.facebook\.net/.test(headers) && /img-src[^;]*https:\/\/www\.facebook\.com/.test(headers), 'رأس CSP يسمح بمصدر Meta؛ شرط الموافقة في JavaScript');
+  try {
+    const raw = html.match(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+    const schema = JSON.parse(raw);
+    const offers = schema.offers?.offers || [];
+    ok(schema['@type'] === 'Product' && schema.url === 'https://raawaa-store.pages.dev/serum', 'بيانات منتج البحث صالحة');
+    ok(offers.length === config.products.length && config.products.every(p => offers.some(o => o.name?.includes(p.sizeMl + ' مل') && Number(o.price) === p.price)), 'أسعار صفحة البحث تطابق الإعدادات');
+    ok(!schema.offers?.availability && offers.every(o => !o.availability), 'لا مخزون مختلق في بيانات البحث');
+    for (const product of config.products) {
+      ok(visible.includes('>' + product.sizeMl + ' مل</span>') && visible.includes('$' + product.price), `سعر ${product.sizeMl} مل ظاهر حتى دون JavaScript`);
+    }
+  } catch (err) { fail('JSON-LD صفحة السيروم غير صالح', err.message); }
+}
+
 try {
   const { config } = await loadConfig();
   await checkRequiredFiles();
@@ -1083,6 +1123,7 @@ try {
   await checkLinks();
   await checkContentClaims();
   await checkOwnerDecisions(config);
+  await checkProductPage(config);
   await checkCartLogic();
   await checkAssets();
   await checkSecurity();

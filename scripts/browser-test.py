@@ -497,7 +497,7 @@ def run(base: str) -> int:
         check("زر القائمة يفتح قائمة التنقل على الهاتف", m.locator("#mobile-nav").is_visible())
         check("aria-expanded=true عند الفتح",
               m.locator("[data-nav-toggle]").get_attribute("aria-expanded") == "true")
-        m.locator("#mobile-nav a").first.click()
+        m.locator('#mobile-nav a[href="#products"]').click()
         m.wait_for_timeout(400)
         check("القائمة تُغلق بعد اختيار رابط", m.locator("#mobile-nav").is_hidden())
 

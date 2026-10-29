@@ -30,12 +30,13 @@ jobs:
         run: |
           BASE="https://raawaa-store.pages.dev"
           FAIL=0
-          for path in "" "privacy.html" "manifest.webmanifest" "sw.js" \
-                      "css/styles.css" "js/config.js" "js/cart.js" \
+          # تتبع تحويلات Pages الطبيعية (.html → رابط نظيف)، ثم افحص الرمز النهائي.
+          for path in "" "serum" "privacy.html" "manifest.webmanifest" "sw.js" \
+                      "css/styles.css" "css/serum.css" "js/config.js" "js/cart.js" "js/marketing.js" \
                       "assets/icons/apple-touch-icon.png" \
-                      "assets/img/products/hero-wide-v3-v4-720.avif" \
+                      "assets/img/products/trio-v5-480.avif" \
                       "sitemap.xml" "robots.txt"; do
-            CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 25 --retry 3 --retry-delay 5 "$BASE/$path")
+            CODE=$(curl -sSL -o /dev/null -w "%{http_code}" --max-time 25 --retry 3 --retry-delay 5 "$BASE/$path") || CODE=000
             if [ "$CODE" != "200" ]; then
               echo "✗ /$path => $CODE"
               FAIL=1
@@ -50,14 +51,21 @@ jobs:
 
       - name: فحص المحتوى الحرج في الصفحة الرئيسية
         run: |
-          HTML=$(curl -s --max-time 25 "https://raawaa-store.pages.dev/")
-          for needle in "RAWAA" "رواء" "data-product-grid" "963997310856" "شام كاش"; do
-            if echo "$HTML" | grep -q "$needle"; then
+          HTML=$(curl -fsSL --max-time 25 --retry 3 "https://raawaa-store.pages.dev/")
+          for needle in "RAWAA" "رواء" "data-add-current" "963997310856" "شام كاش"; do
+            if grep -qF "$needle" <<< "$HTML"; then
               echo "✓ يحتوي: $needle"
             else
               echo "::error::الصفحة الرئيسية لا تحتوي: $needle"
               exit 1
             fi
+          done
+
+      - name: صفحة المنتج ومسار الطلب
+        run: |
+          HTML=$(curl -fsSL --max-time 25 --retry 3 "https://raawaa-store.pages.dev/serum")
+          for needle in "سيروم زيوت" "data-add-current" "data-cart-checkout" "البانثينول"; do
+            if grep -qF "$needle" <<< "$HTML"; then echo "✓ المنتج: $needle"; else echo "::error::صفحة المنتج تفتقد: $needle"; exit 1; fi
           done
 
       - name: تثبيت Playwright
@@ -91,19 +99,23 @@ jobs:
           FAIL=0
           for pair in "price: 10:30" "price: 12:50" "price: 15:100"; do
             NEEDLE="${pair%:*}"
-            if echo "$BODY" | grep -qF "$NEEDLE"; then echo "✓ $pair"; else echo "✗ سعر مفقود: $pair"; FAIL=1; fi
+            if grep -qF "$NEEDLE" <<< "$BODY"; then echo "✓ $pair"; else echo "✗ سعر مفقود: $pair"; FAIL=1; fi
           done
           exit $FAIL
       - name: الخط الجديد منشور فعلًا
         run: |
           CODE=$(curl -s -o /dev/null -w "%{http_code}" https://raawaa-store.pages.dev/assets/fonts/plexar-400.subset.woff2)
           echo "plexar-400 → $CODE"; [ "$CODE" = "200" ]
-      - name: لا مراجع لصور قديمة في HTML المنشور
+      - name: لا مراجع الصور القديمة في الصفحتين
         run: |
-          HTML=$(curl -s --max-time 20 https://raawaa-store.pages.dev/)
-          OLD=$(echo "$HTML" | grep -oE 'products/[a-z0-9-]+-[0-9]+\.(avif|webp|jpg)' | grep -v 'v4' || true)
-          if [ -n "$OLD" ]; then echo "✗ مراجع قديمة:"; echo "$OLD"; exit 1; fi
-          echo "✓ كل مراجع الصور تحمل لاحقة v4"
+          for path in "" "serum"; do
+            HTML=$(curl -fsSL --max-time 20 --retry 3 "https://raawaa-store.pages.dev/$path")
+            IMAGES=$(printf '%s' "$HTML" | grep -oE 'products/[a-z0-9-]+-v[0-9]+-[0-9]+\.(avif|webp|jpg)' || true)
+            if [ -z "$IMAGES" ]; then echo "::error::لا صور منتجات مرقّمة في /$path"; exit 1; fi
+            OLD=$(printf '%s\n' "$IMAGES" | grep -E -- '-v[1-4]-' || true)
+            if [ -n "$OLD" ]; then echo "::error::مراجع صور قديمة في /$path"; echo "$OLD"; exit 1; fi
+            echo "✓ صور /$path مرقّمة وحديثة؛ تدقيق وجود الأصول في المهمة المستقلة"
+          done
 
   quality:
     name: أبواب الجودة (axe + Lighthouse)
@@ -121,9 +133,24 @@ jobs:
         run: |
           python -m pip install --quiet playwright
           python -m playwright install --with-deps chromium
-      - name: npm ci (lighthouse)
-        run: npm install --no-save lighthouse chrome-launcher
+      - name: تثبيت أدوات Lighthouse بالإصدارات المقفلة
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: تدقيق إمكانية الوصول (axe-core)
         run: python scripts/axe-audit.py --fail-on serious
-      - name: ميزانية الأداء (Lighthouse)
+      - name: ميزانية الصفحة الرئيسية (وسيط 3 قراءات)
         run: node scripts/perf-budget.mjs
+      - name: ميزانية صفحة السيروم (وسيط 3 قراءات)
+        if: ${{ !cancelled() }}
+        env:
+          BASE: https://raawaa-store.pages.dev/serum
+          PERF_REPORT: BENCHMARKS-serum.json
+        run: node scripts/perf-budget.mjs
+      - name: حفظ قراءات الأداء حتى عند الإخفاق
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: lighthouse-live
+          path: |
+            BENCHMARKS-lighthouse-latest.json
+            BENCHMARKS-serum.json
+          if-no-files-found: warn

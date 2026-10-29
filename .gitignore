@@ -5,3 +5,5 @@ repomix-output.xml
 .npm/
 .wrangler/
 BENCHMARKS-lighthouse.json
+BENCHMARKS-serum.json
+BENCHMARKS-lighthouse-latest.json

@@ -1,6 +1,6 @@
 /**
  * RAWAA | رواء — منطق الواجهة والسلة وطلب واتساب.
- * لا شبكة، لا تخزين محلي، لا تتبّع: كل شيء يجري داخل الصفحة الحالية.
+ * السلة في ذاكرة الجلسة؛ فتح الطلب ينقل اختيارات الزائرة إلى واتساب فقط عند اختيارها.
  */
 (function () {
   'use strict';
@@ -357,6 +357,7 @@
     // زر الإضافة يتبع الحجم المختار — الـ id لا يُكتب في HTML
     Array.prototype.forEach.call(document.querySelectorAll('[data-add-current]'), function (btn) {
       btn.setAttribute('data-add-to-cart', selectedSize);
+      if (btn.hasAttribute('data-requires-js')) btn.disabled = false;
     });
   }
 
@@ -1272,7 +1273,7 @@
 
     if (blocked) {
       showFallback(url);
-      announce('لم نتمكن من فتح نافذة واتساب تلقائيًا. استخدمي الرابط البديل الظاهر في السلة.');
+      announce('إن لم تُفتح محادثة واتساب، استخدمي الرابط البديل الظاهر في السلة.');
     } else {
       hideFallback();
       announce('فُتحت محادثة واتساب في نافذة جديدة. الطلب لا يُعد مؤكدًا قبل ردّنا عليك.');
@@ -1572,7 +1573,9 @@
 
       if (target.hasAttribute('data-add-to-cart')) {
         event.preventDefault();
-        addToCart(target.getAttribute('data-add-to-cart'), target);
+        var productId = target.getAttribute('data-add-to-cart');
+        addToCart(productId, target);
+        if (target.hasAttribute('data-open-cart-after-add') && cart[productId]) openCart();
         return;
       }
       if (target.hasAttribute('data-cart-open')) {

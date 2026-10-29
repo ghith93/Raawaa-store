@@ -6,6 +6,29 @@
 
 ---
 
+## رابط صفحة السيروم للإعلانات
+
+**رابط صفحة المنتج**
+
+```
+https://raawaa-store.pages.dev/serum
+```
+
+**رابط حملة تجريبي قابل للنسخ**
+
+```
+https://raawaa-store.pages.dev/serum?utm_source=facebook&utm_medium=paid_social&utm_campaign=serum_launch
+```
+
+يمكن تغيير `serum_launch` لتمييز كل حملة. عند استخدام واتساب من الموقع يُضاف اسم
+الحملة إلى نص الرسالة؛ هذا يساعد على معرفة المصدر، لكنه **لا يثبت إرسال الرسالة أو اكتمال البيع**.
+لا نُطلق إعلانًا ولا ننفق ميزانية دون موافقتك.
+
+**معرّف Meta Pixel:** غير متوفر بعد والبكسل غير مفعّل. قبل تفعيله يلزم إدخال
+المعرّف الصحيح ومراجعة سياسة الخصوصية؛ تشغيله مشروط بموافقة الزائرة.
+
+---
+
 ## ١) أسرار GitHub — Cloudflare
 
 **اسم السر الأول**
@@ -248,7 +271,7 @@ curl -sI https://raawaa-store.pages.dev/assets/fonts/plexar-400.subset.woff2
 **التحقق أن إصلاح الصور يعمل**
 
 ```
-curl -sI https://raawaa-store.pages.dev/assets/img/products/trio-v4-1080.avif
+curl -sI https://raawaa-store.pages.dev/assets/img/products/trio-v5-480.avif
 ```
 
 المتوقع: `200` — **لا** `301`

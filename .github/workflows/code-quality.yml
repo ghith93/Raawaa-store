@@ -31,7 +31,7 @@ jobs:
           npx eslint js/*.js sw.js --max-warnings 10
 
       - name: html-validate — صحة HTML وإمكانية الوصول
-        run: npx html-validate index.html privacy.html 404.html
+        run: npx html-validate index.html serum.html privacy.html 404.html
 
       - name: صحة JSON-LD والمانيفست
         run: |
@@ -59,7 +59,7 @@ jobs:
           node -e "
           const fs=require('fs'),path=require('path');
           let src='';
-          for(const f of ['index.html','privacy.html','404.html','sw.js','manifest.webmanifest'])
+          for(const f of ['index.html','serum.html','privacy.html','404.html','sw.js','manifest.webmanifest'])
             if(fs.existsSync(f)) src+=fs.readFileSync(f,'utf8');
           for(const f of fs.readdirSync('js').filter(x=>x.endsWith('.js')))
             src+=fs.readFileSync(path.join('js',f),'utf8');
