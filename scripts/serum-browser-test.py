@@ -568,6 +568,8 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               }});""")
             page = ctx.new_page(); page.goto(base + target_path + '?utm_campaign=copy-test', wait_until='load')
             page.locator('[data-add-current]').click()
+            if not page.locator('#cart-dialog').evaluate('(d) => d.open'):
+                page.locator('[data-cart-open]').first.click()
             page.locator('[data-cart-checkout]').click()
             box = page.locator('#cart-dialog').bounding_box()
             page.mouse.move(box['x'] + box['width'] / 2, 280)
