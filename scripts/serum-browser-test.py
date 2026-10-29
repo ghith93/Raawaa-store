@@ -711,6 +711,35 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               'demo@example.invalid' not in old_src and '+963 999 111 222' not in old_log and 'facebook' in old_src)
         ctx.close()
 
+        # خصوصية ذاكرة عامل الخدمة: لا تحفظ الاستعلامات، لكن الصفحة النظيفة تعمل دون إنترنت.
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        page = ctx.new_page(); page.goto(base + path, wait_until='load')
+        controller = page.evaluate("""async () => {
+          await navigator.serviceWorker.ready;
+          if (navigator.serviceWorker.controller) return true;
+          return new Promise(resolve => {
+            navigator.serviceWorker.addEventListener('controllerchange', () => resolve(true), {once:true});
+            setTimeout(() => resolve(false), 12000);
+          });
+        }""")
+        page.goto(base + path, wait_until='load')
+        page.goto(base + path + '?utm_campaign=private-cache-probe', wait_until='load')
+        page.evaluate("fetch('/assets/img/products/size-50-v6-480.avif?private-cache-probe=1').then(r => r.arrayBuffer())")
+        page.wait_for_timeout(500)
+        query_keys = page.evaluate("""async () => {
+          const keys = await caches.keys();
+          return (await Promise.all(keys.map(async name => (await caches.open(name)).keys())))
+            .flat().map(r => r.url).filter(url => new URL(url).search);
+        }""")
+        check('عامل الخدمة لا يحفظ روابط ذات استعلام في ذاكرته', controller and not query_keys, str(query_keys))
+        ctx.set_offline(True)
+        page.goto(base + path + '?utm_campaign=offline-safe-probe', wait_until='load')
+        check('رابط حملة بلا إنترنت يفتح صفحة المنتج النظيفة لا الصفحة الرئيسية',
+              page.locator('[data-serum-control="sizes"]').count() > 0 and
+              page.locator('[data-add-current]').is_enabled() and
+              'offline-safe-probe' in page.evaluate('window.rawaaSourceNote()'))
+        ctx.close()
+
         # مسار الصفحة النظيفة وصورة المشهد حتى بعد انقطاع الشبكة.
         # خادم CI البسيط لا ينفّذ تحويل /serum، لذا يُفحص ذلك على الخادم المهيأ والحي.
         if path == '/serum':

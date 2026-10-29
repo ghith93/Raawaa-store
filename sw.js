@@ -14,8 +14,9 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'v1793300790';
-const RUNTIME = 'rawaa-runtime-v6';
+const CACHE_VERSION = 'v1793302000';
+// استبدال الذاكرة القديمة يمسح مفاتيحها التي ربما احتوت استعلامات روابط.
+const RUNTIME = 'rawaa-runtime-v7';
 
 /** الأصول التي يجب أن تعمل بلا إنترنت */
 const CORE = [
@@ -104,7 +105,7 @@ self.addEventListener('fetch', (event) => {
         cache.match(req).then((hit) => hit || caches.match(req)).then((hit) => {
           const network = fetch(req)
             .then((res) => {
-              if (res && res.ok) cache.put(req, res.clone());
+              if (res && res.ok && !url.search) cache.put(req, res.clone());
               return res;
             })
             .catch(() => {
@@ -132,7 +133,8 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(req)
       .then((res) => {
-        if (res && res.ok) {
+        // لا نحفظ مفاتيح تحتوي استعلامات قد تتضمن بيانات خاصة أو رموز حملات.
+        if (res && res.ok && !url.search) {
           const copy = res.clone();
           caches.open(CACHE_VERSION).then((c) => c.put(req, copy));
         }
@@ -143,7 +145,11 @@ self.addEventListener('fetch', (event) => {
         // "صورة لا تفتح" بدل خطأ واضح، ويخفي السبب. الرجوع للصفحة للتنقل فقط.
         caches.match(req).then((hit) => {
           if (hit) return hit;
-          if (req.mode === 'navigate') return caches.match('./index.html');
+          if (req.mode === 'navigate') {
+            // للرابط ذي الاستعلام نستخدم نسخة المسار النظيفة، لا نسخة صفحة أخرى.
+            const clean = new URL(url.pathname, url.origin).href;
+            return caches.match(clean).then((page) => page || caches.match('./index.html'));
+          }
           return Response.error();
         })
       )
