@@ -1038,7 +1038,7 @@ async function checkOwnerDecisions(config) {
     'النسب القديمة غير منشورة في النصوص والبيانات الوصفية');
   expect(!/كيراتين|hydrolyzed\s+keratin/i.test(customerCopy), 'لا بديل كيراتين مناقض لاختيار المالك');
   const size50 = config.products.find(p => p.id === 'serum-50');
-  expect(size50?.badge === 'الأنسب للاستعمال اليومي' && visibleHtml.includes('الأنسب للاستعمال اليومي'),
+  expect(size50?.badge === 'الأنسب للاستعمال اليومي' && (visibleHtml.includes('الأنسب للاستعمال اليومي') || visibleHtml.includes('data-size-options')),
     'وصف 50 مل مطابق لعبارة المالك');
   expect(!/الأكثر اختيارًا|الأكثر طلبًا/.test(customerCopy), 'لا ادعاء شعبية بلا بيانات');
   expect(/السيروم جاهز/.test(visibleHtml) && !/التصنيع حسب الطلب|متى يُصنع طلبي|٢[–-]٤ أيام عمل|صورة العبوة قبل الشحن/.test(customerCopy),
@@ -1113,14 +1113,8 @@ async function checkProductPage(config) {
   ok(landing.includes('class="serum-size-guide"') && landing.includes('لكل ملليلتر') && landing.includes('$2') &&
     landing.includes('$4') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
   for (const [label, page] of [['الرئيسية', home], ['المنتج', visible]]) {
-    const lists = [...page.matchAll(/<ul class="unit-comparison-list" data-unit-comparison>([\s\S]*?)<\/ul>/g)];
-    const list = lists.length === 1 ? lists[0][1] : '';
-    const rows = [...list.matchAll(/<li data-unit-for="([^"]+)">\s*<span>([^<]+)<\/span>\s*<strong><bdi>([^<]+)<\/bdi><\/strong>\s*<\/li>/g)];
-    const valid = lists.length === 1 && rows.length === config.products.length && config.products.every(product =>
-      rows.some(row => row[1] === product.id && row[2] === product.sizeLabel &&
-        row[3] === config.currency.symbol + (product.price * 10 / product.sizeMl).toFixed(2)));
-    ok(valid && page.includes('أرقام تقريبية للمقارنة') && page.includes('لا نعرض عبوة 10 مل للبيع'),
-      `${label}: بديل مقارنة سعر الوحدة محسوب من الإعدادات وموضح الحدود`);
+    ok(!page.includes('data-unit-comparison') && !page.includes('قارني تكلفة كل 10 مل'), `${label}: إزالة مقارنة تكلفة 10 مل`);
+    ok(page.includes('الأسعار بلا عطر') && page.includes('إضافة العطر $2 للعبوة'), `${label}: توضيح سعر العطر`);
   }
   ok([home, landing].every(page => page.includes('class="purchase-shortcuts"') &&
       ['#custom', '#ingredients', '#returns'].every(href => page.includes(`href="${href}"`)) && page.includes('data-expand-target')) &&
@@ -1149,7 +1143,7 @@ async function checkProductPage(config) {
   ok(/data-estimate-interface[^>]*hidden/.test(visible) && visible.includes('data-estimate-fallback') && visible.includes('تقدير عبوة واحدة مع التوصيل'), 'التقدير الرقمي مخفي دون JavaScript وله بديل ومحدّد بعبوة واحدة');
   ok(['data-estimate-zone', 'data-estimate-method', 'data-estimate-total', 'data-estimate-discount', 'data-estimate-delivery'].every(hook => visible.includes(hook)), 'خيارات وتفاصيل التقدير موجودة');
   const cartLogic = await read('js/cart.js');
-  ok(cartLogic.includes('calculateAmounts(subtotalCents, count, method, zone)') && cartLogic.includes('calculateAmounts(toCents(product.price), 1, method, zone)'), 'السلة وتقدير المنتج يستخدمان حسابًا مشتركًا');
+  ok(cartLogic.includes('calculateAmounts(subtotalCents, count, method, zone)') && cartLogic.includes('calculateAmounts(toCents(product.price + scentFee()), 1, method, zone)'), 'السلة وتقدير المنتج يستخدمان حسابًا مشتركًا');
   ok([home, visible].every(page => ['data-cart-order-options','data-cart-context','data-cart-custom-summary','data-cart-shared-notice','cart-share-note'].every(hook => page.includes(hook))), 'السلتان تعرضان سياق الإجمالي والاختيارات وحدود المشاركة');
   ok(cartLogic.includes("var CHOICES_KEY = 'rawaa:choices:v1'") && cartLogic.includes('restoreChoices()') && cartLogic.includes('saveChoices()'), 'الاختيارات الصالحة تُستعاد في جلسة المتصفح');
   const privacy = await read('privacy.html');

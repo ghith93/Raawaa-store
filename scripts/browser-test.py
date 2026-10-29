@@ -71,10 +71,7 @@ def run(base: str) -> int:
         check("الأحجام 30/50/100 مل", [t.strip() for t in sizes] == ["30 مل", "50 مل", "100 مل"], str(sizes))
         prices = page.locator("#products .size-option-price").all_inner_texts()
         check("الأسعار المعروضة $10 / $12 / $15", [t.strip() for t in prices] == ["$10", "$12", "$15"], str(prices))
-        unit_rows = page.locator('[data-unit-comparison] li').all_inner_texts()
-        check("الرئيسية تقارن تكلفة 10 مل للأحجام دون افتراض عبوة للبيع",
-              [x.replace('\n', ' ') for x in unit_rows] == ['30 مل $3.33', '50 مل $2.40', '100 مل $1.50'] and
-              'لا نعرض عبوة 10 مل للبيع' in page.locator('.unit-comparison-note').inner_text())
+        check("إزالة مقارنة تكلفة 10 مل", page.locator('[data-unit-comparison]').count() == 0)
         check("الرئيسية توفّر اختصارات العطر والمكونات والإرجاع",
               [x.get_attribute('href') for x in page.locator('.purchase-shortcuts a').all()] == ['#custom','#ingredients','#returns'])
         check("اتجاه الصفحة RTL", page.evaluate("getComputedStyle(document.body).direction") == "rtl")

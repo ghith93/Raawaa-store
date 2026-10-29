@@ -253,38 +253,13 @@
     return getProduct(id) || CONFIG.products[0];
   }
 
-  /** سعر 10 مل مجرد مقياس مقارنة؛ الأرقام والأحجام من الإعدادات. */
-  function unitPriceForTen(product) {
-    if (!product || !Number.isFinite(product.price) || !Number.isFinite(product.sizeMl) || product.sizeMl <= 0) return '—';
-    return CONFIG.currency.symbol + (product.price * 10 / product.sizeMl).toFixed(2);
-  }
-
-  function renderUnitComparisons() {
-    Array.prototype.forEach.call(document.querySelectorAll('[data-unit-comparison]'), function (list) {
-      list.textContent = '';
-      CONFIG.products.forEach(function (product) {
-        var item = document.createElement('li');
-        item.setAttribute('data-unit-for', product.id);
-        var size = document.createElement('span');
-        size.textContent = product.sizeLabel;
-        var amount = document.createElement('strong');
-        var value = document.createElement('bdi');
-        value.textContent = unitPriceForTen(product);
-        amount.appendChild(value);
-        item.appendChild(size);
-        item.appendChild(amount);
-        list.appendChild(item);
-      });
-    });
-  }
-
   /** رابط السؤال يتبع الاختيار دون فتح واتساب أو إرسال رسالة. */
   function updateSelectedInquiry(product) {
     var links = document.querySelectorAll('[data-wa-selected]');
     if (!links.length || !product) return;
     var lines = [
       'مرحبًا رواء، أود الاستفسار عن ' + product.name + ' بحجم ' + product.sizeLabel + '.',
-      'سعر العبوة المرجعي: ' + money(product.price) + ' قبل الخصم والتوصيل.'
+      'سعر العبوة المرجعي: ' + money(product.price + scentFee()) + ' قبل الخصم والتوصيل؛ سعر الزيت إن اختير يُؤكّد.'
     ];
     var cfg = CONFIG.customization || {};
     var scent = (cfg.scentOptions || []).filter(function (o) { return o.id === custom.scent; })[0];
@@ -356,7 +331,6 @@
       host.appendChild(label);
     });
 
-    renderUnitComparisons();
     syncSizeUI();
   }
 
@@ -429,6 +403,10 @@
      هذا هو التخصيص الذي نملكه فعلًا: القاعدة ثابتة، والاختيار حسّي. */
   var custom = { scent: '', oil: '' };
 
+  function scentFee() {
+    return custom.scent && custom.scent !== 'unscented' ? (CONFIG.customization.scentPrice || 0) : 0;
+  }
+
   function setCustom(field, value) {
     if (field !== 'scent' && field !== 'oil') return;
     var cfg = CONFIG.customization || {};
@@ -439,6 +417,7 @@
     syncCustomChips();
     renderCustomSummary();
     updateSelectedInquiry(selectedProduct());
+    refreshOrderEstimate();
     if (el.items) renderCart();
   }
 
@@ -512,7 +491,7 @@
     var count = 0;
 
     entries.forEach(function (entry) {
-      subtotalCents += toCents(entry.product.price) * entry.qty;
+      subtotalCents += toCents(entry.product.price + scentFee()) * entry.qty;
       count += entry.qty;
     });
 
@@ -587,7 +566,7 @@
     var zone = activeZone();
     var method = activeMethod();
     if (!product || !zone || !method) return;
-    var amounts = calculateAmounts(toCents(product.price), 1, method, zone);
+    var amounts = calculateAmounts(toCents(product.price + scentFee()), 1, method, zone);
     box.querySelector('[data-estimate-zone]').value = zone.id;
     box.querySelector('[data-estimate-method]').value = method.id;
     box.querySelector('[data-estimate-context]').textContent = product.sizeLabel + ' · ' + zone.label + ' · ' + (method.short || method.label);
@@ -708,7 +687,7 @@
     var oil = (cfg.oilAdditions || []).filter(function (o) { return o.id === custom.oil; })[0];
     var parts = [];
     if (scent) parts.push('العطر: ' + scent.label);
-    if (oil) parts.push('إضافة زيت: ' + oil.label);
+    if (oil) parts.push('إضافة زيت: ' + oil.label + ' (السعر يؤكد في واتساب وغير مشمول بالإجمالي)');
     el.cartCustomSummary.hidden = isEmpty || !parts.length;
     el.cartCustomSummary.textContent = parts.length
       ? 'للاستفسار عن الطلب ككل: ' + parts.join(' · ') + '؛ نؤكد التوفّر في واتساب.'
@@ -1152,11 +1131,11 @@
 
     var unit = document.createElement('p');
     unit.className = 'cart-item-unit';
-    unit.textContent = 'سعر الوحدة: ' + money(product.price) + ' · مرجعي';
+    unit.textContent = 'سعر الوحدة: ' + money(product.price + scentFee()) + ' · مرجعي';
 
     var line = document.createElement('p');
     line.className = 'cart-item-line';
-    line.textContent = 'مجموع البند: ' + money((toCents(product.price) * qty) / 100);
+    line.textContent = 'مجموع البند: ' + money((toCents(product.price + scentFee()) * qty) / 100);
 
     var controls = document.createElement('div');
     controls.className = 'cart-item-controls';
@@ -1298,8 +1277,8 @@
 
     p.entries.forEach(function (entry) {
       lines.push('• ' + entry.product.sizeLabel + ' × ' + entry.qty +
-        ' — ' + money(entry.product.price) + ' للواحدة = ' +
-        money((toCents(entry.product.price) * entry.qty) / 100));
+        ' — ' + money(entry.product.price + scentFee()) + ' للواحدة = ' +
+        money((toCents(entry.product.price + scentFee()) * entry.qty) / 100));
     });
 
     lines.push('');
@@ -1333,11 +1312,11 @@
       lines.push('التخصيص:');
       if (custom.scent) {
         var so = (cfgC.scentOptions || []).filter(function (o) { return o.id === custom.scent; })[0];
-        if (so) lines.push('• العطر: ' + so.label);
+        if (so) lines.push('• العطر: ' + so.label + (scentFee() ? ' (إضافة $2 لكل عبوة، مشمولة أعلاه)' : ''));
       }
       if (custom.oil) {
         var oo = (cfgC.oilAdditions || []).filter(function (o) { return o.id === custom.oil; })[0];
-        if (oo) lines.push('• إضافة زيت: ' + oo.label);
+        if (oo) lines.push('• إضافة زيت: ' + oo.label + ' (السعر غير مشمول ويؤكد في واتساب)');
       }
     }
 
