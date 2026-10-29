@@ -1131,6 +1131,12 @@ async function checkProductPage(config) {
   ok((await read('js/marketing.js')).includes('window.rawaaSourceNote = sourceNote') &&
     (await read('js/cart.js')).includes('window.rawaaSourceNote()') &&
     (await read('privacy.html')).includes('نسخة المحتوى'), 'نسخة الحملة تنتقل لواتساب وتُذكر في الخصوصية');
+  const marketingLogic = await read('js/marketing.js');
+  const privacySource = await read('privacy.html');
+  ok(marketingLogic.includes('function cleanCampaignLabel') && marketingLogic.includes('function cleanStoredEvents') &&
+    marketingLogic.includes('var safe = cleanSource(raw)') && privacySource.includes('ترشيح تقريبي') &&
+    privacySource.includes('لا يحذف الترشيح الرابط الأصلي'),
+    'رموز الحملات تُرشّح قبل التخزين مع شرح حدود الحماية');
   for (const hook of ['data-size-options', 'data-add-current', 'data-open-cart-after-add', 'data-cart-checkout', 'data-wa-direct']) {
     ok(visible.includes(hook), `مسار المنتج والسلة: ${hook}`);
   }

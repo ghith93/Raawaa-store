@@ -9,7 +9,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -450,7 +450,9 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.add_init_script("Object.defineProperty(window, 'sessionStorage', {get(){throw new DOMException('blocked','SecurityError')}})")
         page = ctx.new_page(); errors = []
         page.on('pageerror', lambda e: errors.append(str(e)))
-        page.goto(base + path + '?offer=cod', wait_until='load')
+        page.goto(base + path + '?offer=cod&utm_source=facebook&utm_campaign=demo%40example.invalid', wait_until='load')
+        blocked_draft = parse_qs(urlparse(page.locator('[data-wa-selected]').get_attribute('href') or '').query).get('text', [''])[0]
+        check("ترشيح المصدر يعمل حتى عند منع التخزين", 'demo@example.invalid' not in blocked_draft and '— المصدر: facebook' in blocked_draft)
         page.locator('[data-custom-scent="vanilla"]').click()
         page.locator('#products .size-option').nth(2).click()
         page.locator('[data-add-current]').click()
@@ -616,6 +618,54 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
         no_source = parse_qs(urlparse(page.locator('[data-wa-direct]').first.get_attribute('href') or '').query).get('text', [''])[0]
         check("زيارة بلا حملة لا تختلق مصدرًا", page.evaluate('window.rawaaSourceNote()') == '' and '— المصدر:' not in no_source and '— نسخة المحتوى:' not in no_source)
+        ctx.close()
+
+        # رموز حملات تجريبية فقط: لا تُرسل رسالة ولا يُفعّل قياس حقيقي.
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        page = ctx.new_page()
+        q = urlencode({'utm_source':'facebook','utm_medium':'paid',
+                       'utm_campaign':'demo@example.invalid','utm_content':'+963 999 111 222'})
+        page.goto(base + path + '?' + q, wait_until='load')
+        source = page.evaluate("JSON.parse(sessionStorage.getItem('rawaa_src') || '{}')")
+        draft = parse_qs(urlparse(page.locator('[data-wa-selected]').get_attribute('href') or '').query).get('text', [''])[0]
+        check("المصدر يتجاهل البريد ورقم الهاتف التجريبيين قبل الحفظ ورسالة واتساب",
+              source == {'utm_source':'facebook', 'utm_medium':'paid'} and
+              all(x not in draft for x in ['demo@example.invalid','+963 999 111 222']) and '— المصدر: facebook' in draft)
+        page.evaluate("window.rawaaTrack('ViewContent', {})")
+        log = page.evaluate("sessionStorage.getItem('rawaa_events') || ''")
+        check("سجل الأحداث لا يكرر الرمز المستبعد", 'demo@example.invalid' not in log and '+963 999 111 222' not in log)
+        ctx.close()
+
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        page = ctx.new_page()
+        q = urlencode({'utm_campaign':'رواء-عناية-20261029','utm_content':'scene_1'})
+        page.goto(base + path + '?' + q, wait_until='load')
+        check("رمز عربي وتاريخ قصير صالحان يبقيان قابلين للإسناد",
+              page.evaluate('window.rawaaSrcTag()') == 'رواء-عناية-20261029' and
+              '— نسخة المحتوى: scene_1' in page.evaluate('window.rawaaSourceNote()'))
+        page.goto(base + path + '?' + urlencode({'utm_campaign':'٠٩٩٧٣١٠٨٥٦','utm_content':'token=example'}), wait_until='load')
+        check("رقم عربي أو سر معلَّم يزيلان المصدر القديم ولا ينشئان إسنادًا خاطئًا",
+              page.evaluate('window.rawaaSourceNote()') == '' and page.evaluate("sessionStorage.getItem('rawaa_src')") is None)
+        page.goto(base + path, wait_until='load')
+        check("المصدر المستبعد لا يعود بعد التنقّل", page.evaluate('window.rawaaSourceNote()') == '')
+        ctx.close()
+
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        page = ctx.new_page()
+        q = urlencode({'utm_campaign':'x' * 513, 'utm_content':'demo%40example.invalid'})
+        page.goto(base + path + '?' + q, wait_until='load')
+        check("قيمة طويلة جدًا أو بريد مرمّز لا تُحفظ ولا تُرفق",
+              page.evaluate("sessionStorage.getItem('rawaa_src')") is None and page.evaluate('window.rawaaSourceNote()') == '')
+        ctx.close()
+
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx.add_init_script("""sessionStorage.setItem('rawaa_src', JSON.stringify({utm_source:'facebook',utm_campaign:'demo@example.invalid'}));
+          sessionStorage.setItem('rawaa_events', JSON.stringify([{e:'ViewContent',t:1,src:'+963 999 111 222'}]));""")
+        page = ctx.new_page(); page.goto(base + path, wait_until='load')
+        old_src = page.evaluate("sessionStorage.getItem('rawaa_src') || ''")
+        old_log = page.evaluate("sessionStorage.getItem('rawaa_events') || ''")
+        check("ترحيل جلسة قديمة ينقّي المصدر وسجل الأحداث قبل استعمالهما",
+              'demo@example.invalid' not in old_src and '+963 999 111 222' not in old_log and 'facebook' in old_src)
         ctx.close()
 
         # مسار الصفحة النظيفة وصورة المشهد حتى بعد انقطاع الشبكة.
@@ -812,11 +862,14 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             route.fulfill(status=200, content_type='application/javascript', body='/* intercepted locally */')
         ctx.route('**/js/config.js', mock_config)
         ctx.route('https://connect.facebook.net/**', fake_meta)
-        page = ctx.new_page(); page.goto(base + path, wait_until='load')
+        page = ctx.new_page(); page.goto(base + path + '?' + urlencode({'utm_source':'facebook','utm_campaign':'demo@example.invalid'}), wait_until='load')
         check('عند تهيئة معرّف تجريبي: لا بكسل قبل الموافقة', page.locator('[data-consent-bar]').is_visible() and not seen_meta and not page.evaluate('!!window.fbq'))
         with page.expect_response('https://connect.facebook.net/**', timeout=10000):
             page.locator('[data-consent-bar] button').first.click()
         check('الموافقة تشغّل مكتبة تجريبية معترضة محليًا فقط', len(seen_meta) == 1 and page.evaluate('!!window.fbq') and page.locator('[data-consent-bar]').is_hidden(), f"طلبات={len(seen_meta)} fbq={page.evaluate('!!window.fbq')} مخفي={page.locator('[data-consent-bar]').is_hidden()}")
+        page.evaluate("window.rawaaTrack('ViewContent', {})")
+        queued = page.evaluate("JSON.stringify(window.fbq.queue || [])")
+        check('بيانات الحدث التجريبي لا تتضمن البريد المستبعد', 'demo@example.invalid' not in queued)
         page.locator('[data-consent-settings]').click()
         with page.expect_navigation(wait_until='load'):
             page.locator('[data-consent-bar] button').nth(1).click()
