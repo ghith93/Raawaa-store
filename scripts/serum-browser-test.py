@@ -215,6 +215,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             # الخيارات للاستفسار فقط، وتُرفق برسالة السلة.
             page.locator('[data-custom-scent="vanilla"]').click()
             page.locator('[data-custom-oil="argan"]').click()
+            check('التقدير يوضّح أن سعر الزيت غير مشمول', page.locator('[data-estimate-oil-note]').is_visible() and 'غير مشمول' in page.locator('[data-estimate-oil-note]').inner_text())
             for index in [0, 2]:
                 page.locator('#products .size-option').nth(index).click()
                 page.locator('[data-add-current]').click()
