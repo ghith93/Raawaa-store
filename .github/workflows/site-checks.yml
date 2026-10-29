@@ -132,8 +132,17 @@ jobs:
       - name: اختبار السلة وواتساب والتجاوب
         run: python scripts/browser-test.py --base http://127.0.0.1:8080
 
+      # WebKit يطبّق upgrade-insecure-requests، لذا يجب اختبار سياسة الموقع
+      # الأصلية عبر HTTPS محلي بدل إزالة السياسة أو اعتبار فشل TLS عيبًا بالموقع.
+      - name: تشغيل HTTPS محلي لاختبار WebKit
+        run: |
+          openssl req -x509 -newkey rsa:2048 -nodes -keyout "$RUNNER_TEMP/test-key.pem" -out "$RUNNER_TEMP/test-cert.pem" -days 1 -subj '/CN=localhost' >/dev/null 2>&1
+          python scripts/test-https-server.py "$RUNNER_TEMP/test-cert.pem" "$RUNNER_TEMP/test-key.pem" &
+          sleep 2
+          curl -ksf -o /dev/null https://127.0.0.1:8443/serum.html
+
       - name: اختبار صفحة السيروم بمحرك WebKit المشابه لسفاري
-        run: python scripts/serum-browser-test.py --base http://127.0.0.1:8080 --path /serum.html --browser webkit
+        run: python scripts/serum-browser-test.py --base https://127.0.0.1:8443 --path /serum.html --browser webkit --ignore-https-errors
 
       - name: اختبار صفحة السيروم ومسار الإعلان
         run: python scripts/serum-browser-test.py --base http://127.0.0.1:8080 --path /serum.html
