@@ -187,6 +187,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             page.locator('[data-cart-close]').click()
             if width < 600:
                 sticky = page.locator('[data-sticky-bar]')
+                sticky.wait_for(state='visible', timeout=5000)
                 check("شريط السلة يوضح أن المبلغ تقديري ويتبع المنطقة والدفع",
                       sticky.is_visible() and 'تقديري' in sticky.inner_text() and
                       page.locator('[data-sticky-total]').inner_text() == '$14')
