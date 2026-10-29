@@ -1,0 +1,24 @@
+{
+  "version": "5",
+  "specifiers": {
+    "npm:postgres@3.4.7": "3.4.7"
+  },
+  "npm": {
+    "postgres@3.4.7": {
+      "integrity": "sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw=="
+    }
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:axe-core@^4.14.0",
+        "npm:chrome-launcher@^1.2.1",
+        "npm:eslint@^10.13.0",
+        "npm:html-validate@^11.17.0",
+        "npm:lighthouse@^13.6.0",
+        "npm:repomix@^1.18.1",
+        "npm:wrangler@^4.154.0"
+      ]
+    }
+  }
+}

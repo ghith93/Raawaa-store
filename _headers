@@ -5,7 +5,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://www.facebook.com https://connect.facebook.net; font-src 'self'; connect-src 'self' https://www.facebook.com https://connect.facebook.net; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://www.facebook.com https://connect.facebook.net; font-src 'self'; connect-src 'self' https://www.facebook.com https://connect.facebook.net https://oyoyozdugicmnkfhjovo.supabase.co; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests
 
 # الصور تحمل لاحقة إصدار — التخزين الطويل آمن على الملفات المرقّمة فقط
 /assets/img/*
@@ -26,3 +26,10 @@
 
 /js/config.js
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+
+# لوحة خاصة: بلا تخزين، فهرسة أو مصادر خارجية باستثناء Supabase للمصادقة.
+/owner/*
+  Cache-Control: no-store, private
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: default-src 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src https://oyoyozdugicmnkfhjovo.supabase.co
