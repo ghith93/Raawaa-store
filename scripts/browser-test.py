@@ -114,6 +114,13 @@ def run(base: str) -> int:
         check("الصور موصوفة بأنها تصميم لا صورة المنتج الفعلي",
               "تصوّر تصميمي" in (page.locator(".hero-figure figcaption").inner_text()) and
               "ليست صورة للمنتج الفعلي" in (page.locator(".hero-figure img").get_attribute("alt") or ""))
+        privacy_faq = page.locator('details').filter(has_text='ماذا يحدث لاختياراتي في السلة؟').text_content() or ''
+        heat_faq = page.locator('details').filter(has_text='هل يحمي الشعر من حرارة التصفيف؟').text_content() or ''
+        estimate_faq = page.locator('details').filter(has_text='كم أدفع فعلًا عند الاستلام؟').text_content() or ''
+        check('المحتوى يوضح استعادة الجلسة وحدود الحماية الحرارية والتقدير',
+              all(x in privacy_faq for x in ['قد يستعيد المتصفح','لا تُرسل تلقائيًا','واتساب']) and
+              'لا تتوفر لدينا معلومة مؤكدة' in heat_faq and
+              all(x in estimate_faq for x in ['تقدير السلة','شام كاش خارج حماة','السعر النهائي']))
         faq_payment = page.locator("details").filter(has_text="ما طرق الدفع المتاحة؟").text_content() or ""
         check("FAQ الدفع تبيّن حماة ورسوم باقي المحافظات",
               "حماة فقط" in faq_payment and "$2" in faq_payment and "$4" in faq_payment)
