@@ -118,20 +118,35 @@
   }, true);
 
   /* ── ٥) مصدر مختصر وآمن في رسالة واتساب ───────────────────── */
+  function safeLabel(value, limit) {
+    return String(value || '')
+      .replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, ' ')
+      .trim().slice(0, limit);
+  }
   function sourceTag() {
-    return String(source.utm_campaign || source.utm_source || '')
-      .replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 120);
+    return safeLabel(source.utm_campaign || source.utm_source, 120);
+  }
+  function sourceNote() {
+    var lines = [];
+    var campaign = sourceTag();
+    var channel = safeLabel(source.utm_source, 80);
+    var creative = safeLabel(source.utm_content, 80);
+    if (campaign) lines.push('— المصدر: ' + campaign);
+    if (channel && channel !== campaign) lines.push('— القناة: ' + channel);
+    if (creative) lines.push('— نسخة المحتوى: ' + creative);
+    return lines.join('\n');
   }
   window.rawaaSrcTag = sourceTag;
+  window.rawaaSourceNote = sourceNote;
 
   function decorateDirectLinks() {
-    var tag = sourceTag();
-    if (!tag) return;
+    var note = sourceNote();
+    if (!note) return;
     document.querySelectorAll('a[href^="https://wa.me/"]:not([data-cart-fallback-link])')
       .forEach(function (link) {
         var url = new URL(link.href);
         var text = url.searchParams.get('text') || 'مرحبًا رواء، أريد الاستفسار عن السيروم.';
-        url.searchParams.set('text', text + '\n\n— المصدر: ' + tag);
+        url.searchParams.set('text', text + '\n\n' + note);
         link.href = url.href;
       });
   }

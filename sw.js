@@ -54,7 +54,11 @@ const CORE = [
   './assets/img/products/size-50-v5-720.avif',
   './assets/img/products/size-50-v5-480.webp',
   './assets/img/products/size-50-v5-720.jpg',
-  './assets/img/products/size-100-v5-480.avif'
+  './assets/img/products/size-100-v5-480.avif',
+  // مشهد رواء: نسخة صغيرة لكل صيغة، تكفي كبديل عند انقطاع الشبكة.
+  './assets/img/products/ritual-v5-480.avif',
+  './assets/img/products/ritual-v5-480.webp',
+  './assets/img/products/ritual-v5-720.jpg'
 ];
 
 self.addEventListener('install', (event) => {
@@ -96,7 +100,18 @@ self.addEventListener('fetch', (event) => {
               if (res && res.ok) cache.put(req, res.clone());
               return res;
             })
-            .catch(() => hit);
+            .catch(() => {
+              if (hit) return hit;
+              // إن طلبت شاشة عالية الكثافة نسخة أكبر دون إنترنت، أعطها المشهد
+              // الصغير المحفوظ للصيغة نفسها بدل صورة مكسورة.
+              const ritual = url.pathname.match(/\/ritual-v5-\d+\.(avif|webp|jpg)$/i);
+              if (ritual) {
+                const ext = ritual[1].toLowerCase();
+                const width = ext === 'jpg' ? '720' : '480';
+                return caches.match('./assets/img/products/ritual-v5-' + width + '.' + ext);
+              }
+              return hit;
+            });
           return hit || network;
         })
       )

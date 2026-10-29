@@ -92,7 +92,8 @@ def run(base: str) -> int:
         check("لا مدة تصنيع مختلقة أو وعد بصورة قبل الشحن",
               "٢–٤ أيام" not in all_faq and "التصنيع حسب الطلب" not in all_faq and "صورة العبوة قبل الشحن" not in all_faq)
         check("الصور موصوفة بأنها تصميم لا صورة المنتج الفعلي",
-              "ليست صورة للمنتج الفعلي" in (page.locator(".hero-figure figcaption").inner_text()))
+              "تصوّر تصميمي" in (page.locator(".hero-figure figcaption").inner_text()) and
+              "ليست صورة للمنتج الفعلي" in (page.locator(".hero-figure img").get_attribute("alt") or ""))
         faq_payment = page.locator("details").filter(has_text="ما طرق الدفع المتاحة؟").text_content() or ""
         check("FAQ الدفع تبيّن حماة ورسوم باقي المحافظات",
               "حماة فقط" in faq_payment and "$2" in faq_payment and "$4" in faq_payment)

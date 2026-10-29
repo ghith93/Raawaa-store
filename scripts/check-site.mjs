@@ -1093,6 +1093,18 @@ async function checkProductPage(config) {
     landing.includes('مظهر أنعم') && landing.includes('لمعان لطيف'), 'صفحة المنتج تشرح الحاجة والفائدة قبل تفاصيل التركيبة');
   ok(benefits.includes('ملمسًا أنعم') && benefits.includes('كمية صغيرة') && benefits.includes('النتيجة والإحساس يختلفان') &&
     visible.indexOf('id="benefits"') < visible.indexOf('id="ingredients"'), 'فوائد تجميلية وخطوة استعمال وتحفّظ واضح قبل التركيبة');
+  const ritual = visible.match(/<section[^>]*id="ritual"[\s\S]*?<\/section>/)?.[0] || '';
+  ok(ritual.includes('مشهد تعبيري مولّد') && ritual.includes('لا يعرض نتيجة') && ritual.includes('loading="lazy"') &&
+    ritual.includes('ritual-v5-720.jpg'), 'لحظة استخدام بصورة تعبيرية مصارح بها ومحملة بكسل');
+  const worker = await read('sw.js');
+  ok(['ritual-v5-480.avif', 'ritual-v5-480.webp', 'ritual-v5-720.jpg'].every(f => worker.includes(f)) &&
+    worker.includes('const ritual = url.pathname.match'), 'بديل الصورة التعبيرية محفوظ بلا إنترنت لكل صيغة');
+  ok(landing.includes('class="serum-size-guide"') && landing.includes('لكل ملليلتر') && landing.includes('$2') &&
+    landing.includes('$4') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
+  ok(visible.includes('id="returns"') && visible.includes('الاستفسار عن الشروط على واتساب'), 'سؤال الشروط دون اختلاق سياسة إرجاع');
+  ok((await read('js/marketing.js')).includes('window.rawaaSourceNote = sourceNote') &&
+    (await read('js/cart.js')).includes('window.rawaaSourceNote()') &&
+    (await read('privacy.html')).includes('نسخة المحتوى'), 'نسخة الحملة تنتقل لواتساب وتُذكر في الخصوصية');
   for (const hook of ['data-size-options', 'data-add-current', 'data-open-cart-after-add', 'data-cart-checkout', 'data-wa-direct']) {
     ok(visible.includes(hook), `مسار المنتج والسلة: ${hook}`);
   }

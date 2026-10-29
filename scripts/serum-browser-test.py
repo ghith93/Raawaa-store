@@ -50,7 +50,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             bad: list[str] = []
             page.on("pageerror", lambda e: errors.append(str(e)))
             page.on("response", lambda r: bad.append(f"{r.status} {r.url}") if r.status >= 400 else None)
-            response = page.goto(base + path + "?utm_source=facebook&utm_medium=paid&utm_campaign=serum-oct", wait_until="load", timeout=45000)
+            response = page.goto(base + path + "?utm_source=facebook&utm_medium=paid&utm_campaign=serum-oct&utm_content=moment", wait_until="load", timeout=45000)
             page.wait_for_selector('#products .size-option input')
             page.evaluate('document.fonts.ready')
             check("صفحة حقيقية HTTP 200", bool(response and response.status == 200), str(response.status if response else None))
@@ -66,12 +66,17 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("لا تمرير أفقي", page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'))
             if width < 600:
                 check("عرض شام كاش مقروء بلا اقتطاع", page.locator('.topbar-short').evaluate('(e) => e.scrollWidth <= e.clientWidth + 1'))
-            check("الصورة توضيحية وليست صورة منتج", 'ليست صورة للمنتج الفعلي' in (page.locator('[data-size-img]').get_attribute('alt') or '') and 'ليس صورة العبوة الفعلية' in page.locator('.serum-photo figcaption').inner_text())
+            check("الصورة توضيحية وليست صورة منتج", 'ليست صورة للمنتج الفعلي' in (page.locator('[data-size-img]').get_attribute('alt') or '') and 'تصوّر تصميمي' in page.locator('.serum-photo figcaption').inner_text())
             check("المكوّنات غير مكتملة ولا نِسب فيها", 'البانثينول' in page.locator('#ingredients').inner_text() and 'ليست القائمة الكاملة' in page.locator('#ingredients').inner_text() and '%' not in page.locator('#ingredients').inner_text())
             check("المصدر محفوظ في الجلسة", page.evaluate('window.rawaaSrcTag()') == 'serum-oct')
             direct = page.locator('[data-wa-direct]').first.get_attribute('href') or ''
             direct_msg = parse_qs(urlparse(direct).query).get('text', [''])[0]
-            check("المصدر في رابط واتساب المباشر", '— المصدر: serum-oct' in direct_msg)
+            check("الحملة ونسخة المحتوى في واتساب المباشر", all(x in direct_msg for x in ['— المصدر: serum-oct','— القناة: facebook','— نسخة المحتوى: moment']))
+            check("رسوم التوصيل وشروطها قرب الشراء", all(x in page.locator('.serum-trust').inner_text() for x in ['حماة فقط','$4','$2','بلا خصم']))
+            page.locator('.serum-size-guide summary').click()
+            guide = page.locator('.serum-size-guide').inner_text()
+            check("دليل الحجم يشرح التجربة والاستعمال والقيمة", all(x in guide for x in ['30 مل','50 مل','100 مل','الأنسب للاستعمال اليومي','لكل ملليلتر']))
+            page.locator('.serum-size-guide summary').click()
             page.locator('#products .size-option').nth(2).click()
             check("السعر المختار يُعلن لقارئ الشاشة وتتبعه الصورة", '$15' in page.locator('[data-price-live]').inner_text() and '100 مل' in (page.locator('[data-size-img]').get_attribute('alt') or ''))
             page.locator('#products .size-option').nth(1).click()
@@ -80,6 +85,18 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                 Path(screenshot_dir).mkdir(parents=True, exist_ok=True)
                 page.screenshot(path=str(Path(screenshot_dir) / f'serum-{browser_name}-390.png'), full_page=False)
             audit(page, 'الصفحة')
+            page.locator('#ritual img').scroll_into_view_if_needed()
+            image_loaded = page.locator('#ritual img').evaluate("""el => new Promise(resolve => {
+              if (el.complete) return resolve(el.naturalWidth > 0);
+              el.addEventListener('load', () => resolve(el.naturalWidth > 0), {once:true});
+              el.addEventListener('error', () => resolve(false), {once:true});
+              setTimeout(() => resolve(false), 15000);
+            })""")
+            check("المشهد التعبيري يحمل وصفًا واضحًا وخطوات استخدام", image_loaded and 'مشهد تعبيري' in page.locator('#ritual figcaption').inner_text() and 'لا يعرض نتيجة' in page.locator('#ritual figcaption').inner_text() and page.locator('#ritual .serum-ritual-steps li').count() == 3)
+            page.locator('#ritual a[href="#products"]').click()
+            check("زر اللحظة يعود لاختيار الحجم", urlparse(page.url).fragment == 'products')
+            page.locator('#returns summary').click()
+            check("الإرجاع للاستفسار لا سياسة مختلقة", 'الاستفسار عن الشروط' in page.locator('#returns').inner_text() and 'wa.me/963997310856' in (page.locator('#returns a').get_attribute('href') or ''))
             page.locator('.serum-benefits-cta').click()
             check("زر الفوائد يعيد الزائرة إلى اختيار الحجم", urlparse(page.url).fragment == 'products' and page.locator('[data-add-current]').is_visible())
 
@@ -117,7 +134,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             url = calls[-1] if calls else ''
             msg = parse_qs(urlparse(url).query).get('text', [''])[0]
             check("رابط الطلب للرقم الصحيح، دون إرسال", url.startswith('https://wa.me/963997310856?') and bool(msg))
-            check("الرسالة تحمل الخيارات والمصدر والمجموع", all(x in msg for x in ['30 مل','50 مل','100 مل','فانيلا','أرجان','$37.30','— المصدر: serum-oct']))
+            check("الرسالة تحمل الخيارات والمصدر والمجموع", all(x in msg for x in ['30 مل','50 مل','100 مل','فانيلا','أرجان','$37.30','— المصدر: serum-oct','— القناة: facebook','— نسخة المحتوى: moment']))
             check("الرابط البديل يظهر إذا تعذّر فتح النافذة", page.locator('[data-cart-fallback]').is_visible() and page.locator('[data-cart-fallback-link]').get_attribute('href') == url)
             events = page.evaluate("JSON.parse(sessionStorage.getItem('rawaa_events') || '[]').map(x => x.e)")
             check("زر واتساب يقيس النقرة فقط لا الشراء", 'InitiateCheckout' in events and 'Contact' in events and 'Purchase' not in events, str(events))
@@ -137,7 +154,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         if path.endswith('.html') and urlparse(base).hostname in ('127.0.0.1', 'localhost'):
             ctx.route('**/serum', lambda route: route.continue_(url=base + path))
         page = ctx.new_page()
-        page.goto(base + '/?utm_source=facebook&utm_medium=organic&utm_campaign=home_bridge', wait_until='load')
+        page.goto(base + '/?utm_source=facebook&utm_medium=organic&utm_campaign=home_bridge&utm_content=finish', wait_until='load')
         check("الرئيسية تربط الحاجة بخطوة اختيار الحجم", all(x in page.locator('.hero-lead').inner_text() for x in ['الباهت','المتطاير']) and page.locator('[data-discover-serum]').get_attribute('href') == '/serum')
         with page.expect_navigation(wait_until='load'):
             page.locator('[data-discover-serum]').click()
@@ -149,13 +166,63 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.locator('[data-cart-checkout]').click()
         calls = page.evaluate('window.__waCalls')
         msg = parse_qs(urlparse(calls[-1] if calls else '').query).get('text', [''])[0]
-        check("مصدر الرئيسية والحجم ينتقلان لنص واتساب دون إرسال", all(x in msg for x in ['100 مل', '$13.50', '— المصدر: home_bridge']))
+        check("مصدر الرئيسية والحجم ينتقلان لنص واتساب دون إرسال", all(x in msg for x in ['100 مل', '$13.50', '— المصدر: home_bridge', '— القناة: facebook', '— نسخة المحتوى: finish']))
         ctx.close()
+
+        # القيم لا تُنشئ أسطرًا مزوّرة في الرسالة، وتبقى محدودة الطول.
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        page = ctx.new_page()
+        page.goto(base + path + '?utm_campaign=launch%0Aforged&utm_content=scene%0Dextra', wait_until='load')
+        note = page.evaluate('window.rawaaSourceNote()')
+        check("رموز الحملة محدودة وآمنة من محارف التحكم", note.splitlines() == ['— المصدر: launch forged', '— نسخة المحتوى: scene extra'] and len(note) < 230, note)
+        ctx.close()
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        page = ctx.new_page(); page.goto(base + path + '?utm_content=finish', wait_until='load')
+        solo = parse_qs(urlparse(page.locator('[data-wa-direct]').first.get_attribute('href') or '').query).get('text', [''])[0]
+        check("نسخة المحتوى تُرفق حتى دون اسم حملة", '— نسخة المحتوى: finish' in solo and '— المصدر:' not in solo)
+        ctx.close()
+        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        page = ctx.new_page(); page.goto(base + path, wait_until='load')
+        no_source = parse_qs(urlparse(page.locator('[data-wa-direct]').first.get_attribute('href') or '').query).get('text', [''])[0]
+        check("زيارة بلا حملة لا تختلق مصدرًا", page.evaluate('window.rawaaSourceNote()') == '' and '— المصدر:' not in no_source and '— نسخة المحتوى:' not in no_source)
+        ctx.close()
+
+        # مسار الصفحة النظيفة وصورة المشهد حتى بعد انقطاع الشبكة.
+        # خادم CI البسيط لا ينفّذ تحويل /serum، لذا يُفحص ذلك على الخادم المهيأ والحي.
+        if path == '/serum':
+            ctx = browser.new_context(viewport={"width":390,"height":844}, device_scale_factor=3,
+                                      locale="ar", ignore_https_errors=ignore_https)
+            page = ctx.new_page()
+            page.goto(base + '/?utm_campaign=offline_test&utm_content=finish', wait_until='load')
+            controller = page.evaluate("""async () => {
+              await navigator.serviceWorker.ready;
+              if (navigator.serviceWorker.controller) return true;
+              return new Promise(resolve => {
+                navigator.serviceWorker.addEventListener('controllerchange', () => resolve(true), {once:true});
+                setTimeout(() => resolve(false), 12000);
+              });
+            }""")
+            cached = page.evaluate("""async () => !!(await caches.match('/serum')) &&
+              !!(await caches.match('/assets/img/products/ritual-v5-480.avif'))""")
+            check("عامل الخدمة يحفظ صفحة المنتج ومشهدًا صغيرًا", controller and cached)
+            ctx.set_offline(True)
+            with page.expect_navigation(wait_until='load'):
+                page.locator('[data-discover-serum]').click()
+            page.wait_for_selector('#products .size-option input')
+            page.locator('#ritual img').scroll_into_view_if_needed()
+            offline_image = page.locator('#ritual img').evaluate("""el => new Promise(resolve => {
+              if (el.complete) return resolve(el.naturalWidth > 0);
+              el.addEventListener('load', () => resolve(el.naturalWidth > 0), {once:true});
+              el.addEventListener('error', () => resolve(false), {once:true});
+              setTimeout(() => resolve(false), 12000);
+            })""")
+            check("المشهد وخيار الشراء يعملان بلا إنترنت", offline_image and page.locator('[data-add-current]').is_enabled() and '— نسخة المحتوى: finish' in page.evaluate('window.rawaaSourceNote()'))
+            ctx.close()
 
         # لا JavaScript: أسعار حقيقية وزر واتساب يعمل، وزر السلة معطّل بدل وهم وظيفي.
         ctx = browser.new_context(java_script_enabled=False, ignore_https_errors=ignore_https, viewport={"width":390,"height":844})
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
-        check("بدون JavaScript: الأسعار وواتساب ظاهرة وزر السلة معطّل", all(s in page.locator('#products').inner_text() for s in ['$10','$12','$15']) and page.locator('[data-add-current]').is_disabled() and page.locator('[data-wa-direct]').is_visible())
+        check("بدون JavaScript: الأسعار وواتساب ظاهرة وزر السلة معطّل", all(s in page.locator('#products').inner_text() for s in ['$10','$12','$15']) and page.locator('[data-add-current]').is_disabled() and page.locator('[data-wa-direct]').first.is_visible())
         ctx.close()
 
         # فحص الموافقة على بكسل وهمي في الذاكرة فقط؛ كل طلب Meta يُعترض محليًا.

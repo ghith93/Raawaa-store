@@ -20,6 +20,13 @@
 .serum-order-note { font-size: .76rem; color: var(--ink-soft); line-height: 1.65; margin: .75rem 0 0; }
 .serum-trust { list-style: none; border-top: 1px solid var(--line-soft); padding: .75rem 0 0; margin: .75rem 0 0; display: grid; gap: .2rem; color: var(--ink-soft); font-size: .75rem; }
 .serum-trust li::before { content: '·'; color: var(--brown); font-weight: 700; padding-inline-end: .45rem; }
+.serum-credentials { font-size: .75rem; color: var(--ink-soft); margin: .45rem 0 0; }
+.serum-size-guide { border-bottom: 1px solid var(--line-soft); margin-top: .5rem; }
+.serum-size-guide summary { cursor: pointer; display: flex; align-items: center; min-height: 44px; font-size: .8rem; font-weight: 700; }
+.serum-size-guide summary::after { content: '+'; margin-inline-start: auto; font-size: 1.15rem; color: var(--brown); }
+.serum-size-guide[open] summary::after { content: '−'; }
+.serum-size-guide ul { margin: 0 0 .5rem; padding-inline-start: 1.1rem; color: var(--ink-soft); font-size: .8rem; }
+.serum-size-guide p { color: var(--ink-soft); font-size: .76rem; margin: 0 0 .9rem; }
 .serum-benefits { background: var(--cream); }
 .serum-benefits .section-head { max-width: 68ch; }
 .serum-benefit-list { list-style: none; padding: 0; margin: 1.5rem 0 1rem; display: grid; gap: .75rem; }
@@ -28,6 +35,19 @@
 .serum-benefit-list p { color: var(--ink-soft); font-size: .88rem; margin: 0; }
 .serum-benefits-note { color: var(--ink-soft); font-size: .8rem; margin: 0 0 1rem; }
 .serum-benefits-cta { margin-top: .1rem; }
+.serum-ritual-grid { display: grid; gap: 1.5rem; align-items: center; }
+.serum-ritual-figure { margin: 0; }
+.serum-ritual-figure picture { display: block; }
+.serum-ritual-figure img { display: block; width: 100%; aspect-ratio: 1264 / 848; object-fit: cover; border-radius: 14px; }
+.serum-ritual-figure figcaption { color: var(--taupe); font-size: .7rem; margin-top: .4rem; }
+.serum-ritual-copy { max-width: 58ch; }
+.serum-ritual-copy h2 { max-width: 22ch; }
+.serum-ritual-copy > p:not(.eyebrow) { color: var(--ink-soft); }
+.serum-ritual-steps { list-style: none; margin: 1.2rem 0 1.4rem; padding: 0; display: grid; gap: .75rem; }
+.serum-ritual-steps li { display: grid; grid-template-columns: 2rem 1fr; gap: .65rem; align-items: start; }
+.serum-ritual-steps li > span { color: var(--brown); font-size: .76rem; padding-top: .2rem; }
+.serum-ritual-steps strong { font-size: .9rem; }
+.serum-ritual-steps p { color: var(--ink-soft); font-size: .82rem; margin: .1rem 0 0; }
 .serum-steps { list-style: none; padding: 0; margin: 1.5rem 0; display: grid; gap: 1rem; counter-reset: steps; }
 .serum-steps li { counter-increment: steps; background: var(--surface, #FFFDFA); border: 1px solid var(--line); border-radius: 12px; padding: 1rem; }
 .serum-steps li::before { content: '0' counter(steps); color: var(--brown); display: block; font-size: .72rem; margin-bottom: .4rem; }
@@ -45,6 +65,7 @@
   .serum-benefit-list { grid-template-columns: repeat(3, 1fr); }
   .serum-steps { grid-template-columns: repeat(3, 1fr); }
   .serum-delivery-inner { grid-template-columns: 1fr 1.3fr; gap: 2rem; }
+  .serum-ritual-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(2rem, 4vw, 4rem); }
 }
 @media (min-width: 900px) {
   .serum-landing { padding: 1.5rem 0 4rem; }
