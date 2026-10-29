@@ -1363,9 +1363,9 @@ bdi { unicode-bidi: isolate; }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ---------- ظهور هادئ عند التمرير ---------- */
-.reveal { opacity: 0; transform: translateY(14px); transition: opacity 600ms var(--ease), transform 600ms var(--ease); }
-.reveal.is-visible { opacity: 1; transform: none; }
+/* ---------- حركة هادئة مع بقاء النص واضحًا طوال الوقت ---------- */
+.reveal { transform: translateY(14px); transition: transform 600ms var(--ease); }
+.reveal.is-visible { transform: none; }
 
 /* ---------- شاشات متوسطة ---------- */
 @media (min-width: 600px) {
@@ -1438,7 +1438,7 @@ bdi { unicode-bidi: isolate; }
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
-  .reveal { opacity: 1; transform: none; }
+  .reveal { transform: none; }
 }
 
 /* ---------- الطباعة ---------- */

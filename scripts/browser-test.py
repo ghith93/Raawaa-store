@@ -73,6 +73,20 @@ def run(base: str) -> int:
         check("الأسعار المعروضة $10 / $12 / $15", [t.strip() for t in prices] == ["$10", "$12", "$15"], str(prices))
         check("اتجاه الصفحة RTL", page.evaluate("getComputedStyle(document.body).direction") == "rtl")
         check("عنوان h1 واحد", page.locator("h1").count() == 1)
+        # لا يخفت النص في بداية الحركة أو أثناءها؛ نحافظ على التباين دائمًا.
+        reveal_opacity = page.evaluate("""async () => {
+          const probe = document.createElement('div');
+          probe.className = 'reveal'; probe.textContent = 'فحص الوضوح';
+          document.body.appendChild(probe);
+          const before = Number(getComputedStyle(probe).opacity);
+          probe.classList.add('is-visible');
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          const during = Number(getComputedStyle(probe).opacity);
+          probe.remove();
+          return {before, during};
+        }""")
+        check("النص يبقى واضحًا قبل حركة الظهور وأثناءها",
+              reveal_opacity['before'] == 1 and reveal_opacity['during'] == 1, str(reveal_opacity))
 
         # قرارات المالك 2026-10-29: لا نِسب غير مصححة، ولا مدة تصنيع مختلقة.
         ingredients = page.locator("#ingredients").inner_text()
