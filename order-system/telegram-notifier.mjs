@@ -8,7 +8,7 @@ export async function sendOrderAlert({ token, chatId, reference, fetchImpl = fet
   try { text = formatOwnerAlert(reference); } catch { return { ok: false, reason: 'invalid_reference' }; }
   try {
     const res = await fetchImpl(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
+      method: 'POST', redirect: 'error',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: chatId, text, disable_notification: false }),
       signal: AbortSignal.timeout(8000)

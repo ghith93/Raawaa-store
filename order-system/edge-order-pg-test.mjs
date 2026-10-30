@@ -1,0 +1,25 @@
+import {readFile} from 'node:fs/promises';
+import {pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {createEdgeOrder} from './edge-order-runtime.mjs';
+if(!process.env.PGLITE_MODULE)throw Error('Set PGLITE_MODULE');
+const {PGlite}=await import(pathToFileURL(process.env.PGLITE_MODULE));const db=new PGlite();
+await db.exec('create role anon;create role authenticated;create role service_role bypassrls;');
+for(const f of ['001_private_orders.sql','003_order_rate_limit.sql'])await db.exec(await readFile(new URL(`./migrations/${f}`,import.meta.url),'utf8'));
+const sandbox={window:{}};vm.runInNewContext(await readFile(new URL('../js/config.js',import.meta.url),'utf8'),sandbox);
+const settings={SUPABASE_DB_URL:'postgres://dummy',RAWAA_TURNSTILE_SECRET:'fake-secret',RAWAA_RATE_LIMIT_HMAC_KEY:'x'.repeat(40),RAWAA_OWNER_ORIGIN:'https://store.example'};
+const sql={unsafe:async(text,args)=>(await db.query(text,args)).rows,begin:async cb=>db.transaction(async tx=>cb({unsafe:async(text,args)=>(await tx.query(text,args)).rows}))};
+let identity=null,challengeGood=true;
+const handle=createEdgeOrder({getEnv:k=>settings[k],postgresFactory:()=>sql,config:sandbox.window.RAWAA_CONFIG,getTrustedIdentity:async()=>identity,
+ fetchImpl:async(url,init)=>{assert.equal(url,'https://challenges.cloudflare.com/turnstile/v0/siteverify');assert.equal(JSON.parse(init.body).secret,'fake-secret');return {ok:true,json:async()=>({success:challengeGood,hostname:'store.example',action:'rawaa_order'})};}});
+const body={idempotencyKey:crypto.randomUUID(),consent:true,challengeToken:'test',order:{name:'Synthetic',phone:'0990000000',address:'Synthetic',items:[{id:'serum-30',qty:1}],zone:'hama',method:'cod',totalCents:1}};
+const request=()=>new Request('https://edge.example/orders',{method:'POST',headers:{origin:'https://store.example','content-type':'application/json'},body:JSON.stringify(body)});
+assert.equal((await handle(request())).status,503);identity='synthetic-client';challengeGood=false;assert.equal((await handle(request())).status,403);
+assert.equal((await db.query('select count(*)::int n from rawaa_store.orders')).rows[0].n,0);challengeGood=true;
+const result=await handle(request());assert.equal(result.status,200);assert.match((await result.json()).reference,/^RAWAA-/);
+const saved=await db.query('select details from rawaa_store.orders');assert.equal(saved.rows[0].details.totalCents,1900);
+assert.equal((await db.query("select count(*)::int n from rawaa_store.notification_outbox where state='pending'")).rows[0].n,1);
+assert.equal((await handle(request())).status,200);assert.equal((await db.query('select count(*)::int n from rawaa_store.orders')).rows[0].n,1);
+const missing=createEdgeOrder({getEnv:k=>settings[k],postgresFactory:()=>sql,config:sandbox.window.RAWAA_CONFIG});assert.equal((await missing(request())).status,503);
+await db.close();console.log('Edge order staging: trusted identity, challenge, server prices and durable outbox passed.');
