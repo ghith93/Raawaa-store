@@ -317,7 +317,7 @@
     var unitNode = document.querySelector('[data-unit-live]');
     if (unitNode && product.sizeMl && product.price) {
       var per = effectivePrice / product.sizeMl;
-      unitNode.innerHTML = '<bdi>' + CONFIG.currency.symbol + (per >= 0.1 ? per.toFixed(2) : per.toFixed(3)) + '</bdi> تقريبًا لكل مل، قبل خصم الدفع والتوصيل.';
+      unitNode.innerHTML = '<bdi>' + CONFIG.currency.symbol + (per >= 0.1 ? per.toFixed(2) : per.toFixed(3)) + '</bdi> تقريبًا لكل مل، قبل خصم الدفع والشحن.';
     }
 
     // صورة البطاقة تتبع الحجم المختار — ترى الزائنة العبوة التي تختارها فعلًا

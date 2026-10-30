@@ -99,7 +99,9 @@
   .serum-media .serum-view-rail { display: none; }
   .serum-view-rail--small { display: block; margin-top: .65rem; }
   .serum-purchase { margin-top: .55rem; }
+  .serum-purchase .unit-price-live { margin-top: .2rem; font-size: .7rem; line-height: 1.3; }
   .serum-purchase .size-option-body { padding-block: .4rem; }
+  .serum-actions { margin-top: .55rem; }
   .serum-actions .btn { font-size: .78rem; padding-inline: .55rem; }
 }
 @media (min-width: 700px) {
