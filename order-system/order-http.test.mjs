@@ -43,12 +43,36 @@ test('database failure is uncertain, never falsely says order was not saved',asy
   const res=await handle(request()); assert.equal(res.status,503); assert.deepEqual(await res.json(),{error:'save_uncertain'});
 });
 test('Turnstile is checked server-side against expected host and action',async()=>{
-  for (const result of [{success:true,hostname:'store.example',action:'rawaa_order'},{success:true,hostname:'evil.example',action:'rawaa_order'},{success:true,hostname:'store.example',action:'other'},{success:false}]) {
+  for (const result of [{success:true,hostname:'store.example',action:'rawaa_order'},{success:true,hostname:'evil.example',action:'rawaa_order'},{success:true,hostname:'store.example',action:'other'},{success:false,'error-codes':['timeout-or-duplicate']}]) {
     const verifier=createTurnstileVerifier({secret:'fake-secret',hostname:'store.example',fetchImpl:async (url,init)=>{
       assert.equal(url,'https://challenges.cloudflare.com/turnstile/v0/siteverify'); assert.equal(JSON.parse(init.body).response,'fake-token');
       return {ok:true,json:async()=>result};}});
     assert.equal(await verifier('fake-token'),result.success===true&&result.hostname==='store.example'&&result.action==='rawaa_order');
   }
-  assert.equal(await createTurnstileVerifier({secret:'',hostname:'store.example'})('fake-token'),false);
-  assert.equal(await createTurnstileVerifier({secret:'fake',hostname:'store.example',fetchImpl:async()=>{throw new Error('fake');}})('fake-token'),false);
+  await assert.rejects(createTurnstileVerifier({secret:'',hostname:'store.example'})('fake-token'),/CHALLENGE_UNAVAILABLE/);
+  await assert.rejects(createTurnstileVerifier({secret:'fake',hostname:'store.example',fetchImpl:async()=>{throw new Error('fake');}})('fake-token'),/CHALLENGE_UNAVAILABLE/);
+});
+
+
+test('Turnstile outages and invalid secrets are unavailable, not customer rejection',async()=>{
+  const responses=[
+    {ok:false,status:500},
+    {ok:true,json:async()=>({success:false,'error-codes':['invalid-input-secret']})},
+    {ok:true,json:async()=>({success:false,'error-codes':['internal-error']})},
+    {ok:true,json:async()=>({success:false,'error-codes':['timeout-or-duplicate','internal-error']})},
+    {ok:true,json:async()=>({success:false})},
+    {ok:true,json:async()=>null},
+    {ok:true,json:async()=>{throw Error('private provider response');}},
+  ];
+  for(const response of responses){
+    calls=[];
+    const verifier=createTurnstileVerifier({secret:'synthetic-secret',hostname:'store.example',fetchImpl:async()=>response});
+    const result=await createOrderHandler({...deps,verifyChallenge:verifier})(request());
+    assert.equal(result.status,503);assert.deepEqual(await result.json(),{error:'unavailable'});
+    assert.ok(!calls.includes('saved'));
+  }
+  for(const code of ['missing-input-response','invalid-input-response','timeout-or-duplicate']){
+    const verifier=createTurnstileVerifier({secret:'fake',hostname:'store.example',fetchImpl:async()=>({ok:true,json:async()=>({success:false,'error-codes':[code]})})});
+    assert.equal((await createOrderHandler({...deps,verifyChallenge:verifier})(request())).status,403);
+  }
 });

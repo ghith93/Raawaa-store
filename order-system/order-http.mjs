@@ -52,19 +52,28 @@ export function createOrderHandler({ origin, config, repository, notificationRun
   };
 }
 
-/** Cloudflare validation must run on the server, against a pinned hostname and action. */
+/** Cloudflare validation must run on the server, against a pinned hostname and action.
+ * False is reserved for a verified token rejection; service/configuration failures
+ * throw a generic error so the handler returns 503 rather than blaming the customer.
+ */
 export function createTurnstileVerifier({ secret, hostname, fetchImpl = fetch }) {
-  if (typeof secret !== 'string' || !secret || typeof hostname !== 'string' || !/^[a-z0-9.-]+$/.test(hostname)) return async () => false;
+  if (typeof secret !== 'string' || !secret || typeof hostname !== 'string' || !/^[a-z0-9.-]+$/.test(hostname) || typeof fetchImpl !== 'function') return async () => { throw new Error('CHALLENGE_UNAVAILABLE'); };
   return async token => {
     if (typeof token !== 'string' || !token || token.length > 2048) return false;
+    let result;
     try {
       const response = await fetchImpl('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
         method:'POST', headers:{'content-type':'application/json'},
         body:JSON.stringify({ secret, response:token }), redirect:'error', signal:AbortSignal.timeout(5000)
       });
-      if (!response.ok) return false;
-      const result = await response.json();
-      return result.success === true && result.hostname === hostname && result.action === 'rawaa_order';
-    } catch { return false; }
+      if (!response.ok) throw new Error();
+      result = await response.json();
+    } catch { throw new Error('CHALLENGE_UNAVAILABLE'); }
+    if (result?.success === true) return result.hostname === hostname && result.action === 'rawaa_order';
+    const codes = result?.['error-codes'];
+    const tokenErrors = new Set(['missing-input-response', 'invalid-input-response', 'timeout-or-duplicate']);
+    if (result?.success === false && Array.isArray(codes) && codes.length > 0 && codes.every(code => tokenErrors.has(code))) return false;
+    // Includes provider errors, secret/configuration errors, and malformed replies.
+    throw new Error('CHALLENGE_UNAVAILABLE');
   };
 }
