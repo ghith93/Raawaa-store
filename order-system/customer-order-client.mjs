@@ -58,7 +58,12 @@ export function createCustomerOrderClient({ endpoint, allowedOrigin, storage, fe
         }
         current.phase='uncertain';return {status:'uncertain'};
       }
-      if([400,403,413,415,429].includes(response.status)) return {status:'rejected',reason:response.status===429?'try_later':'check_details'};
+      if([400,403,413,415,429].includes(response.status)) {
+        // A rejection of this retry cannot prove that a prior attempt was not saved.
+        // Preserve the unresolved outcome, especially after a reload.
+        if(current.phase==='uncertain') return {status:'uncertain'};
+        return {status:'rejected',reason:response.status===429?'try_later':'check_details'};
+      }
       current.phase='uncertain';return {status:'uncertain'};
     } catch {current.phase='uncertain';return {status:'uncertain'};}
     finally {inFlight=false;}

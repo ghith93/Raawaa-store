@@ -41,3 +41,16 @@ test('storage failure prevents submission; corrupted storage fails closed',async
  const c=createCustomerOrderClient({...base,storage,fetchImpl:async()=>{sent=true;}});c.begin({name:'x'});await assert.rejects(c.submit({challengeToken:'one',consent:true}),/STORAGE_UNAVAILABLE/);assert.equal(sent,false);
  assert.throws(()=>createCustomerOrderClient({...base,storage:{...storage,getItem:()=>'{bad'}}),/STORAGE_UNAVAILABLE/);
 });
+
+
+test('rejected retries never erase an earlier uncertain save, including after reload',async()=>{
+  for(const status of [400,403,413,415,429]) {
+    const storage=memoryStorage(); let attempt=0;
+    const fetchImpl=async()=>{attempt++;if(attempt===1)throw Error('lost after save');return {status,json:async()=>({})};};
+    const first=createCustomerOrderClient({...base,storage,fetchImpl});first.begin({name:'synthetic'});
+    assert.deepEqual(await first.submit({challengeToken:'a',consent:true}),{status:'uncertain'});
+    const resumed=createCustomerOrderClient({...base,storage,fetchImpl});resumed.begin({name:'synthetic'});
+    assert.deepEqual(await resumed.submit({challengeToken:'b',consent:true}),{status:'uncertain'},`HTTP ${status}`);
+    assert.equal(resumed.state(),'uncertain');assert.throws(()=>resumed.reset(),/SAVE_UNCERTAIN/);
+  }
+});
