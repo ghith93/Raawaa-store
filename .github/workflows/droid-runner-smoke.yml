@@ -1,0 +1,23 @@
+name: Droid runner smoke test
+
+on:
+  push:
+    branches: [arena/5336cc2d-raawaa-store]
+    paths:
+      - .github/workflows/droid-runner-smoke.yml
+
+permissions: {}
+
+jobs:
+  runtime-smoke:
+    if: github.ref == 'refs/heads/arena/5336cc2d-raawaa-store'
+    runs-on: [self-hosted, Linux, ARM64]
+    timeout-minutes: 3
+    steps:
+      - name: Verify runner runtime without checkout or secrets
+        shell: bash
+        run: |
+          set -eu
+          printf 'Runner reports OS=%s ARCH=%s\n' "$RUNNER_OS" "$RUNNER_ARCH"
+          uname -srm
+          grep '^PRETTY_NAME=' /etc/os-release
