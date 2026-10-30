@@ -51,3 +51,14 @@ test('notification contains only a valid reference, not customer details', () =>
   assert.ok(!alert.includes(base.phone));
   assert.throws(() => formatOwnerAlert('<bad>'));
 });
+
+test('phone requires seven actual digits and permits familiar Syrian and Arabic-Indic formats', () => {
+  for (const phone of ['0991234567', '+963 991 234 567', '٠٩٩١٢٣٤٥٦٧', '+٩٦٣ (٩٩١) ٢٣٤-٥٦٧', '123-4567']) {
+    assert.equal(prepareOrder({ ...base, phone }, cfg).phone, phone);
+  }
+  for (const phone of ['-------', '+(--- ---)', '12 - ٣٤٥٦', '12+34567', '++963991234567', '1234567+']) {
+    assert.throws(() => prepareOrder({ ...base, phone }, cfg), /INVALID_PHONE/);
+  }
+  assert.throws(() => prepareOrder({ ...base, phone:'123\n4567' }, cfg), /INVALID_CONTACT/);
+  assert.throws(() => prepareOrder({ ...base, phone:'1'.repeat(31) }, cfg), /INVALID_CONTACT/);
+});

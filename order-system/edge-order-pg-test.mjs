@@ -17,6 +17,11 @@ const body={idempotencyKey:crypto.randomUUID(),consent:true,challengeToken:'test
 const request=()=>new Request('https://edge.example/orders',{method:'POST',headers:{origin:'https://store.example','content-type':'application/json'},body:JSON.stringify(body)});
 assert.equal((await handle(request())).status,503);identity='synthetic-client';challengeGood=false;assert.equal((await handle(request())).status,403);
 assert.equal((await db.query('select count(*)::int n from rawaa_store.orders')).rows[0].n,0);challengeGood=true;
+body.order.phone='(--- ---)';
+const invalidPhone=await handle(request());assert.equal(invalidPhone.status,400);assert.deepEqual(await invalidPhone.json(),{error:'invalid_request'});
+assert.equal((await db.query('select count(*)::int n from rawaa_store.orders')).rows[0].n,0);
+assert.equal((await db.query('select count(*)::int n from rawaa_store.notification_outbox')).rows[0].n,0);
+body.order.phone='0990000000';
 const result=await handle(request());assert.equal(result.status,200);assert.match((await result.json()).reference,/^RAWAA-/);
 const saved=await db.query('select details from rawaa_store.orders');assert.equal(saved.rows[0].details.totalCents,1900);
 assert.equal((await db.query("select count(*)::int n from rawaa_store.notification_outbox where state='pending'")).rows[0].n,1);

@@ -11,7 +11,9 @@ export function prepareOrder(input, config) {
   };
   const name = clean(input.name, 80);
   const phone = clean(input.phone, 30);
-  if (!/^[+\d٠-٩ ()-]{7,30}$/.test(phone)) throw new Error('INVALID_PHONE');
+  // Count digits rather than formatting characters; support Arabic-Indic digits
+  // and common punctuation without claiming that the number is reachable.
+  if (!/^\+?[0-9٠-٩ ()-]+$/.test(phone) || (phone.match(/[0-9٠-٩]/g) || []).length < 7) throw new Error('INVALID_PHONE');
   const address = clean(input.address, 200);
   if (!Array.isArray(input.items) || input.items.length < 1 || input.items.length > config.products.length) throw new Error('INVALID_ITEMS');
   const seen = new Set();
