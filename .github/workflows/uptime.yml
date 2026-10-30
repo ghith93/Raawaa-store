@@ -148,7 +148,7 @@ jobs:
         run: node scripts/perf-budget.mjs
       - name: حفظ قراءات الأداء حتى عند الإخفاق
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: lighthouse-live
           path: |
