@@ -34,7 +34,7 @@ jobs:
   advisory:
     # Never pass credentials to pull requests or arbitrary branches. Disabled until
     # the owner confirms the free plan and deliberately sets the repository variable.
-    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main' && vars.RAWAA_AI_FREE_PLAN_CONFIRMED == 'true'
+    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main' && vars.RAWAA_AI_FREE_PLAN_CONFIRMED == 'true'
     needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 5
