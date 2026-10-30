@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Local AST-only map of tracked source files. No documents, secrets, APIs, or network backends.
+# Structural project map only. No database, untracked files, media content, LLM or external services.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 GRAPHIFY="${GRAPHIFY_BIN:-$ROOT/.cache/graphify-venv/bin/graphify}"
@@ -9,17 +9,18 @@ if [[ ! -x "$GRAPHIFY" ]]; then
 fi
 mkdir -p "$ROOT/.cache"
 SCAN="$(mktemp -d "$ROOT/.cache/graphify-scan.XXXXXXXX")"
-# Only explicitly tracked code under these paths, not the rest of the checkout,
-# configuration files, hidden paths, untracked data, environment files or credentials.
 cd "$ROOT"
-while IFS= read -r -d '' path; do
-  if [[ -f "$path" && ! -L "$path" ]]; then
-    mkdir -p "$SCAN/$(dirname "$path")"
-    cp -- "$path" "$SCAN/$path"
-  fi
-done < <(git ls-files -z -- 'js/*.js' 'order-system/*.mjs' 'order-system/migrations/*.sql' 'owner/*.mjs' 'sw.js')
+python3 scripts/graphify-select.py "$SCAN"
 # Clear environment so semantic providers and credentials cannot be auto-selected.
 env -i HOME="$SCAN" PATH="$(dirname "$GRAPHIFY"):/usr/bin:/bin" LANG=C.UTF-8 \
   "$GRAPHIFY" update "$SCAN" --no-cluster
+# Do not echo node names or potentially sensitive source text in CI logs.
+python3 - "$SCAN/graphify-out/graph.json" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding='utf-8') as f:
+    data = json.load(f)
+if not data.get('nodes') or not (data.get('links') or data.get('edges')):
+    raise SystemExit('Graphify output is empty')
+print(f"Local graph validated: {len(data['nodes'])} nodes, {len(data.get('links', data.get('edges', [])))} edges")
+PY
 echo "Local graph: $SCAN/graphify-out/graph.json"
-echo "Example: $GRAPHIFY explain createCustomerOrderClient --graph $SCAN/graphify-out/graph.json"

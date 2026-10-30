@@ -1,0 +1,50 @@
+name: Graphify structural review
+
+# This is a periodic deterministic check, not an autonomous agent. It does not
+# access customer records, send messages, open PRs, or run a hosted LLM.
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - 'scripts/graphify-local.sh'
+      - 'scripts/graphify-select.py'
+      - 'scripts/graphify-select.test.mjs'
+      - '.github/workflows/graphify-monitor.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: graphify-monitor-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  structural-review:
+    name: تحليل بنية المشروع والفحوص الأساسية
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: تثبيت Graphify المعزول
+        run: |
+          python -m venv .cache/graphify-venv
+          .cache/graphify-venv/bin/pip install --disable-pip-version-check 'graphifyy[sql]==0.9.97'
+      - name: التحقق من حدود البيانات
+        run: node --test scripts/graphify-select.test.mjs
+      - name: بناء خريطة محلية بلا LLM
+        run: bash scripts/graphify-local.sh
+      - name: فحص الموقع ونظام الطلبات قيد التطوير
+        run: |
+          node scripts/check-site.mjs
+          node --test order-system/*.test.mjs scripts/order-config-monitor.test.mjs
+      # No graph artifacts are uploaded: graph data may reproduce project content.
