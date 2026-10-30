@@ -68,7 +68,14 @@ def run(base: str, browser_name: str, ignore_https: bool) -> int:
             hero = page.locator('.campaign-hero-visual img')
             check('صورة العبوة المحورية محمّلة ومفصح عنها كتصور', hero.evaluate('(img) => img.complete && img.naturalWidth > 0') and 'ليست صورة للعبوات الفعلية' in hero.get_attribute('alt') and 'تصور تصميمي' in page.locator('.campaign-hero-visual figcaption').inner_text())
             editorial = page.locator('.campaign-editorial-image img')
-            check('المشهد التحريري يحمل وصفًا يمنع ادعاء نتيجة', editorial.evaluate('(img) => img.complete && img.naturalWidth > 0') and 'مولّد' in page.locator('.campaign-editorial-image figcaption').inner_text())
+            editorial.scroll_into_view_if_needed()
+            editorial_loaded = editorial.evaluate("""img => new Promise(resolve => {
+              if (img.complete) return resolve(img.naturalWidth > 0);
+              img.addEventListener('load', () => resolve(img.naturalWidth > 0), {once: true});
+              img.addEventListener('error', () => resolve(false), {once: true});
+              setTimeout(() => resolve(false), 15000);
+            })""")
+            check('المشهد التحريري يحمل وصفًا يمنع ادعاء نتيجة', editorial_loaded and 'مولّد' in page.locator('.campaign-editorial-image figcaption').inner_text())
             check('الدفع والتوصيل مأخوذان من الإعدادات', all(s in page.locator('[data-campaign-delivery]').inner_text() for s in ['شام كاش','$2','$4','الدفع عند الاستلام']))
             wa = page.locator('[data-campaign-whatsapp]').get_attribute('href') or ''
             message = parse_qs(urlparse(wa).query).get('text', [''])[0]
