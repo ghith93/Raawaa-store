@@ -22,6 +22,11 @@ export function createCheckoutFlow({client, challenge}) {
       busy=false;
     }
   }
+  function revise(order) {
+    if(busy)throw Error('IN_FLIGHT');
+    if(!started || typeof client.revise!=='function')throw Error('REVISION_NOT_ALLOWED');
+    client.revise(order);
+  }
   function reset() {
     if(busy)throw Error('IN_FLIGHT');
     client.reset(); // A possibly saved order must never be discarded here.
@@ -29,5 +34,5 @@ export function createCheckoutFlow({client, challenge}) {
     try {challenge.reset();} catch { /* No successful order result should be lost. */ }
   }
   function state(){return client.state();}
-  return {begin,submit,reset,state};
+  return {begin,submit,revise,reset,state};
 }

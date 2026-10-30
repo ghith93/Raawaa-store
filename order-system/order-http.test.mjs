@@ -76,3 +76,11 @@ test('Turnstile outages and invalid secrets are unavailable, not customer reject
     assert.equal((await createOrderHandler({...deps,verifyChallenge:verifier})(request())).status,403);
   }
 });
+
+test('intent mismatch returns no reference or details and never triggers an alert',async()=>{
+  calls=[];
+  const handle=createOrderHandler({...deps,repository:{async insertPending(){return {result:'conflict'};}}});
+  const response=await handle(request());
+  assert.equal(response.status,409);assert.deepEqual(await response.json(),{error:'intent_mismatch'});
+  assert.ok(!calls.includes('notify'));assert.match(response.headers.get('cache-control'),/no-store/);
+});

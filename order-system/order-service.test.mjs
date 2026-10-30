@@ -43,3 +43,14 @@ test('rejects malformed repository results without leaking details', async () =>
   const result = await submitOrder({ input, idempotencyKey, config, repository, notificationRunner: { async kick() { throw new Error('must not run'); } } });
   assert.deepEqual(result, { ok: false, code: 'SAVE_UNCERTAIN' });
 });
+
+test('only a structured repository conflict becomes a mismatch and never notifies', async () => {
+  let notified=false;
+  const args={input,idempotencyKey,config,notificationRunner:{async kick(){notified=true;}},repository:{async insertPending(){return {result:'conflict'};}}};
+  assert.deepEqual(await submitOrder(args),{ok:false,code:'INTENT_MISMATCH'});
+  args.repository={async insertPending(){throw Error('IDEMPOTENCY_CONFLICT');}};
+  assert.deepEqual(await submitOrder(args),{ok:false,code:'SAVE_UNCERTAIN'});
+  args.repository={async insertPending(){return {result:'conflict',reference:'RAWAA-TEST123'};}};
+  assert.deepEqual(await submitOrder(args),{ok:false,code:'SAVE_UNCERTAIN'});
+  assert.equal(notified,false);
+});

@@ -14,6 +14,8 @@ export async function submitOrder({ input, idempotencyKey, config, repository, n
   let saved;
   try { saved = await repository.insertPending({ order, idempotencyKey }); }
   catch { return { ok: false, code: 'SAVE_UNCERTAIN' }; }
+  // A committed row under this key exists, but its details differ. Never expose it.
+  if (saved?.result === 'conflict' && Object.keys(saved).length === 1) return { ok: false, code: 'INTENT_MISMATCH' };
   // Don't report success unless storage returned a valid durable order reference.
   if (!saved || typeof saved.reference !== 'string' || !/^RAWAA-[A-Z0-9]{6,30}$/.test(saved.reference) ||
       (saved.result !== 'created' && saved.result !== 'existing')) return { ok: false, code: 'SAVE_UNCERTAIN' };

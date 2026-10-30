@@ -47,7 +47,11 @@ export function createOrderHandler({ origin, config, repository, notificationRun
       if (await verifyChallenge(body.challengeToken) !== true) return respond(403, { error:'challenge_failed' }, true);
     } catch { return respond(503, { error:'unavailable' }, true); }
     const result = await submitOrder({ input:body.order, idempotencyKey:key, config, repository, notificationRunner });
-    if (!result.ok) return respond(result.code === 'INVALID_REQUEST' ? 400 : 503, { error:result.code === 'INVALID_REQUEST' ? 'invalid_request' : 'save_uncertain' }, true);
+    if (!result.ok) {
+      if (result.code === 'INVALID_REQUEST') return respond(400, {error:'invalid_request'}, true);
+      if (result.code === 'INTENT_MISMATCH') return respond(409, {error:'intent_mismatch'}, true);
+      return respond(503, {error:'save_uncertain'}, true);
+    }
     return respond(200, { reference:result.reference, status:'pending_review' }, true);
   };
 }

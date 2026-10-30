@@ -12,7 +12,7 @@ export function createCustomerOrderClient({ endpoint, allowedOrigin, storage, fe
   const keyPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   const refPattern = /^RAWAA-[A-Z0-9]{6,30}$/;
   const storageKey = 'rawaa-order-intent-v1';
-  let intent = null, inFlight = false, restored = null;
+  let intent = null, inFlight = false, restored = null, mayRevise = false;
   try {
     const raw=storage.getItem(storageKey);
     if(raw!==null){
@@ -59,6 +59,12 @@ export function createCustomerOrderClient({ endpoint, allowedOrigin, storage, fe
         }
         current.phase='uncertain';return {status:'uncertain'};
       }
+      if(response.status===409) {
+        const data=await response.json();
+        current.phase='uncertain';
+        if(data?.error==='intent_mismatch') {mayRevise=true;return {status:'intent_mismatch'};}
+        return {status:'uncertain'};
+      }
       if([400,403,413,415,429].includes(response.status)) {
         // A rejection of this retry cannot prove that a prior attempt was not saved.
         // Preserve the unresolved outcome, especially after a reload.
@@ -69,13 +75,22 @@ export function createCustomerOrderClient({ endpoint, allowedOrigin, storage, fe
     } catch {current.phase='uncertain';return {status:'uncertain'};}
     finally {inFlight=false;}
   }
+  // Only after the server reports a mismatch; keep the key and all used tokens.
+  // The caller must re-enter the original details, not start a new order.
+  function revise(order) {
+    if(inFlight)throw new Error('IN_FLIGHT');
+    if(!intent || intent.phase!=='uncertain' || !mayRevise)throw new Error('REVISION_NOT_ALLOWED');
+    const copy=structuredClone(order);
+    if(!copy || typeof copy!=='object' || Array.isArray(copy))throw new Error('INVALID_ORDER');
+    intent.order=copy;mayRevise=false;
+  }
   function reset() {
     if(inFlight)throw new Error('IN_FLIGHT');
     if(intent?.phase==='uncertain'||(!intent && restored?.phase==='pending'))throw new Error('SAVE_UNCERTAIN');
     try{storage.removeItem(storageKey);if(storage.getItem(storageKey)!==null)throw Error();}catch{throw new Error('STORAGE_UNAVAILABLE');}
-    intent=null;restored=null;
+    intent=null;restored=null;mayRevise=false;
   }
   function state(){return intent?.phase ?? (restored?.phase==='pending'?'uncertain':restored?.phase==='complete'?'complete':'idle');}
   function restoredReference(){return restored?.phase==='complete'?restored.reference:null;}
-  return {begin,submit,reset,state,restoredReference};
+  return {begin,submit,revise,reset,state,restoredReference};
 }

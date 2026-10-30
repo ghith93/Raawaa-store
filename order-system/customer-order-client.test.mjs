@@ -79,3 +79,28 @@ test('timeout configuration is finite and bounded',()=>{
   for(const requestTimeoutMs of [0,-1,30001,Infinity,NaN,1.5,'10'])
     assert.throws(()=>createCustomerOrderClient({...base,requestTimeoutMs}),/INVALID_CONFIGURATION/);
 });
+
+test('mismatched retry allows correction with the same key, never discarding uncertainty',async()=>{
+  const storage=memoryStorage(),calls=[];let n=0;
+  const fetchImpl=async(_url,init)=>{calls.push(JSON.parse(init.body));n++;if(n===1)throw Error('lost');if(n===2)return {status:409,json:async()=>({error:'intent_mismatch'})};return {status:200,json:async()=>({reference:'RAWAA-TEST123',status:'pending_review'})};};
+  const a=createCustomerOrderClient({...base,storage,fetchImpl});a.begin({name:'original'});await a.submit({challengeToken:'a',consent:true});
+  const b=createCustomerOrderClient({...base,storage,fetchImpl});b.begin({name:'different'});
+  assert.throws(()=>b.revise({name:'original'}),/REVISION_NOT_ALLOWED/);
+  assert.deepEqual(await b.submit({challengeToken:'b',consent:true}),{status:'intent_mismatch'});
+  assert.equal(b.state(),'uncertain');assert.throws(()=>b.reset(),/SAVE_UNCERTAIN/);
+  const revised={name:'original'};b.revise(revised);revised.name='mutated';
+  assert.throws(()=>b.revise(revised),/REVISION_NOT_ALLOWED/);
+  await assert.rejects(b.submit({challengeToken:'b',consent:true}),/INVALID_CHALLENGE/);
+  assert.equal((await b.submit({challengeToken:'c',consent:true})).status,'saved');
+  assert.deepEqual(calls.map(c=>c.order.name),['original','different','original']);
+  assert.equal(new Set(calls.map(c=>c.idempotencyKey)).size,1);
+  assert.ok(!storage.getItem().includes('original'));
+});
+
+test('unrecognized or malformed conflict responses stay uncertain without enabling revision',async()=>{
+  for(const json of [async()=>({error:'other'}),async()=>{throw Error('bad json');}]){
+    const c=createCustomerOrderClient({...base,storage:memoryStorage(),fetchImpl:async()=>({status:409,json})});c.begin({name:'x'});
+    assert.deepEqual(await c.submit({challengeToken:'x',consent:true}),{status:'uncertain'});
+    assert.throws(()=>c.revise({name:'y'}),/REVISION_NOT_ALLOWED/);assert.throws(()=>c.reset(),/SAVE_UNCERTAIN/);
+  }
+});

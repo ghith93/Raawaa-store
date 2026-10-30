@@ -36,11 +36,14 @@ const data={name:'Synthetic',phone:'0990000000',address:'Synthetic address',item
 const first=client();first.begin(data);assert.deepEqual(await first.submit({consent:true,challengeToken:'fresh-1'}),{status:'uncertain'});
 assert.equal((await db.query('select count(*)::int as n from rawaa_store.orders')).rows[0].n,1);
 assert.equal(alerts.length,0);
-const afterReload=client();assert.equal(afterReload.state(),'uncertain');afterReload.begin(data);
+const afterReload=client();assert.equal(afterReload.state(),'uncertain');afterReload.begin({...data,address:'different synthetic address'});
 // An already-consumed challenge rejects this retry; it does not undo the first save.
 assert.deepEqual(await afterReload.submit({consent:true,challengeToken:'fresh-1'}),{status:'uncertain'});
 assert.equal(afterReload.state(),'uncertain');assert.throws(()=>afterReload.reset(),/SAVE_UNCERTAIN/);
-const saved=await afterReload.submit({consent:true,challengeToken:'fresh-2'});assert.equal(saved.status,'saved');assert.match(saved.reference,/^RAWAA-/);
+assert.deepEqual(await afterReload.submit({consent:true,challengeToken:'fresh-2'}),{status:'intent_mismatch'});
+assert.equal(afterReload.state(),'uncertain');assert.throws(()=>afterReload.reset(),/SAVE_UNCERTAIN/);
+afterReload.revise(data);
+const saved=await afterReload.submit({consent:true,challengeToken:'fresh-3'});assert.equal(saved.status,'saved');assert.match(saved.reference,/^RAWAA-/);
 assert.equal((await db.query('select count(*)::int as n from rawaa_store.orders')).rows[0].n,1);
 assert.equal((await db.query('select count(*)::int as n from rawaa_store.notification_outbox')).rows[0].n,1);
 const worker=createEdgeOutbox({getEnv:key=>settings[key],postgresFactory:()=>sql,fetchImpl});
