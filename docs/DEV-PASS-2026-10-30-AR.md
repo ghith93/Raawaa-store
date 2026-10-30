@@ -409,7 +409,7 @@ CSS أو استهداف الظهور. لا تغيير مرئي أو سلوكي �
 - نجح نشر Cloudflare [41116408539](https://github.com/ghith93/Raawaa-store/actions/runs/41116408539)، بما فيه البناء والنشر وتشخيص Cloudflare وفحص HTTP الحي بعد النشر.
 - غطى PR اختبار Chromium للتنقل دون اتصال إلى `/` مع query وصفحة الخصوصية، عدم تخزين عناوين query، ومطابقة بايتات بدائل صور AVIF/WebP/JPEG مع fallbacks المخزنة. لا تعديل في أسعار البيع أو رسوم التوصيل.
 - لم يُجرَ اختبار على هاتف حقيقي، ولم يُثبت استلام رسالة واتساب أو طلب. لا تُستنتج هذه النتائج من نجاح CI أو فتح رابط WhatsApp.
-- ظهر تحذيران غير مانعين في سجل النشر: `cloudflare/wrangler-action@v3` يستخدم Node.js 20، و`ubuntu-latest` سيتحول مستقبلًا إلى Ubuntu 26. استجابةً لهما، أُعدّل على فرع الجلسة ملف `.github/workflows/deploy.yml` لاستخدام `cloudflare/wrangler-action@v4.1.3` (Node 24) و`ubuntu-24.04`. هذا تعديل CI فقط؛ ينتظر تحقق CI على الفرع ولم يُدمج أو يُنشر.
+- ظهر تحذيران غير مانعين في سجل النشر: `cloudflare/wrangler-action@v3` يستخدم Node.js 20، و`ubuntu-latest` سيتحول مستقبلًا إلى Ubuntu 26. استجابةً لهما، عُدّل `.github/workflows/deploy.yml` على فرع الجلسة إلى `cloudflare/wrangler-action@v4.1.3` (Node 24) و`ubuntu-24.04`. نجح Site checks [41119046307](https://github.com/ghith93/Raawaa-store/actions/runs/41119046307) على commit `08044f9735a4d36983d849ae22ef19babc4994e7` بكافة الوظائف الست، ومنها Chromium وWebKit والإتاحة. التعديل لم يُدمج إلى `main` ولم ينفّذ نشرًا.
 - Dispatch مستقل لمراقبة uptime فشل بـ `403 Resource not accessible by integration`؛ لم تُوسّع صلاحيات GitHub، وفحص النشر الحي المدمج نجح.
 
 **الخلاصة:** PR #89 مدمج ومنشور ومتحقق منه على مستوى workflow وفحص HTTP الحي. لا يلزم تغيير أسعار أو إعادة نشر في هذه المتابعة.
