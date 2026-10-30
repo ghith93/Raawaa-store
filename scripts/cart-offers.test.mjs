@@ -180,3 +180,98 @@ test('صفحة السيروم تحمل العرض نفسه ولا تختلف ع�
   assert.equal(api.totals().amount, 21.06);
   assert.equal(w.document.querySelector('[data-cart-offer]').textContent, '− $2.60');
 });
+
+// ───────────────────── عروض العبوات في السلة الحقيقية ─────────────────────
+
+const TWO_50 = [{ id: 'two-50', label: 'عبوتان للاستعمال اليومي', type: 'bundle', qty: 2, sizeId: 'serum-50', value: 46, enabled: true }];
+
+test('عرض عبوتين: الشارة على بطاقة الحجم والكمية 2 تُحسب بسعر العرض', async () => {
+  const w = await boot(TWO_50);
+  const doc = w.document;
+  const flag = doc.querySelector('[data-size-for="serum-50"] .size-option-flag--bundle');
+  assert.equal(flag.textContent, 'عبوتان بـ $46');
+  assert.equal(doc.querySelector('[data-size-for="serum-30"] .size-option-flag--bundle'), null);
+
+  const api = w.__RAWAA_TEST__;
+  api.setMethod('cod', true);
+  api.addToCart('serum-50');
+  assert.equal(api.totals().amount, 28, 'عبوة واحدة تبقى 26 + 2 توصيل');
+  api.addToCart('serum-50');
+  const two = api.totals();
+  assert.equal(two.subtotal, 52);
+  assert.equal(two.offer, 6);
+  assert.equal(two.net, 46);
+  assert.equal(two.amount, 48, '46 + 2 توصيل حماة');
+
+  assert.equal(doc.querySelector('[data-row-offer]').hidden, false);
+  assert.equal(doc.querySelector('[data-cart-offer]').textContent, '− $6');
+  assert.match(doc.querySelector('[data-offer-label]').textContent, /عبوتان/);
+  assert.match(doc.querySelector('[data-cart-item="serum-50"] .cart-item-unit').textContent, /عبوتان بـ \$46/);
+
+  const msg = api.buildOrderMessage();
+  assert.match(msg, /\$23 للواحدة = \$46/);
+  assert.match(msg, /خصم عرض «عبوتان للاستعمال اليومي»: − \$6/);
+});
+
+test('ثلاث عبوات مع عرض «عبوتان»: عبوتان + واحدة بسعرها', async () => {
+  const w = await boot(TWO_50);
+  const api = w.__RAWAA_TEST__;
+  api.setMethod('cod', true);
+  for (let i = 0; i < 3; i += 1) api.addToCart('serum-50');
+  const t = api.totals();
+  assert.equal(t.offer, 6);
+  assert.equal(t.net, 72, '46 + 26');
+  assert.equal(t.amount, 74);
+});
+
+test('ثلاث عبوات مع عرض «3 بـ 66$»: 66$ لا 69$، ثم شام كاش', async () => {
+  const three = [{ id: 'three', label: 'ثلاث عبوات', type: 'bundle', qty: 3, sizeId: 'serum-100', value: 66, enabled: true }];
+  const w = await boot(three);
+  const api = w.__RAWAA_TEST__;
+  api.addToCart('serum-100'); api.addToCart('serum-100'); api.addToCart('serum-100');
+  api.setMethod('shamcash', true);
+  api.setZone('hama', true);
+  const t = api.totals();
+  assert.equal(t.offer, 21, '87 − 66');
+  assert.equal(t.net, 66);
+  assert.equal(t.discount, 6.6);
+  assert.equal(t.amount, 59.4);
+});
+
+test('عرض العبوة لا يُطبَّق على حجم آخر ولا يفسد إضافة العطر', async () => {
+  const w = await boot(TWO_50);
+  const api = w.__RAWAA_TEST__;
+  api.setMethod('cod', true);
+  api.addToCart('serum-30'); api.addToCart('serum-30');
+  assert.equal(api.totals().offer, 0, 'الحجم 30 مل ليس له عرض');
+  assert.equal(api.totals().net, 38);
+  api.addToCart('serum-50'); api.addToCart('serum-50');
+  const t = api.totals();
+  assert.equal(t.offer, 6);
+  assert.equal(t.subtotal, 90, 'قيمة المنتجات المعلنة 38 + 52');
+  assert.equal(t.net, 84);
+});
+
+test('عرضان: واحد للحجم وواحد لكل العبوات — الأرخص يُختار بلا تكرار', async () => {
+  const both = [
+    { id: 'two-50', label: 'عبوتان 50', type: 'bundle', qty: 2, sizeId: 'serum-50', value: 46, enabled: true },
+    { id: 'three-any', label: 'ثلاث عبوات', type: 'bundle', qty: 3, value: 75, enabled: true }
+  ];
+  const w = await boot(both);
+  const api = w.__RAWAA_TEST__;
+  api.setMethod('cod', true);
+  for (let i = 0; i < 3; i += 1) api.addToCart('serum-100');
+  // 87 ← «ثلاث بـ 75» مقابل «عبوتان بـ 46» (لا ينطبق على 100 مل لأنه مقيَّد بـ50)
+  assert.equal(api.totals().net, 75);
+  assert.equal(api.totals().offer, 12);
+});
+
+test('عرض العبوة يظهر في صفحة السيروم بالرقم نفسه', async () => {
+  const w = await boot(TWO_50, serumHtml);
+  const api = w.__RAWAA_TEST__;
+  api.setMethod('shamcash', true);
+  api.addToCart('serum-50'); api.addToCart('serum-50');
+  // 46 − 4.60 = 41.40 داخل حماة بتوصيل مجاني
+  assert.equal(api.totals().amount, 41.4);
+  assert.equal(w.document.querySelector('[data-cart-offer]').textContent, '− $6');
+});

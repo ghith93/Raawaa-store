@@ -260,8 +260,12 @@
      *   id       اسم داخلي ثابت لا يظهر للزبونة.
      *   label    الاسم الذي تقرأه الزبونة في السلة ورسالة واتساب.
      *   type     percent (نسبة) | amount (مبلغ ثابت) | sizePrice (سعر حجم بعينه)
+     *            | bundle (سعر عبوة أو عبوتين أو ثلاث — يحتاج qty)
      *   value    15 = 15% · 5 = 5 دولارات · 23 = سعر الحجم الجديد بالدولار
      *   sizeId   للحجم الواحد فقط: serum-30 | serum-50 | serum-100
+     *   qty      لعرض العبوة فقط: عدد العبوات في العرض (١–١٠). قيمة `value` = سعرها كاملة.
+     *            مثال: { type: 'bundle', qty: 2, value: 46 } = «عبوتان بـ $46».
+     *            يعمل لكل حجم على حدة: 2 من 30 مل و2 من 100 مل يُقيَّمان بسعرهما.
      *   startsAt / endsAt  تاريخ اختياري YYYY-MM-DD؛ بعد endsAt يتوقف العرض وحده
      *   badge    شارة قصيرة اختيارية بجانب السعر
      *   enabled  لا يعمل العرض إلا إذا كانت true صراحةً
@@ -274,9 +278,12 @@
       slots: [
         // { id: 'launch', label: 'عرض الإطلاق', type: 'percent', value: 15, enabled: false, endsAt: '2026-11-30', badge: 'إطلاق' },
         // { id: 'size-100-special', label: 'سعر خاص للعبوة الكبيرة', type: 'sizePrice', sizeId: 'serum-100', value: 26, enabled: false },
-        // { id: 'cart-5', label: 'خصم 5 دولارات على الطلب', type: 'amount', value: 5, enabled: false }
+        // { id: 'cart-5', label: 'خصم 5 دولارات على الطلب', type: 'amount', value: 5, enabled: false },
+        // { id: 'two-50', label: 'عبوتان للاستعمال اليومي', type: 'bundle', qty: 2, sizeId: 'serum-50', value: 46, enabled: false },
+        // { id: 'three-any', label: 'ثلاث عبوات', type: 'bundle', qty: 3, value: 75, enabled: false },
+        // { id: 'single-100', label: 'عبوة كبيرة بسعر خاص', type: 'bundle', qty: 1, sizeId: 'serum-100', value: 26, enabled: false }
       ],
-      note: 'الأسعار الأساسية 19/26/29 تبقى مرجعًا؛ العرض يظهر كسعر قبل/بعد مع شارة، ويُحتسب في السلة ورسالة واتساب.'
+      note: 'الأسعار الأساسية 19/26/29 تبقى مرجعًا؛ العرض يظهر كسعر قبل/بعد مع شارة، ويُحتسب في السلة ورسالة واتساب. عرض العبوة (bundle) يحسب أفضل تقسيم للكمية تلقائيًا: 3 عبوات مع عرض «عبوتان» = عبوتان + واحدة بسعرها.'
     },
 
     cart: {

@@ -9,10 +9,14 @@
  *  - الخانة لا تعمل إلا إذا كتب المالك `enabled: true` صراحةً. النسيان = لا خصم.
  *  - التاريخ (startsAt / endsAt) بصيغة YYYY-MM-DD ويُقارن بتاريخ جهاز الزائرة.
  *    بعد endsAt يتوقف العرض وحده بلا أي تدخّل.
- *  - الأنواع المسموحة ثلاثة فقط:
+ *  - الأنواع المسموحة أربعة:
  *      percent   : نسبة من سعر المنتجات — بسقف CONFIG.offers.maxPercent.
  *      amount    : مبلغ ثابت بالدولار يُخصم من قيمة المنتجات.
  *      sizePrice : سعر جديد لحجم واحد بعينه (يحتاج sizeId).
+ *      bundle    : سعر عبوة أو عبوتين أو ثلاث: `qty` عدد العبوات و`value` سعرها كاملة.
+ *                  يحتاج `qty` (١–١٠). يعمل لكل حجم على حدة: إن كُتب `sizeId` فلهذا الحجم،
+ *                  وإلا فهو متاح لكل حجم يكون فيه أرخص فعلًا (وإلا يُهمَل لذلك الحجم).
+ *                  في السلة تُحسب أفضل تركيبة ممكنة: أكبر عدد عبوات مغطى بالعرض، والباقي بسعره.
  *  - العرض المقيَّد بحجم (`sizeId`) يُطبَّق على سعره فقط. العرض غير المقيَّد
  *    يُطبَّق على قيمة المنتجات كلها (وليس على إضافة العطر ولا التوصيل).
  *  - لكل نطاق عرض واحد فقط: الأول في المصفوفة. والترتيب في المصفوفة = الأولوية.
@@ -27,7 +31,9 @@
 (function (root) {
   'use strict';
 
-  var TYPES = ['percent', 'amount', 'sizePrice'];
+  var TYPES = ['percent', 'amount', 'sizePrice', 'bundle'];
+  var UNIT_TYPES = ['percent', 'amount', 'sizePrice'];
+  var MAX_BUNDLE_QTY = 10;
   var DEFAULT_MAX_PERCENT = 30;
   var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -67,7 +73,34 @@
       if (toCents(value) >= priceById[slot.sizeId]) return 'not-a-discount';
     }
     if (slot.sizeId && !(slot.sizeId in priceById)) return 'bad-size';
+    if (slot.type === 'bundle') {
+      var qty = Number(slot.qty);
+      if (!isFinite(qty) || qty !== Math.floor(qty) || qty < 1 || qty > MAX_BUNDLE_QTY) return 'bad-qty';
+      var sizes = slot.sizeId ? [slot.sizeId] : Object.keys(priceById);
+      var usable = sizes.some(function (id) {
+        return bundleQualifies(slot, priceById[id], maxPercent(cfg));
+      });
+      if (!usable) return 'not-a-discount';
+    }
     return null;
+  }
+
+  /** سعر العبوة الواحدة داخل عرض العبوة، بالسنتات. */
+  function bundleUnitCents(slot) {
+    return toCents(slot.value) / Number(slot.qty);
+  }
+
+  /**
+   * هل هذا العرض يفيد هذا الحجم فعلًا وبسقف الخصم؟ يُقيَّم لكل حجم على حدة،
+   * لأن جمع عبوتين من 30 مل لا يساوي جمع عبوتين من 100 مل.
+   */
+  function bundleQualifies(slot, priceCents, capPercent) {
+    var qty = Number(slot.qty);
+    if (!isFinite(qty) || qty < 1 || !priceCents) return false;
+    var bundleCents = toCents(slot.value);
+    if (bundleCents >= priceCents * qty) return false;             // ليس تخفيضًا
+    var cap = (typeof capPercent === 'number' ? capPercent : DEFAULT_MAX_PERCENT) / 100;
+    return bundleUnitCents(slot) >= priceCents * (1 - cap) - 0.5;   // داخل السقف (تحمّل التقريب)
   }
 
   /**
@@ -98,10 +131,14 @@
     return { today: day, slots: live, skipped: skipped };
   }
 
-  /** أول عرض يعمل، مقيَّدًا بحجم أو غير مقيَّد — بحسب الطلب. */
+  /**
+   * أول عرض يعمل، مقيَّدًا بحجم أو غير مقيَّد — بحسب الطلب.
+   * عروض العبوات لا تدخل هنا أبدًا: لها مسار مستقل لأنه سعر مجموعة لا سعر وحدة.
+   */
   function pick(live, sizeId) {
-    for (var i = 0; i < live.length; i += 1) {
-      var slot = live[i];
+    var list = (live || []).filter(function (s) { return s && s.type !== 'bundle'; });
+    for (var i = 0; i < list.length; i += 1) {
+      var slot = list[i];
       if (sizeId) {
         if (slot.sizeId === sizeId) return slot;
       } else if (!slot.sizeId) {
@@ -109,6 +146,60 @@
       }
     }
     return null;
+  }
+
+  /** عروض العبوات التي تفيد هذا الحجم اليوم، بترتيب أولويتها في الإعدادات. */
+  function bundlesFor(live, sizeId, priceCents, cfg) {
+    var cap = cfg ? maxPercent(cfg) : DEFAULT_MAX_PERCENT;
+    return (live || []).filter(function (slot) {
+      return slot && slot.type === 'bundle' &&
+        (!slot.sizeId || slot.sizeId === sizeId) &&
+        bundleQualifies(slot, priceCents, cap);
+    });
+  }
+
+  /**
+   * أفضل تركيبة عبوات لعدد معيّن: البرمجة الديناميكية تجرّب كل تقسيم ممكن
+   * (وحدات فردية + مجموعات) وتختار الأرخص للزبونة، بلا تكرار خصم على العبوة نفسها.
+   * العروض لا تتراكم فوق بعضها: كل عبوة تدخل في مجموعة واحدة كحد أقصى.
+   * @returns {{totalCents:number, listCents:number, cutCents:number,
+   *            singles:number, sets:Array<{slot:object,count:number}>}}
+   */
+  function bestPlan(qty, unitCents, bundles) {
+    var n = Math.max(0, Math.floor(Number(qty) || 0));
+    var unit = Math.max(0, Math.round(Number(unitCents) || 0));
+    var list = (bundles || []).filter(Boolean);
+    var dp = [0];
+    var choice = [null];
+    for (var k = 1; k <= n; k += 1) {
+      dp[k] = dp[k - 1] + unit;
+      choice[k] = null;
+      for (var i = 0; i < list.length; i += 1) {
+        var size = Number(list[i].qty);
+        if (!isFinite(size) || size < 1 || size > k) continue;
+        var candidate = dp[k - size] + toCents(list[i].value);
+        if (candidate < dp[k]) { dp[k] = candidate; choice[k] = list[i]; }
+      }
+    }
+    var sets = [];
+    var singles = 0;
+    var cursor = n;
+    while (cursor > 0) {
+      var slot = choice[cursor];
+      if (!slot) { singles += 1; cursor -= 1; continue; }
+      var found = null;
+      for (var j = 0; j < sets.length; j += 1) if (sets[j].slot === slot) found = sets[j];
+      if (found) found.count += 1;
+      else sets.push({ slot: slot, count: 1 });
+      cursor -= Number(slot.qty);
+    }
+    return {
+      totalCents: dp[n],
+      listCents: unit * n,
+      cutCents: unit * n - dp[n],
+      singles: singles,
+      sets: sets
+    };
   }
 
   /** خصم النسبة/الحجم على سعر منتج واحد. يعيد السنتات. */
@@ -143,11 +234,29 @@
     var symbol = currencySymbol || '$';
     if (slot.type === 'percent') return '−' + Number(slot.value) + '%';
     if (slot.type === 'amount') return '−' + symbol + Number(slot.value);
+    if (slot.type === 'bundle') return bundleText(slot, symbol);
     return 'سعر خاص';
+  }
+
+  /** نص عربي قصير لعرض العبوة: «عبوة بـ $18» · «عبوتان بـ $46» · «3 عبوات بـ $69». */
+  function bundleText(slot, currencySymbol) {
+    if (!slot) return '';
+    var symbol = currencySymbol || '$';
+    var qty = Number(slot.qty);
+    var amount = symbol + Number(slot.value);
+    if (qty === 1) return 'عبوة بـ ' + amount;
+    if (qty === 2) return 'عبوتان بـ ' + amount;
+    return qty + ' عبوات بـ ' + amount;
   }
 
   root.RawaaOffers = {
     TYPES: TYPES,
+    UNIT_TYPES: UNIT_TYPES,
+    MAX_BUNDLE_QTY: MAX_BUNDLE_QTY,
+    bundlesFor: bundlesFor,
+    bundleQualifies: bundleQualifies,
+    bundleText: bundleText,
+    bestPlan: bestPlan,
     todayISO: todayISO,
     evaluate: evaluate,
     pick: pick,

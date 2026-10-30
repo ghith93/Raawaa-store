@@ -1148,6 +1148,11 @@ async function checkProductPage(config) {
   ok(config.offers.slots.every(slot => slot.enabled !== true), 'لا يوجد عرض مفعّل بلا قرار صريح من المالك');
   ok(config.offers.slots.every(slot => !('sizePrice' === slot.type) || config.products.some(p => p.id === slot.sizeId)), 'كل عرض مرتبط بحجم موجود');
   ok(offersLogic.includes("slot.enabled !== true") && offersLogic.includes('over-cap') && offersLogic.includes('expired'), 'محرّك العروض يفشل مغلقًا: تعطيل صريح وسقف نسبة وانتهاء بتاريخ');
+  ok(offersLogic.includes("'bundle'") && offersLogic.includes('function bestPlan') && offersLogic.includes('function bundlesFor'), 'محرّك عروض العبوات موجود (bundle + bestPlan)');
+  const bundleSlots = config.offers.slots.filter(slot => slot.type === 'bundle');
+  ok(bundleSlots.every(slot => Number.isInteger(slot.qty) && slot.qty >= 1 && slot.qty <= 10 && Number(slot.value) > 0), 'كل عرض عبوة مكتمل: qty صحيح ١–١٠ وقيمة موجبة');
+  ok(bundleSlots.every(slot => !slot.sizeId || config.products.some(p => p.id === slot.sizeId)), 'عرض العبوة يشير إلى حجم موجود إن كان مقيَّدًا');
+  ok(cartLogic.includes('function planFor') && cartLogic.includes('engine.bestPlan') && cartLogic.includes('planFor(entry.product'), 'السلة تحسب عروض العبوات بنفس المحرّك');
   const pageFiles = { 'index.html': home, 'serum.html': await read('serum.html') };
   ok(Object.values(pageFiles).every(page => page.includes('js/offers.js')), 'محرّك العروض محمّل في الصفحتين');
   ok(Object.values(pageFiles).every(page => page.includes('data-row-offer') && page.includes('data-cart-offer')), 'صف خصم العرض موجود في سلتي الصفحتين');

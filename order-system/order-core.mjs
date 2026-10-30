@@ -33,7 +33,15 @@ export function prepareOrder(input, config) {
     const priced = offerEngine
       ? offerEngine.unitPrice(offerEngine.pick(offerState.slots, product.id), listCents)
       : { listCents, cents: listCents, cutCents: 0 };
-    return { id: product.id, size: product.sizeLabel, qty: item.qty, unitCents: priced.cents, listCents, offerCents: priced.cutCents };
+    // عرض العبوة (عبوة/عبوتان/ثلاث) يُحسب بنفس محرّك المتصفح، على كمية هذا الحجم.
+    const plan = offerEngine
+      ? offerEngine.bestPlan(item.qty, priced.cents, offerEngine.bundlesFor(offerState.slots, product.id, listCents, config.offers))
+      : { totalCents: priced.cents * item.qty, cutCents: 0 };
+    return {
+      id: product.id, size: product.sizeLabel, qty: item.qty,
+      listCents, unitCents: priced.cents, offerCents: priced.cutCents * item.qty + plan.cutCents,
+      lineCents: plan.totalCents
+    };
   });
   const scent = input.scent || '';
   const oil = input.oil || '';
@@ -47,10 +55,10 @@ export function prepareOrder(input, config) {
   const quantity = entries.reduce((n, item) => n + item.qty, 0);
   const scentCents = scent && scent !== 'unscented' ? cents(config.customization.scentPrice) : 0;
   // العرض العام على قيمة المنتجات وحدها، ثم إضافة العطر، ثم خصم طريقة الدفع.
-  const productCents = entries.reduce((n, item) => n + item.unitCents * item.qty, 0);
+  const productCents = entries.reduce((n, item) => n + item.lineCents, 0);
   const generalSlot = offerEngine ? offerEngine.pick(offerState.slots, null) : null;
   const generalCut = generalSlot ? offerEngine.orderCut(generalSlot, productCents) : 0;
-  const offerCents = entries.reduce((n, item) => n + item.offerCents * item.qty, 0) + generalCut;
+  const offerCents = entries.reduce((n, item) => n + item.offerCents, 0) + generalCut;
   const subtotalCents = productCents - generalCut + scentCents * quantity;
   const discountCents = Math.round(subtotalCents * method.discountPercent / 100);
   const deliveryCents = method.freeDeliveryIn.includes(zone.id) ? 0 : cents(zone.fee);
