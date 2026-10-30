@@ -2,8 +2,8 @@ import { formatOwnerAlert } from './order-core.mjs';
 
 /** A single attempt only. Callers must persist delivery status separately. */
 export async function sendOrderAlert({ token, chatId, reference, fetchImpl = fetch }) {
-  if (typeof token !== 'string' || !/^\d+:[A-Za-z0-9_-]{20,}$/.test(token) ||
-      typeof chatId !== 'string' || !/^-?\d{1,20}$/.test(chatId)) return { ok: false, reason: 'not_configured' };
+  if (typeof token !== 'string' || !/^[0-9]+:[A-Za-z0-9_-]{20,}$/.test(token) ||
+      typeof chatId !== 'string' || !/^-?[0-9]{1,20}$/.test(chatId)) return { ok: false, reason: 'not_configured' };
   let text;
   try { text = formatOwnerAlert(reference); } catch { return { ok: false, reason: 'invalid_reference' }; }
   try {
