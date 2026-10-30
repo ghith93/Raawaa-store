@@ -27,7 +27,7 @@ const result=await retry.json();assert.match(result.reference,/^RAWAA-/);assert.
 assert.equal((await db.query('select count(*)::int as n from rawaa_store.orders')).rows[0].n,1);
 assert.equal((await db.query("select count(*)::int as n from rawaa_store.notification_outbox where state='pending'")).rows[0].n,1);
 assert.equal(notifications,0); // scheduler is required to recover the persisted pending job
-const changed=await handler(req({...payload,challengeToken:'another-fake-token',order:{...payload.order,address:'مكان مختلف'}}));assert.equal(changed.status,503);
+const changed=await handler(req({...payload,challengeToken:'another-fake-token',order:{...payload.order,address:'مكان مختلف'}}));assert.equal(changed.status,409);assert.deepEqual(await changed.json(),{error:'intent_mismatch'});
 for (let i=0;i<7;i++) assert.equal((await handler(req({...payload,challengeToken:'fresh'}))).status,200);
 assert.equal((await handler(req({...payload,challengeToken:'fresh'}))).status,429);
 assert.equal((await db.query('select count(*)::int as n from rawaa_store.orders')).rows[0].n,1);
