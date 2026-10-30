@@ -626,6 +626,36 @@ def run(base: str) -> int:
         check("صفحة الخصوصية المسبقة التخزين تفتح بلا إنترنت",
               privacy_loaded, f"HTTP={privacy_response.status if privacy_response else 'n/a'}")
 
+        image_fallbacks = pw.evaluate("""async () => {
+          const cases = [
+            ['/assets/img/products/size-50-v6-900.jpg?offline-probe=1', '/assets/img/products/size-50-v6-480.jpg'],
+            ['/assets/img/products/trio-v6-1080.avif?offline-probe=1', '/assets/img/products/trio-v6-480.avif'],
+            ['/assets/img/products/ritual-v5-1080.jpg?offline-probe=1', '/assets/img/products/ritual-v5-720.jpg'],
+            ['/assets/img/products/size-100-v6-900.webp?offline-probe=1', '/assets/img/products/size-100-v6-480.webp']
+          ];
+          const results = [];
+          for (const [requested, fallback] of cases) {
+            try {
+              const response = await fetch(requested);
+              const cached = await caches.match(new URL(fallback, location.origin).href);
+              if (!response.ok || !cached) {
+                results.push({requested, ok: false, status: response.status, cached: !!cached});
+                continue;
+              }
+              const [actual, expected] = await Promise.all([response.arrayBuffer(), cached.arrayBuffer()]);
+              const a = new Uint8Array(actual), b = new Uint8Array(expected);
+              const identical = a.length === b.length && a.every((value, index) => value === b[index]);
+              results.push({requested, ok: identical, bytes: a.length});
+            } catch (error) {
+              results.push({requested, ok: false, error: String(error)});
+            }
+          }
+          return results;
+        }""")
+        check("صور AVIF وWebP وJPEG عالية الدقة ترجع للصورة الصغيرة نفسها بلا إنترنت",
+              len(image_fallbacks) == 4 and all(item.get("ok") for item in image_fallbacks),
+              json.dumps(image_fallbacks, ensure_ascii=False))
+
         query_cache_urls = pw.evaluate("""async () => {
           const names = await caches.keys();
           const requests = (await Promise.all(names.map(async name =>
