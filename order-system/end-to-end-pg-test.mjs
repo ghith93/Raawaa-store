@@ -37,6 +37,9 @@ const first=client();first.begin(data);assert.deepEqual(await first.submit({cons
 assert.equal((await db.query('select count(*)::int as n from rawaa_store.orders')).rows[0].n,1);
 assert.equal(alerts.length,0);
 const afterReload=client();assert.equal(afterReload.state(),'uncertain');afterReload.begin(data);
+// An already-consumed challenge rejects this retry; it does not undo the first save.
+assert.deepEqual(await afterReload.submit({consent:true,challengeToken:'fresh-1'}),{status:'uncertain'});
+assert.equal(afterReload.state(),'uncertain');assert.throws(()=>afterReload.reset(),/SAVE_UNCERTAIN/);
 const saved=await afterReload.submit({consent:true,challengeToken:'fresh-2'});assert.equal(saved.status,'saved');assert.match(saved.reference,/^RAWAA-/);
 assert.equal((await db.query('select count(*)::int as n from rawaa_store.orders')).rows[0].n,1);
 assert.equal((await db.query('select count(*)::int as n from rawaa_store.notification_outbox')).rows[0].n,1);

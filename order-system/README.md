@@ -41,3 +41,5 @@ The staged `order-http.mjs` requires explicit consent, bounded requests, a serve
 `customer-checkout-flow.mjs` is a staged orchestration layer: it requires consent and a fresh challenge for each attempt, and never masks a confirmed save if a widget reset fails. It is not wired to a customer UI.
 
 `end-to-end-pg-test.mjs` exercises mocked challenge, lost confirmation, reload/retry, a bounded outbox run, mock Telegram, and an owner-authorized view on ephemeral PostgreSQL. This is not a live integration test.
+
+For a local, AST-only architecture scan using Graphify, see `docs/GRAPHIFY-AR.md`. The graph is not a substitute for runtime verification.
