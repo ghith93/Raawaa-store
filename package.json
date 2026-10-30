@@ -4,6 +4,7 @@
     "chrome-launcher": "^1.2.1",
     "eslint": "^10.13.0",
     "html-validate": "^11.17.0",
+    "jsdom": "^30.1.3",
     "lighthouse": "^13.6.0",
     "repomix": "^1.18.1",
     "wrangler": "^4.154.0"
@@ -17,14 +18,16 @@
     "check": "node scripts/check-site.mjs",
     "lint": "eslint js/*.js sw.js",
     "html": "html-validate index.html serum.html privacy.html 404.html setup.html check.html owner/index.html",
-    "gates": "node scripts/ref-audit.mjs && node scripts/perf-static.mjs && node scripts/check-site.mjs && eslint js/*.js sw.js && html-validate index.html serum.html privacy.html 404.html setup.html check.html owner/index.html && python3 scripts/browser-test.py && python3 scripts/serum-browser-test.py && python3 scripts/axe-audit.py && node scripts/perf-budget.mjs && node scripts/asset-audit.mjs",
+    "gates": "node scripts/ref-audit.mjs && node scripts/perf-static.mjs && node scripts/check-site.mjs && node --test scripts/offers.test.mjs scripts/cart-offers.test.mjs && eslint js/*.js sw.js && html-validate index.html serum.html privacy.html 404.html setup.html check.html owner/index.html && python3 scripts/browser-test.py && python3 scripts/serum-browser-test.py && python3 scripts/axe-audit.py && node scripts/perf-budget.mjs && node scripts/asset-audit.mjs",
     "pack": "repomix",
     "verify": "npm run gates && npm run build",
     "perf": "node scripts/perf-budget.mjs",
     "assets": "node scripts/asset-audit.mjs",
     "refs": "node scripts/ref-audit.mjs",
     "perf:static": "node scripts/perf-static.mjs",
-    "gates:offline": "node scripts/ref-audit.mjs && node scripts/perf-static.mjs && node scripts/check-site.mjs && eslint js/*.js sw.js && html-validate index.html serum.html privacy.html 404.html setup.html check.html owner/index.html"
+    "gates:offline": "node scripts/ref-audit.mjs && node scripts/perf-static.mjs && node scripts/check-site.mjs && node --test scripts/offers.test.mjs scripts/cart-offers.test.mjs && eslint js/*.js sw.js && html-validate index.html serum.html privacy.html 404.html setup.html check.html owner/index.html",
+    "test:offers": "node --test scripts/offers.test.mjs scripts/cart-offers.test.mjs",
+    "build:order": "node scripts/build-order-entry.mjs"
   },
   "engines": {
     "node": "^22.22.0 || >=24.8.0"

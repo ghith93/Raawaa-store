@@ -56,6 +56,52 @@
   /** تحويل إلى سنتات لتجنّب أخطاء الفواصل العشرية في الجمع. */
   function toCents(value) { return Math.round(value * 100); }
 
+  /* ------------------------------- العروض -------------------------------
+     كل ما يخصّ العروض يُقرأ من CONFIG.offers عبر js/offers.js.
+     لا رقم تسويقي مكتوب هنا. إن غاب الملف أو كانت الخانات فارغة،
+     تعود كل الأسعار إلى سعر المنتج كما هو — لا خصم ولا خطأ. */
+
+  var offersState = null;
+
+  function offersEngine() {
+    return (typeof window !== 'undefined' && window.RawaaOffers) ? window.RawaaOffers : null;
+  }
+
+  /** الخانات الصالحة اليوم + أسباب استبعاد الباقي (تُهمَل بصمت في الواجهة). */
+  function liveOffers() {
+    if (offersState) return offersState;
+    var engine = offersEngine();
+    if (!engine) {
+      offersState = { date: '', slots: [], skipped: [] };
+      return offersState;
+    }
+    var prices = {};
+    CONFIG.products.forEach(function (p) { prices[p.id] = toCents(p.price); });
+    offersState = engine.evaluate(CONFIG.offers, prices, engine.todayISO());
+    return offersState;
+  }
+
+  /** سعر منتج واحد بعد عرضه الخاص إن وُجد. */
+  function unitOffer(product) {
+    var base = toCents(product.price);
+    var engine = offersEngine();
+    if (!engine) return { slot: null, listCents: base, cents: base, cutCents: 0 };
+    var slot = engine.pick(liveOffers().slots, product.id);
+    return engine.unitPrice(slot, base);
+  }
+
+  /** العرض غير المقيَّد بحجم — يُطبَّق على قيمة المنتجات كلها. */
+  function orderOffer() {
+    var engine = offersEngine();
+    if (!engine) return null;
+    return engine.pick(liveOffers().slots, null);
+  }
+
+  function offerBadge(slot) {
+    var engine = offersEngine();
+    return engine ? engine.badge(slot, CONFIG.currency.symbol) : '';
+  }
+
   function getProduct(id) {
     return CONFIG.products.filter(function (p) { return p.id === id; })[0] || null;
   }
@@ -107,7 +153,9 @@
     if (!links.length || !product) return;
     var lines = [
       'مرحبًا رواء، أود الاستفسار عن ' + product.name + ' بحجم ' + product.sizeLabel + '.',
-      'سعر العبوة المرجعي: ' + money(product.price + scentFee()) + ' قبل الخصم والتوصيل؛ سعر الزيت إن اختير يُؤكّد.'
+      'سعر العبوة المرجعي: ' + money(unitOffer(product).cents / 100 + scentFee()) +
+        (unitOffer(product).cutCents > 0 ? ' بعد عرض «' + unitOffer(product).slot.label + '» (' + money(product.price) + ' قبل العرض)' : '') +
+        ' قبل الخصم والتوصيل؛ سعر الزيت إن اختير يُؤكّد.'
     ];
     var cfg = CONFIG.customization || {};
     var scent = (cfg.scentOptions || []).filter(function (o) { return o.id === custom.scent; })[0];
@@ -160,12 +208,33 @@
       size.className = 'size-option-size';
       size.textContent = product.sizeLabel;
 
+      var unit = unitOffer(product);
       var price = document.createElement('span');
       price.className = 'size-option-price';
-      price.textContent = money(product.price);
+      if (unit.cutCents > 0) {
+        var was = document.createElement('s');
+        was.className = 'size-option-was';
+        was.textContent = money(product.price);
+        var now = document.createElement('bdi');
+        now.className = 'size-option-now';
+        now.textContent = money(unit.cents / 100);
+        price.appendChild(was);
+        price.appendChild(document.createTextNode(' '));
+        price.appendChild(now);
+      } else {
+        price.textContent = money(product.price);
+      }
 
       body.appendChild(size);
       body.appendChild(price);
+
+      if (unit.cutCents > 0) {
+        var offerFlag = document.createElement('span');
+        offerFlag.className = 'size-option-flag size-option-flag--offer';
+        offerFlag.setAttribute('data-offer-flag', unit.slot.id || unit.slot.label);
+        offerFlag.textContent = offerBadge(unit.slot) + ' · ' + unit.slot.label;
+        body.appendChild(offerFlag);
+      }
 
       if (product.badge) {
         var flag = document.createElement('span');
@@ -201,12 +270,24 @@
       if (input) input.checked = on;
     });
 
+    var unit = unitOffer(product);
+    var effectivePrice = unit.cents / 100;
     var priceNode = document.querySelector('[data-price-live]');
-    if (priceNode) priceNode.innerHTML = '<bdi>' + money(product.price) + '</bdi> <span>' + product.sizeLabel + '</span>';
+    if (priceNode) {
+      if (unit.cutCents > 0) {
+        priceNode.setAttribute('aria-label', 'سعر ' + product.sizeLabel + ': ' + money(effectivePrice) +
+          ' بعد عرض «' + unit.slot.label + '» بدل ' + money(product.price) + '.');
+      } else {
+        priceNode.removeAttribute('aria-label');
+      }
+      priceNode.innerHTML = unit.cutCents > 0
+        ? '<s>' + money(product.price) + '</s> <bdi>' + money(effectivePrice) + '</bdi> <span>' + product.sizeLabel + '</span>'
+        : '<bdi>' + money(product.price) + '</bdi> <span>' + product.sizeLabel + '</span>';
+    }
 
     var unitNode = document.querySelector('[data-unit-live]');
     if (unitNode && product.sizeMl && product.price) {
-      var per = product.price / product.sizeMl;
+      var per = effectivePrice / product.sizeMl;
       unitNode.innerHTML = '<bdi>' + CONFIG.currency.symbol + (per >= 0.1 ? per.toFixed(2) : per.toFixed(3)) + '</bdi> تقريبًا لكل مل قبل الخصم والتوصيل.';
     }
 
@@ -328,21 +409,48 @@
    */
   function pricing() {
     var entries = cartEntries();
-    var subtotalCents = 0;
+    var listCents = 0;      // قيمة المنتجات بأسعارها المعلنة
+    var productCents = 0;   // بعد عروض الأحجام
+    var scentTotalCents = 0;
+    var offerCents = 0;
+    var appliedOffers = [];
     var count = 0;
+    var scentUnitCents = toCents(scentFee());
 
     entries.forEach(function (entry) {
-      subtotalCents += toCents(entry.product.price + scentFee()) * entry.qty;
+      var unit = unitOffer(entry.product);
+      listCents += toCents(entry.product.price) * entry.qty;
+      productCents += unit.cents * entry.qty;
+      scentTotalCents += scentUnitCents * entry.qty;
+      if (unit.cutCents > 0) {
+        offerCents += unit.cutCents * entry.qty;
+        appliedOffers.push({ slot: unit.slot, cents: unit.cutCents * entry.qty });
+      }
       count += entry.qty;
     });
 
+    // العرض العام يُطبَّق على قيمة المنتجات وحدها — لا على إضافة العطر ولا التوصيل.
+    var generalSlot = orderOffer();
+    if (generalSlot && productCents > 0) {
+      var generalCut = offersEngine().orderCut(generalSlot, productCents);
+      if (generalCut > 0) {
+        productCents -= generalCut;
+        offerCents += generalCut;
+        appliedOffers.push({ slot: generalSlot, cents: generalCut });
+      }
+    }
+
     var method = activeMethod();
     var zone = activeZone();
-    var amounts = calculateAmounts(subtotalCents, count, method, zone);
+    // خصم طريقة الدفع يُحسب على قيمة المنتجات بعد العرض: العرض أولًا ثم شام كاش.
+    var amounts = calculateAmounts(productCents + scentTotalCents, count, method, zone);
 
     return {
       entries: entries,
       count: count,
+      listCents: listCents,
+      offerCents: offerCents,
+      appliedOffers: appliedOffers,
       subtotalCents: amounts.subtotalCents,
       discountCents: amounts.discountCents,
       deliveryCents: amounts.deliveryCents,
@@ -364,7 +472,10 @@
       method: p.method,
       zone: p.zone,
       freeDelivery: p.freeDelivery,
-      subtotal: p.subtotalCents / 100,
+      subtotal: p.listCents / 100,
+      net: p.subtotalCents / 100,
+      offer: p.offerCents / 100,
+      appliedOffers: p.appliedOffers,
       discount: p.discountCents / 100,
       delivery: p.deliveryCents / 100
     };
@@ -407,7 +518,7 @@
     var zone = activeZone();
     var method = activeMethod();
     if (!product || !zone || !method) return;
-    var amounts = calculateAmounts(toCents(product.price + scentFee()), 1, method, zone);
+    var amounts = calculateAmounts(unitOffer(product).cents + toCents(scentFee()), 1, method, zone);
     box.querySelector('[data-estimate-zone]').value = zone.id;
     box.querySelector('[data-estimate-method]').value = method.id;
     box.querySelector('[data-estimate-context]').textContent = product.sizeLabel + ' · ' + zone.label + ' · ' + (method.short || method.label);
@@ -544,6 +655,23 @@
     if (el.subtotal) el.subtotal.textContent = money(summary.subtotal);
     if (el.subtotalRow) el.subtotalRow.hidden = false;
 
+    // صف العرض: يظهر فقط حين يعمل عرض فعلي، ويشرح الفرق بين السعر المعلن والمدفوع.
+    if (el.offerRow) {
+      if (summary.offer > 0 && summary.appliedOffers.length) {
+        el.offerRow.hidden = false;
+        if (el.offerValue) el.offerValue.textContent = '− ' + money(summary.offer);
+        if (el.offerLabel) {
+          var labels = [];
+          summary.appliedOffers.forEach(function (o) {
+            if (labels.indexOf(o.slot.label) === -1) labels.push(o.slot.label);
+          });
+          el.offerLabel.textContent = 'عرض: ' + labels.join(' · ');
+        }
+      } else {
+        el.offerRow.hidden = true;
+      }
+    }
+
     if (el.discountRow) {
       if (summary.discount > 0) {
         el.discountRow.hidden = false;
@@ -589,7 +717,7 @@
       };
       var worst = null;
       summary.entries.forEach(function (e) {
-        var net = e.product.price * (1 - (summary.method.discountPercent || 0) / 100);
+        var net = unitOffer(e.product).cents / 100 * (1 - (summary.method.discountPercent || 0) / 100);
         var profit = net - summary.delivery - costOfUnit();
         if (profit <= 0 && (!worst || profit < worst.profit)) {
           worst = { size: e.product.sizeLabel, profit: profit };
@@ -684,9 +812,10 @@
       var zone = CONFIG.delivery.zones.filter(function (z) { return z.id === zoneId; })[0];
       if (!method || !zone) return;
 
-      var amounts = calculateAmounts(toCents(sample.price), 1, method, zone);
+      var sampleUnit = unitOffer(sample);
+      var amounts = calculateAmounts(sampleUnit.cents + toCents(scentFee()), 1, method, zone);
 
-      outSub.textContent = money(amounts.subtotalCents / 100);
+      outSub.textContent = money(sampleUnit.cents / 100) + (sampleUnit.cutCents > 0 ? ' (بدل ' + money(sample.price) + ')' : '');
       outDisc.textContent = amounts.discountCents > 0
         ? '− ' + money(amounts.discountCents / 100) + ' (' + method.discountPercent + '%)'
         : 'لا يوجد';
@@ -700,6 +829,10 @@
         note = 'داخل حماة مع شام كاش: خصم 10% وتوصيل مجاني — أفضل سعر متاح.';
       } else {
         note = 'الدفع عند الاستلام: بلا خصم، وتُضاف رسوم التوصيل. المبلغ يُدفع كاملًا للمندوب.';
+      }
+      if (sampleUnit.cutCents > 0) {
+        note = 'عرض «' + sampleUnit.slot.label + '»: ' + money(sample.price) + ' ← ' +
+          money(sampleUnit.cents / 100) + '. ' + note;
       }
       outNote.textContent = note;
     }
@@ -788,7 +921,8 @@
       card.appendChild(list);
 
       // مثال محسوب من نفس معادلة السلة
-      var unitCents = toCents(sample.price);
+      var priced = unitOffer(sample);
+      var unitCents = priced.cents + toCents(scentFee());
       var discountCents = Math.round(unitCents * (method.discountPercent || 0) / 100);
       var deliveryCents = toCents(deliveryFeeFor(method, activeZone()));
       var finalCents = unitCents - discountCents + deliveryCents;
@@ -796,7 +930,10 @@
       var example = document.createElement('p');
       example.className = 'pay-example';
       example.innerHTML = 'مثال: سيروم ' + sample.sizeLabel + ' بسعر ' +
-        money(sample.price) + ' ← تدفعين <strong>' + money(finalCents / 100) + '</strong>' +
+        (priced.cutCents > 0
+          ? '<s>' + money(sample.price) + '</s> ' + money(priced.cents / 100)
+          : money(sample.price)) +
+        ' ← تدفعين <strong>' + money(finalCents / 100) + '</strong>' +
         (isFreeDelivery(method, activeZone()) ? ' مع توصيل مجاني.' : ' شامل التوصيل.');
       card.appendChild(example);
 
@@ -972,13 +1109,17 @@
     head.appendChild(name);
     head.appendChild(size);
 
+    var priced = unitOffer(product);
+    var unitCents = priced.cents + toCents(scentFee());
+
     var unit = document.createElement('p');
     unit.className = 'cart-item-unit';
-    unit.textContent = 'سعر الوحدة: ' + money(product.price + scentFee()) + ' · مرجعي';
+    unit.textContent = 'سعر الوحدة: ' + money(unitCents / 100) + ' · مرجعي' +
+      (priced.cutCents > 0 ? ' · عرض «' + priced.slot.label + '» بدل ' + money(product.price) : '');
 
     var line = document.createElement('p');
     line.className = 'cart-item-line';
-    line.textContent = 'مجموع البند: ' + money((toCents(product.price + scentFee()) * qty) / 100);
+    line.textContent = 'مجموع البند: ' + money((unitCents * qty) / 100);
 
     var controls = document.createElement('div');
     controls.className = 'cart-item-controls';
@@ -1119,13 +1260,21 @@
     lines.push('');
 
     p.entries.forEach(function (entry) {
+      var priced = unitOffer(entry.product);
+      var unitCents = priced.cents + toCents(scentFee());
       lines.push('• ' + entry.product.sizeLabel + ' × ' + entry.qty +
-        ' — ' + money(entry.product.price + scentFee()) + ' للواحدة = ' +
-        money((toCents(entry.product.price + scentFee()) * entry.qty) / 100));
+        ' — ' + money(unitCents / 100) + ' للواحدة = ' +
+        money((unitCents * entry.qty) / 100) +
+        (priced.cutCents > 0 ? ' (بدل ' + money(entry.product.price) + ' — عرض «' + priced.slot.label + '»)' : ''));
     });
 
     lines.push('');
-    lines.push('قيمة المنتجات: ' + money(p.subtotalCents / 100));
+    lines.push('قيمة المنتجات: ' + money(p.listCents / 100));
+    if (p.offerCents > 0) {
+      p.appliedOffers.forEach(function (item) {
+        lines.push('خصم عرض «' + item.slot.label + '»: − ' + money(item.cents / 100));
+      });
+    }
 
     if (p.zone) {
       lines.push('منطقة التوصيل: ' + p.zone.label);
@@ -1653,6 +1802,9 @@
     el.discountRow = document.querySelector('[data-row-discount]');
     el.discountValue = document.querySelector('[data-cart-discount]');
     el.discountLabel = document.querySelector('[data-discount-label]');
+    el.offerRow = document.querySelector('[data-row-offer]');
+    el.offerValue = document.querySelector('[data-cart-offer]');
+    el.offerLabel = document.querySelector('[data-offer-label]');
     el.deliveryRow = document.querySelector('[data-row-delivery]');
     el.deliveryValue = document.querySelector('[data-cart-delivery]');
     el.totalNote = document.querySelector('[data-cart-total-note]');

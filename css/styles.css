@@ -1120,6 +1120,8 @@ bdi { unicode-bidi: isolate; }
 }
 .sum-discount dt,
 .sum-discount dd { color: var(--olive); font-weight: 700; }
+.sum-offer dt,
+.sum-offer dd { color: #8A5F2E; font-weight: 700; }
 .margin-note {
   margin: 6px 0 0;
   padding: 10px 12px;
@@ -2173,6 +2175,27 @@ details[id="returns"] {
   color: #8A5F2E;
   font-weight: 700;
   letter-spacing: 0.04em;
+}
+.size-option-price .size-option-was {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #8A7F70;
+  margin-inline-end: 0.2rem;
+}
+.size-option-flag--offer {
+  color: var(--olive, #4C5A3C);
+  background: #EFEDE2;
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.62rem;
+}
+.sr-only s,
+.size-option-price s,
+.pay-example s {
+  color: #8A7F70;
+  font-weight: 500;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
 }
 
 .btn:disabled, .btn:disabled:hover { cursor: not-allowed; background: #E5DED4; border-color: #CFC5B9; color: #41372D; }

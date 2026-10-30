@@ -73,7 +73,7 @@ def run(base: str) -> int:
         sizes = page.locator("#products .size-option-size").all_inner_texts()
         check("الأحجام 30/50/100 مل", [t.strip() for t in sizes] == ["30 مل", "50 مل", "100 مل"], str(sizes))
         prices = page.locator("#products .size-option-price").all_inner_texts()
-        check("الأسعار المعروضة $17 / $20.40 / $25.50", [t.strip() for t in prices] == ["$17", "$20.40", "$25.50"], str(prices))
+        check("الأسعار المعروضة $19 / $26 / $29", [t.strip() for t in prices] == ["$19", "$26", "$29"], str(prices))
         check("إزالة مقارنة تكلفة 10 مل", page.locator('[data-unit-comparison]').count() == 0)
         check("الرئيسية توفّر اختصارات العطر والمكونات والإرجاع",
               [x.get_attribute('href') for x in page.locator('.purchase-shortcuts a').all()] == ['#custom','#ingredients','#returns'])
@@ -167,9 +167,9 @@ def run(base: str) -> int:
             page.locator("#products .size-option").nth(SIZE_INDEX[pid]).click()
             page.wait_for_timeout(120)
             per_ml.append(page.locator("[data-unit-live]").inner_text().split(" ")[0])
-        check("سعر الملليلتر محسوب لكل حجم", per_ml == ["$0.57", "$0.41", "$0.26"], str(per_ml))
+        check("سعر الملليلتر محسوب لكل حجم", per_ml == ["$0.63", "$0.52", "$0.29"], str(per_ml))
         check("السعر الحاضر يتبع الحجم المختار ولا يبقى ثابتًا",
-              page.locator("[data-price-live]").inner_text().startswith("$25.50"),
+              page.locator("[data-price-live]").inner_text().startswith("$29"),
               page.locator("[data-price-live]").inner_text())
 
         add_size(page, "serum-50")
@@ -384,7 +384,7 @@ def run(base: str) -> int:
                 "الرسالة تحتوي 50 مل": "50 مل" in decoded,
                 "الرسالة تحتوي 100 مل": "100 مل" in decoded,
                 "الرسالة تحتوي الكميات (×)": "×" in decoded,
-                "الرسالة تحتوي أسعار الوحدات": "$17" in decoded and "$20.40" in decoded and "$25.50" in decoded,
+                "الرسالة تحتوي أسعار الوحدات": "$19" in decoded and "$26" in decoded and "$29" in decoded,
                 "الرسالة تحتوي المجموع المرجعي": "المجموع المرجعي" in decoded,
                 "الرسالة تحتوي قيمة المنتجات قبل الخصم": "قيمة المنتجات:" in decoded,
                 "الرسالة تذكر طريقة الدفع المختارة": "طريقة الدفع المطلوبة:" in decoded,
@@ -460,8 +460,8 @@ def run(base: str) -> int:
         op.wait_for_timeout(300)
         op.locator("[data-cart-open]").first.click()
         op.wait_for_timeout(350)
-        check("الحساب مع ?offer=cod: $25.50 + $2 = $27.50",
-              op.locator("[data-cart-total]").inner_text() == "$27.50",
+        check("الحساب مع ?offer=cod: $29 + $2 = $31",
+              op.locator("[data-cart-total]").inner_text() == "$31",
               op.locator("[data-cart-total]").inner_text())
         check("رابط مشاركة لكل طريقة دفع", op.locator(".pay-share").count() >= 0)  # خارج السلة
 
@@ -538,8 +538,8 @@ def run(base: str) -> int:
         check("شريط السلة يوضح أن المبلغ تقديري", "تقديري" in m.locator("[data-sticky-bar]").inner_text())
         check("الشريط يعرض عدد القطع", m.locator("[data-sticky-count]").inner_text() == "1",
               m.locator("[data-sticky-count]").inner_text())
-        check("الشريط يعرض الإجمالي المرجعي مع خصم شام كاش ($17 − 10% = $15.30)",
-              m.locator("[data-sticky-total]").inner_text() == "$15.30",
+        check("الشريط يعرض الإجمالي المرجعي مع خصم شام كاش ($19 − 10% = $17.10)",
+              m.locator("[data-sticky-total]").inner_text() == "$17.10",
               m.locator("[data-sticky-total]").inner_text())
         m.locator("[data-sticky-bar] button").click()
         m.wait_for_timeout(400)

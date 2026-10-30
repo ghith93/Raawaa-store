@@ -10,7 +10,7 @@ const order={ name:'تجربة', phone:'0991234567', address:'حماة', items:[
 const payload={order,idempotencyKey:key,challengeToken:'fake-token',consent:true};
 const request=(body=payload,extra={})=>new Request('https://edge.example/orders',{method:'POST',headers:{origin,'content-type':'application/json',...extra},body:JSON.stringify(body)});
 let calls=[];
-const deps={origin,config,repository:{async insertPending({order: saved}) {calls.push('saved'); assert.equal(saved.totalCents,1900); return {result:'created',reference:'RAWAA-TEST123'};}},notificationRunner:{async kick(){calls.push('notify');}},verifyChallenge:async()=>{calls.push('challenge');return true;},rateLimit:async()=>{calls.push('limit');return true;}};
+const deps={origin,config,repository:{async insertPending({order: saved}) {calls.push('saved'); assert.equal(saved.totalCents,2100); return {result:'created',reference:'RAWAA-TEST123'};}},notificationRunner:{async kick(){calls.push('notify');}},verifyChallenge:async()=>{calls.push('challenge');return true;},rateLimit:async()=>{calls.push('limit');return true;}};
 test('only saves consented, challenge-validated order and never trusts the client total',async()=>{
   calls=[]; const response=await createOrderHandler(deps)(request());
   assert.equal(response.status,200); assert.match(response.headers.get('cache-control'),/no-store/);
