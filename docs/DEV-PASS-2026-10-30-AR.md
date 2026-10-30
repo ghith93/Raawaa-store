@@ -413,3 +413,13 @@ CSS أو استهداف الظهور. لا تغيير مرئي أو سلوكي �
 - Dispatch مستقل لمراقبة uptime فشل بـ `403 Resource not accessible by integration`؛ لم تُوسّع صلاحيات GitHub، وفحص النشر الحي المدمج نجح.
 
 **الخلاصة:** PR #89 مدمج ومنشور ومتحقق منه على مستوى workflow وفحص HTTP الحي. لا يلزم تغيير أسعار أو إعادة نشر في هذه المتابعة.
+
+## 16) تحديث مسار النشر ونتيجته الحية — 2026-10-30
+
+- دُمج [PR #90](https://github.com/ghith93/Raawaa-store/pull/90) عند `2026-10-30T20:07:21Z`؛ commit الدمج `0ff1eb80d02942d5f6b2fcca558d44355f64f32c`.
+- التغيير محصور بسير العمل: `cloudflare/wrangler-action@v4.1.3` (runtime Node 24) و`runs-on: ubuntu-24.04`. لم يتغير كود الموقع أو الأسعار أو الرسوم.
+- نجحت فحوص ما بعد الدمج: Site checks [41120766186](https://github.com/ghith93/Raawaa-store/actions/runs/41120766186)، Code quality [41120766221](https://github.com/ghith93/Raawaa-store/actions/runs/41120766221)، وGraphify [41120766181](https://github.com/ghith93/Raawaa-store/actions/runs/41120766181).
+- نجح النشر الفعلي باستخدام الإجراء المحدّث في [41120766200](https://github.com/ghith93/Raawaa-store/actions/runs/41120766200): البناء، نشر Cloudflare، تشخيص الإعداد، والتحقق الحي من الرئيسية وصفحة المنتج كلها **نجحت**.
+- لا يعني نجاح النشر إثبات استلام رسالة WhatsApp أو وجود طلب، ولا يوجد اختبار مستقل على هاتف حقيقي.
+
+**الخلاصة الحالية:** PR #90 مدمج ومنشور، وتحذير runtime السابق عولج في مسار النشر؛ فحوص الموقع والنشر الحي نجحت. لا تغيير مالي أو تجاري.
