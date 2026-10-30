@@ -458,34 +458,45 @@ curl -s https://raawaa-store.pages.dev/sw.js | grep CACHE_VERSION
 
 ---
 
-## ٣) سرّ مجدول تنبيهات الطلبات — يُنشئه المالك
+## ٣) سرّ مجدول تنبيهات الطلبات — يُنشئه المالك من الآيفون
 
 الدالة `rawaa-outbox` منشورة وتنتظر هذا السرّ؛ بدونه ترفض كل استدعاء (503).
 أنشئ السرّ **بنفسك** ولا تمرّره في المحادثة ولا في المستودع — نفس قاعدة رمز البوت.
+كل شيء من الآيفون عبر صفحة الإعداد المؤقتة (توليد السرّ داخل هاتفك، ولا يُرسَل لأحد):
 
-**٣.١) توليد السرّ (مرة واحدة، على أي جهاز فيه Node)**
-
-```
-node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
-```
-
-الناتج 64 حرفًا من `A-Za-z0-9_-` — هذا هو السرّ. احفظه في مكان آمن عندك.
-
-**٣.٢) اسم السرّ في Supabase (Settings ← Edge Functions ← Secrets)**
+**٣.١) صفحة الإعداد (افتحها من سفاري على الآيفون)**
 
 ```
-RAWAA_OUTBOX_SCHEDULER_SECRET
+https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-header-probe
 ```
 
-ألصق القيمة المولّدة في الحقل المقابل للاسم أعلاه.
+من الصفحة: «ولِّد سرًّا جديدًا» ← «نسخ السرّ» ← ألصقه في المكانين التاليين.
 
-**٣.٣) اسم السرّ في GitHub (Settings ← Secrets and variables ← Actions ← New repository secret)**
+**٣.٢) اسم السرّ في Supabase (تبويب Manage ← Secrets ← إضافة)**
 
 ```
 RAWAA_OUTBOX_SCHEDULER_SECRET
 ```
 
-القيمة نفسها المولّدة. بهذا يعمل مجدول GitHub كل 5 دقائق تلقائيًا.
+الرابط المباشر من الصفحة نفسها، أو:
+
+```
+https://supabase.com/dashboard/project/oyoyozdugicmnkfhjovo/functions
+```
+
+**٣.٣) اسم السرّ في GitHub (New repository secret)**
+
+```
+RAWAA_OUTBOX_SCHEDULER_SECRET
+```
+
+الرابط المباشر من الصفحة نفسها، أو:
+
+```
+https://github.com/ghith93/Raawaa-store/settings/secrets/actions/new
+```
+
+القيمة واحدة: السرّ المولَّد على هاتفك. بهذا يعمل مجدول GitHub كل 5 دقائق تلقائيًا.
 
 **٣.٤) رابط الدالة (للمجدول الخارجي الاختياري مثل cron-job.org)**
 
@@ -494,19 +505,12 @@ https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-outbox
 ```
 
 الاستدعاء: طلب POST مع ترويسة `Authorization: Bearer <السرّ>` كل 5–15 دقيقة.
-المستجيب `{\"ok\":true}` عند النجاح. التأخير ليس فقدًا: التنبيهات تنتظر في الطابور.
+المستجيب `{"ok":true}` عند النجاح. التأخير ليس فقدًا: التنبيهات تنتظر في الطابور.
 
 ---
 
 ## ٤) بثبة تزوير هوية العميل — قبل تشغيل استقبال الطلبات
 
-الدالة المؤقتة `rawaa-header-probe` منشورة لعرض ما تراه من رؤوس الهوية.
-شغّل الأمر التالي (من حاسوب أو هاتف)، ثم اقرأ الناتج:
-
-```
-curl -sS -X POST -H "X-Forwarded-For: 8.8.8.8" -H "X-Real-IP: 8.8.8.8" -H "CF-Connecting-IP: 8.8.8.8" https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-header-probe
-```
-
-**كيف تقرأ النتيجة:** أي حقل ظهر فيه `8.8.8.8` فهو **قابل للتزوير** ويُمنع اعتماده.
-الآمن: أن تظهر عناوينك الحقيقية رغم الترويسات المزوّرة (خصوصًا `cf-connecting-ip`).
-أرسل لي النتيجة كما هي، ثم احذف الدالة المؤقتة — لا تبقى بعد البثبة.
+من الصفحة نفسها (الخطوة ٤ فيها): اضغط «ابدأ البثبة» — تُرسل ترويسات مزوّرة
+بقيمة `8.8.8.8` من متصفحك وتظهر النتيجة مع حكم آلي. اضغط «نسخ النتيجة»
+وأرسلها لي كما هي. بعدها تُحذف الدالة المؤقتة — لا تبقى بعد البثبة.
