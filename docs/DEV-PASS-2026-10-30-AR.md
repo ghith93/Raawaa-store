@@ -397,7 +397,8 @@ CSS أو استهداف الظهور. لا تغيير مرئي أو سلوكي �
 
 - بعد تثبيت العامل والسيطرة على الصفحة، يقطع اختبار Chromium الشبكة ثم ينتقل إلى `/?utm_campaign=offline-browser-probe`؛ يتحقق أن الصفحة الرئيسية المخزنة تظهر على مسار `/`.
 - يفتح `privacy.html` من الـprecache أثناء الانقطاع ويتحقق من عنوانها، ثم يفحص CacheStorage للتأكد من عدم حفظ عناوين تحمل query.
+- يطلب أربع صور كبيرة بصيغ AVIF وWebP وJPEG أثناء الانقطاع، ويتحقق بايتًا ببايت من أنها رجعت إلى صور fallback الصغيرة نفسها من CacheStorage.
 - استمر اختبار السلة ومجموعها دون اتصال. لا يتغير كود الموقع المنشور ولا الأسعار أو الرسوم.
 - محليًا: `npm run gates:offline` نجح (Node 40/40، `check-site` 485/485، ومراجع/أداء/ESLint/HTML validation ناجحة)، و`git diff --check` نظيف.
-- اجتاز CI الفعلي على Chromium وWebKit وبقية وظائف البوابة في التشغيل [41110852717](https://github.com/ghith93/Raawaa-store/actions/runs/41110852717).
-- طلب الدمج [#89](https://github.com/ghith93/Raawaa-store/pull/89) مفتوح؛ اختبار fallback للصور الكبيرة ما زال محاكاة Node، ولا يوجد تحقق منفصل على هاتف حقيقي. لا نشر لهذا التغيير.
+- اجتاز CI الفعلي على Chromium وWebKit وبقية وظائف البوابة في التشغيل [41115104488](https://github.com/ghith93/Raawaa-store/actions/runs/41115104488)؛ ونجح `ESLint + html-validate` في [41115104537](https://github.com/ghith93/Raawaa-store/actions/runs/41115104537).
+- طلب الدمج [#89](https://github.com/ghith93/Raawaa-store/pull/89) مفتوح؛ لا يوجد تحقق مستقل على هاتف حقيقي. لا نشر لهذا التغيير.
