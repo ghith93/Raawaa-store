@@ -448,7 +448,9 @@
     return {
       entries: entries,
       count: count,
-      listCents: listCents,
+      // «قيمة المنتجات» المعروضة = أسعار المنتجات المعلنة + إضافة العطر،
+      // كي تُقرأ المعادلة في السلة كما هي: القيمة − العرض − الخصم + التوصيل = المجموع.
+      listCents: listCents + scentTotalCents,
       offerCents: offerCents,
       appliedOffers: appliedOffers,
       subtotalCents: amounts.subtotalCents,
