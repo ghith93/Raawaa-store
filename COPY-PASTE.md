@@ -481,7 +481,7 @@ RAWAA_OUTBOX_SCHEDULER_SECRET
 الرابط المباشر من الصفحة نفسها، أو:
 
 ```
-https://supabase.com/dashboard/project/oyoyozdugicmnkfhjovo/functions
+https://supabase.com/dashboard/project/oyoyozdugicmnkfhjovo/functions/secrets
 ```
 
 **٣.٣) اسم السرّ في GitHub (New repository secret)**
