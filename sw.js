@@ -95,8 +95,9 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
-  // لوحة المالك يجب أن تبقى خارج الذاكرة والرجوع غير المتصل.
-  if (url.pathname === '/owner' || url.pathname.startsWith('/owner/')) return;
+  // اللوحة ومسارات API لا تُخزَّن أو تُعرض من الذاكرة، بما فيها مسارات الطلب المستقبلية.
+  if (url.pathname === '/owner' || url.pathname.startsWith('/owner/') ||
+      url.pathname === '/api' || url.pathname.startsWith('/api/')) return;
 
   // الصور والخطوط والأيقونات: من الذاكرة للعرض الفوري، **مع تحديث في الخلفية**
   // سابقًا كانت Cache-First بلا تحديث، فبقي الزائر يرى صورًا استُبدلت منذ أسابيع.
