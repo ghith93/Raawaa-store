@@ -1,11 +1,12 @@
 /** Local prototype. Requires a protected endpoint and UI before production. */
-export function createCustomerOrderClient({ endpoint, allowedOrigin, storage, fetchImpl = fetch, makeId = () => crypto.randomUUID() }) {
+export function createCustomerOrderClient({ endpoint, allowedOrigin, storage, fetchImpl = fetch, makeId = () => crypto.randomUUID(), requestTimeoutMs = 15000 }) {
   let parsed, origin;
   try {
     parsed = new URL(endpoint); origin = new URL(allowedOrigin);
     if (origin.protocol !== 'https:' || origin.origin !== allowedOrigin || parsed.protocol !== 'https:' ||
         parsed.origin !== origin.origin || parsed.username || parsed.password || parsed.search || parsed.hash ||
         typeof fetchImpl !== 'function' || typeof makeId !== 'function' ||
+        !Number.isInteger(requestTimeoutMs) || requestTimeoutMs < 1 || requestTimeoutMs > 30000 ||
         typeof storage?.getItem !== 'function' || typeof storage?.setItem !== 'function' || typeof storage?.removeItem !== 'function') throw Error();
   } catch { throw new Error('INVALID_CONFIGURATION'); }
   const keyPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -46,7 +47,7 @@ export function createCustomerOrderClient({ endpoint, allowedOrigin, storage, fe
     persist({key:intent.key,phase:'pending'});
     const current=intent;current.usedChallenges.add(challengeToken);inFlight=true;
     try {
-      const response=await fetchImpl(parsed.href,{method:'POST',cache:'no-store',credentials:'omit',redirect:'error',
+      const response=await fetchImpl(parsed.href,{method:'POST',cache:'no-store',credentials:'omit',redirect:'error',signal:AbortSignal.timeout(requestTimeoutMs),
         headers:{'content-type':'application/json'},body:JSON.stringify({order:current.order,idempotencyKey:current.key,challengeToken,consent:true})});
       if(response.status===200){
         const data=await response.json();
