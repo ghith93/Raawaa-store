@@ -283,3 +283,103 @@ test('عرض العبوة يظهر في صفحة السيروم بالرقم ن�
   assert.equal(api.totals().amount, 41.4);
   assert.equal(w.document.querySelector('[data-cart-offer]').textContent, '− $6');
 });
+
+test('تعذّر المشاركة الأصلية ينسخ رابط السلة أو يعرضه يدويًا', async () => {
+  const w = await boot(NO_OFFER);
+  w.__RAWAA_TEST__.addToCart('serum-50');
+  const doc = w.document;
+  const button = doc.querySelector('[data-cart-share]');
+  const url = button.getAttribute('data-share-url');
+  const toastRegion = doc.querySelector('[data-toast-region]');
+  toastRegion.replaceChildren();
+  let copied = '';
+
+  Object.defineProperty(w.navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: async (value) => { copied = value; } }
+  });
+  Object.defineProperty(w.navigator, 'share', {
+    configurable: true,
+    value: () => Promise.reject(new Error('share unavailable'))
+  });
+
+  button.click();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(copied, url);
+  assert.match(toastRegion.textContent, /تم نسخ رابط السلة/);
+});
+
+test('تعذّر نسخ رابط المشاركة يعرض النص يدويًا لتستطيع الزائرة نسخه', async () => {
+  const w = await boot(NO_OFFER);
+  w.__RAWAA_TEST__.addToCart('serum-30');
+  const button = w.document.querySelector('[data-cart-share]');
+  const url = button.getAttribute('data-share-url');
+  const toastRegion = w.document.querySelector('[data-toast-region]');
+  toastRegion.replaceChildren();
+  Object.defineProperty(w.navigator, 'share', {
+    configurable: true,
+    value: () => Promise.reject(new Error('share unavailable'))
+  });
+  Object.defineProperty(w.navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: () => Promise.reject(new Error('clipboard denied')) }
+  });
+
+  button.click();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.match(toastRegion.textContent, /تعذّر النسخ؛ انسخي الرابط يدويًا/);
+  assert.ok(toastRegion.textContent.includes(url));
+});
+
+test('إلغاء المشاركة من الزائرة لا يعرض تنبيه خطأ أو رابطًا غير مطلوب', async () => {
+  const w = await boot(NO_OFFER);
+  w.__RAWAA_TEST__.addToCart('serum-50');
+  const toastRegion = w.document.querySelector('[data-toast-region]');
+  toastRegion.replaceChildren();
+  const cancel = new Error('share cancelled');
+  cancel.name = 'AbortError';
+  Object.defineProperty(w.navigator, 'share', {
+    configurable: true,
+    value: () => Promise.reject(cancel)
+  });
+
+  w.document.querySelector('[data-cart-share]').click();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  assert.equal(toastRegion.textContent, '');
+});
+
+test('عند معرفة انقطاع الإنترنت لا يفتح واتساب ولا يفرغ السلة', async () => {
+  const w = await boot(NO_OFFER);
+  const api = w.__RAWAA_TEST__;
+  api.addToCart('serum-50');
+  const doc = w.document;
+  const toastRegion = doc.querySelector('[data-toast-region]');
+  toastRegion.replaceChildren();
+  let openCalls = 0;
+  w.open = () => { openCalls += 1; return null; };
+  Object.defineProperty(w.navigator, 'onLine', { configurable: true, value: false });
+
+  doc.querySelector('[data-cart-checkout]').click();
+  assert.equal(openCalls, 0);
+  assert.equal(api.totals().count, 1);
+  assert.equal(doc.querySelector('[data-cart-fallback]').hidden, false);
+  assert.match(doc.querySelector('[data-cart-fallback-link]').href, /^https:\/\/wa\.me\//);
+  assert.match(toastRegion.textContent, /لم يتم إرسال شيء/);
+});
+
+test('الاتصال متاح: الرسالة توضح أن فتح الرابط لا يرسل الطلب تلقائيًا', async () => {
+  const w = await boot(NO_OFFER);
+  const api = w.__RAWAA_TEST__;
+  api.addToCart('serum-30');
+  const toastRegion = w.document.querySelector('[data-toast-region]');
+  toastRegion.replaceChildren();
+  let openedUrl = '';
+  w.open = (url) => { openedUrl = url; return { closed: false, opener: {} }; };
+  Object.defineProperty(w.navigator, 'onLine', { configurable: true, value: true });
+
+  w.document.querySelector('[data-cart-checkout]').click();
+  assert.match(openedUrl, /^https:\/\/wa\.me\//);
+  assert.equal(api.totals().count, 1);
+  assert.match(toastRegion.textContent, /أرسلي الرسالة بنفسك/);
+  assert.match(toastRegion.textContent, /لا يُعد الطلب مؤكدًا/);
+});
