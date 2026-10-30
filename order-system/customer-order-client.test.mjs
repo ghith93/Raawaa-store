@@ -54,3 +54,28 @@ test('rejected retries never erase an earlier uncertain save, including after re
     assert.equal(resumed.state(),'uncertain');assert.throws(()=>resumed.reset(),/SAVE_UNCERTAIN/);
   }
 });
+
+test('a timed-out request remains uncertain and keeps the original key after reload',async()=>{
+  const storage=memoryStorage(),calls=[];
+  const stalled=(_url,init)=>new Promise((_resolve,reject)=>{
+    calls.push(JSON.parse(init.body));
+    init.signal.addEventListener('abort',()=>reject(new Error('timed out')),{once:true});
+  });
+  const client=createCustomerOrderClient({...base,storage,fetchImpl:stalled,requestTimeoutMs:10});
+  client.begin({name:'synthetic'});
+  // A ref'ed timer keeps Node alive while AbortSignal.timeout's unref'ed timer runs.
+  const keepAlive=setTimeout(()=>{},1000);
+  try {assert.deepEqual(await client.submit({challengeToken:'one',consent:true}),{status:'uncertain'});} finally {clearTimeout(keepAlive);}
+  assert.equal(client.state(),'uncertain');assert.throws(()=>client.reset(),/SAVE_UNCERTAIN/);
+  const resumed=createCustomerOrderClient({...base,storage,fetchImpl:async(_url,init)=>{
+    calls.push(JSON.parse(init.body));return {status:200,json:async()=>({reference:'RAWAA-TEST123',status:'pending_review'})};
+  }});
+  assert.equal(resumed.state(),'uncertain');resumed.begin({name:'synthetic'});
+  assert.equal((await resumed.submit({challengeToken:'fresh',consent:true})).status,'saved');
+  assert.equal(calls[0].idempotencyKey,calls[1].idempotencyKey);
+});
+
+test('timeout configuration is finite and bounded',()=>{
+  for(const requestTimeoutMs of [0,-1,30001,Infinity,NaN,1.5,'10'])
+    assert.throws(()=>createCustomerOrderClient({...base,requestTimeoutMs}),/INVALID_CONFIGURATION/);
+});
