@@ -21,7 +21,7 @@ concurrency:
 jobs:
   verify:
     name: فحص الملفات و JavaScript
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
       - name: Checkout
@@ -65,7 +65,7 @@ jobs:
 
   dependency-security:
     name: تدقيق أمان التبعيات المقفلة
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
@@ -79,7 +79,7 @@ jobs:
 
   accessibility:
     name: تدقيق الإتاحة (axe-core · WCAG 2.1 AA)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -116,7 +116,7 @@ jobs:
 
       - name: رفع تقرير الإتاحة
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: a11y-report
           path: docs/a11y-report.json
@@ -124,7 +124,7 @@ jobs:
 
   browser-chromium:
     name: اختبار Chromium والسلة
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -149,7 +149,7 @@ jobs:
 
   browser-webkit:
     name: اختبار WebKit على HTTPS
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -177,7 +177,7 @@ jobs:
     name: اختبار المتصفح الوظيفي
     if: always()
     needs: [browser-chromium, browser-webkit]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 3
     steps:
       - name: التأكد من نجاح مساري المتصفح

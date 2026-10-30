@@ -15,7 +15,7 @@ permissions:
 jobs:
   uptime:
     name: فحص الموقع المنشور
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -78,19 +78,19 @@ jobs:
 
   assets:
     name: كل الأصول تُفتح على الموقع الحيّ
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
       - name: تدقيق الأصول
         run: node scripts/asset-audit.mjs
 
   content-check:
     name: تحقق من المحتوى الحيّ (أسعار + خط)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v5
@@ -119,7 +119,7 @@ jobs:
 
   quality:
     name: أبواب الجودة (axe + Lighthouse)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
@@ -148,7 +148,7 @@ jobs:
         run: node scripts/perf-budget.mjs
       - name: حفظ قراءات الأداء حتى عند الإخفاق
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: lighthouse-live
           path: |

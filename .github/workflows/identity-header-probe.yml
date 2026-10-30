@@ -13,7 +13,7 @@ concurrency:
 jobs:
   probe:
     name: Probe gateway header overwrites
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
       - name: Test forged headers without logging IP values
