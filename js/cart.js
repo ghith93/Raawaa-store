@@ -1477,6 +1477,13 @@
     var url = waLink(buildOrderMessage());
     var opened = null;
 
+    // في وضع عدم الاتصال لا نحاول فتح واتساب؛ نبقي الطلب محليًا ونبيّن أن شيئًا لم يُرسل.
+    if (navigator.onLine === false) {
+      showFallback(url);
+      announce('يبدو أن الاتصال غير متاح. لم يتم إرسال شيء؛ ستبقى السلة على هذه الصفحة. استخدمي رابط واتساب بعد عودة الاتصال.');
+      return;
+    }
+
     try {
       opened = window.open(url, '_blank', 'noopener,noreferrer');
     } catch {
@@ -1490,7 +1497,7 @@
       announce('إن لم تُفتح محادثة واتساب، استخدمي الرابط البديل الظاهر في السلة.');
     } else {
       hideFallback();
-      announce('فُتحت محادثة واتساب في نافذة جديدة. الطلب لا يُعد مؤكدًا قبل ردّنا عليك.');
+      announce('فُتح رابط واتساب في نافذة جديدة. تحققي من المحادثة وأرسلي الرسالة بنفسك؛ لا يُعد الطلب مؤكدًا قبل ردّنا عليك.');
       try { opened.opener = null; } catch { /* تجاهل: لا شيء نفعله بالخطأ */ }
     }
   }
@@ -1508,26 +1515,41 @@
     if (el.copyStatus) el.copyStatus.textContent = '';
   }
 
-  /** مشاركة السلة: Web Share API على الآيفون، وإلا نسخ الرابط. */
+  /** نسخ رابط السلة عند غياب المشاركة الأصلية أو تعذّرها. */
+  function copyShareUrl(url) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        Promise.resolve(navigator.clipboard.writeText(url)).then(function () {
+          announce('تم نسخ رابط السلة.');
+        }, function () {
+          announce('تعذّر النسخ؛ انسخي الرابط يدويًا: ' + url);
+        });
+        return;
+      } catch { /* نعرض الرابط يدويًا عند فشل الحافظة المتزامن أيضًا */ }
+    }
+    announce('انسخي الرابط يدويًا: ' + url);
+  }
+
+  /** مشاركة السلة: Web Share API، مع رجوع للحافظة عند فشلها لا عند إلغائها. */
   function shareCart(button) {
     var url = button.getAttribute('data-share-url');
     if (!url) return;
     var text = 'أحجام وكميات من رواء — تحقّقي من المنطقة والدفع والخيارات عند فتح الرابط:';
 
     if (navigator.share) {
-      navigator.share({ title: 'سلة رواء', text: text, url: url })
-        .catch(function () { /* أُلغيت المشاركة — ليس خطأ */ });
+      try {
+        Promise.resolve(navigator.share({ title: 'سلة رواء', text: text, url: url }))
+          .catch(function (error) {
+            // الإلغاء فعل مقصود؛ أما فشل المشاركة التقني فيحتاج مسارًا بديلًا.
+            if (error && error.name === 'AbortError') return;
+            copyShareUrl(url);
+          });
+      } catch {
+        copyShareUrl(url);
+      }
       return;
     }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(function () {
-        announce('تم نسخ رابط السلة.');
-      }, function () {
-        announce('انسخي الرابط يدويًا: ' + url);
-      });
-      return;
-    }
-    announce('انسخي الرابط يدويًا: ' + url);
+    copyShareUrl(url);
   }
 
   function copyNumber(button) {
