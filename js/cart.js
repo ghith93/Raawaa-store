@@ -317,7 +317,7 @@
     var unitNode = document.querySelector('[data-unit-live]');
     if (unitNode && product.sizeMl && product.price) {
       var per = effectivePrice / product.sizeMl;
-      unitNode.innerHTML = '<bdi>' + CONFIG.currency.symbol + (per >= 0.1 ? per.toFixed(2) : per.toFixed(3)) + '</bdi> تقريبًا لكل مل قبل الخصم والتوصيل.';
+      unitNode.innerHTML = '<bdi>' + CONFIG.currency.symbol + (per >= 0.1 ? per.toFixed(2) : per.toFixed(3)) + '</bdi> تقريبًا لكل مل، قبل خصم الدفع والشحن.';
     }
 
     // صورة البطاقة تتبع الحجم المختار — ترى الزائنة العبوة التي تختارها فعلًا
@@ -2024,7 +2024,7 @@
     // ظهور هادئ (مع احترام تقليل الحركة)
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var revealTargets = Array.prototype.slice.call(
-      document.querySelectorAll('.section-head, .product-card, .story-figure, .story-copy, .steps li, .order-cta-inner')
+      document.querySelectorAll('.section-head, .story-figure, .story-copy, .steps li, .order-cta-inner')
     );
 
     if (!reduce && 'IntersectionObserver' in window && revealTargets.length) {

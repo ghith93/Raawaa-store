@@ -74,6 +74,8 @@ def run(base: str) -> int:
         check("الأحجام 30/50/100 مل", [t.strip() for t in sizes] == ["30 مل", "50 مل", "100 مل"], str(sizes))
         prices = page.locator("#products .size-option-price").all_inner_texts()
         check("الأسعار المعروضة $19 / $26 / $29", [t.strip() for t in prices] == ["$19", "$26", "$29"], str(prices))
+        check("سعر الوحدة ظاهر أسفل محدد الحجم ويتبع الاختيار",
+              page.locator('[data-unit-live]').is_visible() and '$0.52' in page.locator('[data-unit-live]').inner_text())
         check("إزالة مقارنة تكلفة 10 مل", page.locator('[data-unit-comparison]').count() == 0)
         check("الرئيسية توفّر اختصارات العطر والمكونات والإرجاع",
               [x.get_attribute('href') for x in page.locator('.purchase-shortcuts a').all()] == ['#custom','#ingredients','#returns'])

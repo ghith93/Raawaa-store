@@ -466,38 +466,6 @@ bdi { unicode-bidi: isolate; }
 }
 .notice-quiet { background: transparent; border-inline-start-color: var(--sand-deep); }
 
-.product-card {
-  display: flex;
-  flex-direction: column;
-  background: var(--white);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
-  overflow: hidden;
-  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
-}
-.product-card:hover {
-  border-color: var(--sand-deep);
-  box-shadow: var(--shadow-soft);
-}
-.product-media img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  object-position: center;
-}
-/* يدفع زر الإضافة إلى أسفل البطاقة فتتساوى البطاقات الثلاث */
-.product-body > .btn { margin-top: auto; }
-/* الاسم يأخذ السطر كاملًا إن ضاقت المساحة، فلا ينكسر بشكل عشوائي */
-.product-top .product-name { flex: 1 1 100%; }
-.product-name {
-  font-family: var(--font-display);
-  font-size: 1.22rem;
-  margin: 0;
-  color: var(--ink);
-}
-
-.product-card .btn { margin-top: auto; }
 
 /* ---------- قصة العلامة ---------- */
 .story-grid { display: grid; gap: var(--space-6); align-items: center; }
@@ -1255,8 +1223,6 @@ bdi { unicode-bidi: isolate; }
 /* ---------- شاشات متوسطة ---------- */
 @media (min-width: 600px) {
   :root { --gutter: 32px; }
-  .product-grid { grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
-  .product-body { padding: var(--space-4) var(--space-3) var(--space-4); }
   .steps { grid-template-columns: repeat(2, 1fr); gap: var(--space-5) var(--space-5); }
   .footer-grid { grid-template-columns: 1.2fr 1fr 1.2fr; }
 }
@@ -1294,8 +1260,6 @@ bdi { unicode-bidi: isolate; }
   .hero-figure figcaption { text-align: start; margin-top: 0.6rem; }
 
   .section { padding: var(--space-9) 0; }
-  .product-grid { gap: var(--space-5); }
-  .product-body { padding: var(--space-5) var(--space-5) var(--space-5); }
 
   .story-grid { grid-template-columns: 1fr 1fr; gap: var(--space-8); }
   .design-grid { grid-template-columns: 1.35fr 1fr; gap: var(--space-7); align-items: start; }
@@ -1696,14 +1660,6 @@ section.section {
   .hero-figure img { aspect-ratio: 2 / 1; }
 }
 
-/* ٥) بطاقات المنتجات: كانت 169×225 مع cover على صورة مربّعة = قصّ 25% من العرض
-   بلا سبب. الإصلاح: مربّعة 1:1 — الصورة تُرى كاملة. */
-.product-card .card-media img,
-.product-card img {
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-}
-
 /* ٦) ارتفاع سطر مريح للعربية: 1.6 كحد أدنى للنص الطويل */
 p, li, .hero-lead, figcaption {
   line-height: 1.7;
@@ -1796,7 +1752,6 @@ p a[href^="https://wa.me"] {
 
 /* حركة واحدة فقط، قصيرة، وتُلغى لمن يطلب تقليل الحركة */
 @media (prefers-reduced-motion: no-preference) {
-  .product-card,
   .price-strip li {
     transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
                 box-shadow 160ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -2168,6 +2123,13 @@ details[id="returns"] {
 }
 .size-option-size { font-size: 0.78rem; color: var(--ink-soft, #4A443C); }
 .size-option-price { font-size: 1rem; font-weight: 700; }
+.unit-price-live {
+  margin: .35rem 0 0;
+  color: var(--ink-soft, #4A443C);
+  font-size: .75rem;
+  line-height: 1.45;
+}
+.unit-price-live bdi { color: var(--ink, #2E2A26); font-weight: 700; }
 .size-option-flag {
   font-size: 0.68rem;
   line-height: 1.35;

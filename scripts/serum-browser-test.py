@@ -90,6 +90,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             add_box = page.locator('[data-add-current]').bounding_box()
             check("زر الاختيار ظاهر في الشاشة الأولى", bool(add_box and add_box['y'] >= 0 and add_box['y'] + add_box['height'] <= height), str(add_box))
             check("الأحجام والأسعار من الإعدادات", page.locator('#products .size-option-size').all_inner_texts() == ['30 مل','50 مل','100 مل'] and page.locator('#products .size-option-price').all_inner_texts() == ['$19','$26','$29'])
+            check("سعر الوحدة ظاهر أسفل محدد الحجم للحجم الافتراضي", page.locator('[data-unit-live]').is_visible() and '$0.52' in page.locator('[data-unit-live]').inner_text())
             check("شارة 50 مل مطابقة لتوجيه المالك", page.locator('[data-size-for="serum-50"] .size-option-flag').inner_text() == 'الأنسب للاستعمال اليومي')
             check("إزالة مقارنة تكلفة 10 مل", page.locator('[data-unit-comparison]').count() == 0)
             quick = page.locator('.purchase-shortcuts a')
@@ -146,6 +147,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                   page.locator('[data-serum-view="bottle"]').is_visible() and
                   page.locator('[data-serum-control="bottle"]:visible').get_attribute('aria-pressed') == 'true')
             check("السعر المختار يُعلن لقارئ الشاشة وتتبعه الصورة", '$29' in page.locator('[data-price-live]').inner_text() and '100 مل' in (page.locator('[data-size-img]').get_attribute('alt') or ''))
+            check("سعر الوحدة المرئي يتبع حجم 100 مل", page.locator('[data-unit-live]').is_visible() and '$0.29' in page.locator('[data-unit-live]').inner_text())
             check("تبديل الحجم يحدّث ملفات الصور الجديدة", 'size-100-v6-' in (page.locator('[data-size-img]').get_attribute('src') or '') and 'size-100-v6-' in (page.locator('[data-size-avif]').get_attribute('srcset') or ''))
             selected_msg = parse_qs(urlparse(page.locator('[data-wa-selected]').get_attribute('href') or '').query).get('text', [''])[0]
             check("استفسار واتساب يتبع 100 مل دون تكرار مصدر الحملة",
@@ -925,15 +927,16 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
         page.locator('[data-size-for="serum-30"]').click()
         fake_msg = parse_qs(urlparse(page.locator('[data-wa-selected]').get_attribute('href') or '').query).get('text', [''])[0]
-        check("تغيير سعر اختباري في الذاكرة يحدّث المقارنة والاستفسار من الإعدادات",
+        check("تغيير سعر اختباري في الذاكرة يحدّث سعر الوحدة والاختيار والاستفسار من الإعدادات",
               page.locator('[data-unit-comparison]').count() == 0 and
+              '$0.37' in page.locator('[data-unit-live]').inner_text() and
               '30 مل' in fake_msg and '$11' in fake_msg and page.locator('[data-size-for="serum-30"] .size-option-price').inner_text() == '$11')
         ctx.close()
 
         # لا JavaScript: أسعار حقيقية وزر واتساب يعمل، وزر السلة معطّل بدل وهم وظيفي.
         ctx = browser.new_context(java_script_enabled=False, ignore_https_errors=ignore_https, viewport={"width":390,"height":844})
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
-        check("بدون JavaScript: الأسعار وواتساب ظاهرة وزر السلة معطّل", all(s in page.locator('#products').inner_text() for s in ['$19','$26','$29']) and page.locator('[data-add-current]').is_disabled() and page.locator('[data-wa-direct]').first.is_visible())
+        check("بدون JavaScript: الأسعار وسعر الوحدة وواتساب ظاهرة وزر السلة معطّل", all(s in page.locator('#products').inner_text() for s in ['$19','$26','$29']) and page.locator('[data-unit-live]').is_visible() and '$0.52' in page.locator('[data-unit-live]').inner_text() and page.locator('[data-add-current]').is_disabled() and page.locator('[data-wa-direct]').first.is_visible())
         check("دون JavaScript: مقارنة الأحجام كاملة ورابط التخصيص بديل مباشر",
               page.locator('[data-unit-comparison]').count() == 0 and
               page.locator('[data-wa-context]').is_visible() and 'قد تتضمن' in page.locator('[data-wa-context]').inner_text() and

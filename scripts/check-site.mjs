@@ -189,6 +189,15 @@ async function checkNoScatteredPrices() {
   for (const m of cfgSrc.matchAll(/fee:\s*(\d+(?:\.\d+)?)/g)) {
     allowedNumbers.add(m[1]);
   }
+  // سعر المل الظاهر بديل HTML دون JavaScript مشتق آليًا من السعر والحجم في config.js.
+  for (const block of cfgSrc.matchAll(/\{\s*id:\s*'serum-[^']+'([\s\S]*?)(?=\n {6}\},)/g)) {
+    const sizeMl = Number(block[1].match(/sizeMl:\s*(\d+)/)?.[1]);
+    const price = Number(block[1].match(/price:\s*(\d+(?:\.\d+)?)/)?.[1]);
+    if (sizeMl > 0 && price > 0) {
+      const perMl = price / sizeMl;
+      allowedNumbers.add(perMl.toFixed(perMl >= 0.1 ? 2 : 3));
+    }
+  }
 
   const pricePatterns = [/\$\s*(\d+(?:\.\d+)?)\b/, /\b(\d+(?:\.\d+)?)\s*\$/, /\b(\d+(?:\.\d+)?)\s*(?:دولار|USD)/i];
   const offenders = [];
@@ -259,9 +268,23 @@ async function checkHtmlHooks() {
     if (html.includes(hook)) pass(`${label} (${hook})`);
     else fail(`مفقود في index.html: ${hook} — ${label}`);
   }
+  for (const file of ['index.html', 'serum.html']) {
+    const page = await read(file);
+    const visibleUnitPrice = /<p class="unit-price-live"[^>]*data-unit-live[^>]*>/.test(page);
+    if (visibleUnitPrice) pass(`${file}: سعر الوحدة ظاهر في HTML`);
+    else fail(`${file}: سطر سعر الوحدة المرئي مفقود`);
+  }
 
   // العناصر المطلوبة في ملف cart.js يجب أن تكون موجودة في HTML
   const cart = await read('js/cart.js');
+  const currentStorePages = `${await read('index.html')}\n${await read('serum.html')}`;
+  const staleProductCardMarkup = /class=["'][^"']*\bproduct-card\b/.test(currentStorePages);
+  const staleProductCardReveal = /querySelectorAll\(['"][^'"]*\.product-card/.test(cart);
+  const staleProductCardStyles = /\.product-(?:card|grid|media|body|top|name)\b/.test(await read('css/styles.css'));
+  if (!staleProductCardMarkup && !staleProductCardReveal && !staleProductCardStyles) {
+    pass('لا توجد بقايا بطاقات المنتج القديمة في HTML أو CSS أو أهداف الظهور');
+  } else fail('شبكة بطاقات المنتج القديمة عادت إلى المسار النشط');
+
   const queried = [...cart.matchAll(/querySelector(?:All)?\('([^']+)'\)/g)].map((m) => m[1]);
   const ids = [...cart.matchAll(/getElementById\('([^']+)'\)/g)].map((m) => m[1]);
   for (const id of ids) {
