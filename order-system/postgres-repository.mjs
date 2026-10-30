@@ -39,7 +39,8 @@ export function createPostgresRepository(db) {
         }
         const existing = await tx.query('select reference, request_hash from rawaa_store.orders where idempotency_key = $1', [idempotencyKey]);
         // Reusing a key for a different request is a conflict, never another success.
-        if (existing.rows.length !== 1 || existing.rows[0].request_hash !== hash) throw new Error('IDEMPOTENCY_CONFLICT');
+        if (existing.rows.length !== 1) throw new Error('IDEMPOTENCY_LOOKUP_FAILED');
+        if (existing.rows[0].request_hash !== hash) return { result: 'conflict' };
         return { reference: existing.rows[0].reference, result: 'existing' };
       });
     }

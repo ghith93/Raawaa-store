@@ -21,7 +21,7 @@ assert.equal(second.reference, first.reference);
 const priceChanged = await repository.insertPending({ idempotencyKey, order: { ...order, totalCents: 1000 } });
 assert.equal(priceChanged.reference, first.reference);
 assert.equal(priceChanged.result, 'existing');
-await assert.rejects(repository.insertPending({ idempotencyKey, order: { ...order, address: 'Different' } }), /IDEMPOTENCY_CONFLICT/);
+assert.deepEqual(await repository.insertPending({ idempotencyKey, order: { ...order, address: 'Different' } }), {result:'conflict'});
 assert.equal((await db.query('select count(*)::int as n from rawaa_store.orders')).rows[0].n, 1);
 assert.equal((await db.query('select count(*)::int as n from rawaa_store.notification_outbox')).rows[0].n, 1);
 // Full local orchestration against the private schema, with a mock notification failure.

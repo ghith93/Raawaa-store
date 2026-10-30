@@ -27,3 +27,9 @@ test('a broken widget reset cannot mask a confirmed save',async()=>{
  const flow=createCheckoutFlow({client:{begin(){},submit:async()=>({status:'saved',reference:'RAWAA-TEST123'}),reset(){},state(){return 'complete';}},challenge:{take:()=> 'token',reset:()=>{throw Error('widget failed');}}});
  flow.begin({});assert.deepEqual(await flow.submit(true),{status:'saved',reference:'RAWAA-TEST123'});
 });
+
+test('flow forwards a permitted correction without resetting the existing intent',()=>{
+ let revision;const flow=createCheckoutFlow({client:{begin(){},submit:async()=>({status:'uncertain'}),revise(order){revision=order;},reset(){throw Error('must not reset');},state(){return 'uncertain';}},challenge:{take:()=>null,reset(){}}});
+ assert.throws(()=>flow.revise({name:'x'}),/REVISION_NOT_ALLOWED/);
+ flow.begin({name:'different'});flow.revise({name:'original'});assert.deepEqual(revision,{name:'original'});assert.equal(flow.state(),'uncertain');
+});
