@@ -14,13 +14,12 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'v1793373736';
+const CACHE_VERSION = 'v1793383788';
 // استبدال الذاكرة القديمة يمسح مفاتيحها التي ربما احتوت استعلامات روابط.
 const RUNTIME = 'rawaa-runtime-v7';
 
 /** الأصول التي يجب أن تعمل بلا إنترنت */
 const CORE = [
-  './',
   './index.html',
   './serum',
   './privacy.html',
@@ -44,22 +43,16 @@ const CORE = [
   './assets/fonts/plexar-700.subset.woff2',
   './assets/fonts/plexar-bold-latin.subset.woff2',
   './assets/fonts/plexar-latin.subset.woff2',
-  // الهوية البصرية (الجيل الثاني)
-  './assets/brand/logo-mark-v2.svg',
-  './assets/brand/logo-primary-v2.svg',
-  // الأصول المستخدمة حاليًا في الصفحة الرئيسية وصفحة المنتج
+  // الصور الصغيرة تكفي للعمل دون اتصال؛ الطلبات الأكبر ترجع إليها عند انقطاع الشبكة.
   './assets/img/products/trio-v6-480.avif',
-  './assets/img/products/trio-v6-720.avif',
   './assets/img/products/trio-v6-480.webp',
   './assets/img/products/trio-v6-480.jpg',
   './assets/img/products/size-30-v6-480.avif',
   './assets/img/products/size-30-v6-480.webp',
   './assets/img/products/size-30-v6-480.jpg',
   './assets/img/products/size-50-v6-480.avif',
-  './assets/img/products/size-50-v6-720.avif',
   './assets/img/products/size-50-v6-480.webp',
   './assets/img/products/size-50-v6-480.jpg',
-  './assets/img/products/size-50-v6-720.jpg',
   './assets/img/products/size-100-v6-480.avif',
   './assets/img/products/size-100-v6-480.webp',
   './assets/img/products/size-100-v6-480.jpg',
@@ -119,8 +112,8 @@ self.addEventListener('fetch', (event) => {
               if (visual) {
                 const kind = visual[1].toLowerCase();
                 const ext = visual[2].toLowerCase();
-                // الروتين و50 مل: نسخة JPG المحفوظة بحجم 720، وبقية المشاهد 480.
-                const width = ext === 'jpg' && (kind === 'ritual-v5' || kind === 'size-50-v6') ? '720' : '480';
+                // نسخة JPG الوحيدة لمشهد الروتين 720؛ بقية الصور لها نسخة 480 أصغر.
+                const width = ext === 'jpg' && kind === 'ritual-v5' ? '720' : '480';
                 return caches.match('./assets/img/products/' + kind + '-' + width + '.' + ext);
               }
               return hit;

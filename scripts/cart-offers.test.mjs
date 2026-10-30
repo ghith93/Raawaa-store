@@ -63,6 +63,13 @@ test('بلا عروض: الأسعار كما هي 19 / 26 / 29', async () => {
   const w = await boot(NO_OFFER);
   const shown = [...w.document.querySelectorAll('#products .size-option-price')].map((n) => n.textContent.trim());
   assert.deepEqual(shown, ['$19', '$26', '$29']);
+  const unitNode = w.document.querySelector('[data-unit-live]');
+  assert.ok(unitNode && !unitNode.classList.contains('sr-only'), 'سعر الوحدة ليس مخفيًا بصريًا');
+  assert.match(unitNode.textContent, /\$0\.52/);
+  w.document.querySelector('[data-size-for="serum-30"] input').click();
+  assert.match(unitNode.textContent, /\$0\.63/, '30 مل = 19 ÷ 30');
+  w.document.querySelector('[data-size-for="serum-100"] input').click();
+  assert.match(unitNode.textContent, /\$0\.29/, '100 مل = 29 ÷ 100');
 
   const api = w.__RAWAA_TEST__;
   api.addToCart('serum-50');
@@ -84,6 +91,7 @@ test('عرض 10% على 50 مل يظهر قبل/بعد ويُحتسب في ال�
   assert.ok(priceNode.querySelector('s'), 'السعر القديم مشطوب لا محذوف');
   const flag = doc.querySelector('[data-size-for="serum-50"] .size-option-flag--offer');
   assert.equal(flag.textContent, '−10% · عرض نصف');
+  assert.match(doc.querySelector('[data-unit-live]').textContent, /\$0\.47/, 'سعر الوحدة يتبع السعر بعد عرض الحجم');
   assert.equal(doc.querySelector('[data-size-for="serum-30"] .size-option-flag--offer'), null);
 
   const api = w.__RAWAA_TEST__;
