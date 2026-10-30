@@ -19,7 +19,9 @@
 >
 > تعرّفي على سيروم رواء وأحجامه، واسألينا عن أي تفصيل قبل الاختيار.
 
-**الرابط:** [صفحة السيروم — زاوية الفائدة](https://raawaa-store.pages.dev/serum?utm_source=facebook&utm_medium=organic&utm_campaign=pilot_14day&utm_content=benefit)
+**الرابط:** [صفحة السيروم — زاوية الفائدة](https://raawaa-store.pages.dev/campaign?utm_source=facebook&utm_medium=organic&utm_campaign=pilot_14day&utm_content=benefit)
+
+**مادة بصرية مقترحة:** `assets/img/campaign/quiet-finish-editorial-v1-1080.jpg` (عمودي 4:5، مشهد مولّد بلا عبوة أو نص). إفصاح الصورة: «مشهد تعبيري مولّد، لا يعرض المنتج ولا نتيجة استخدامه». لم تُنشر.
 
 **ملاحظة صورة:** إن استُخدمت صورة العبوة التصميمية، أرفق إفصاحًا واضحًا بأنها تصور تصميمي وليست صورة المنتج الفعلي.
 
@@ -31,7 +33,7 @@
 >
 > فتح واتساب وحده لا يرسل الرسالة ولا يؤكد الطلب.
 
-**الرابط:** [صفحة السيروم — خطوات الطلب](https://raawaa-store.pages.dev/serum?utm_source=facebook&utm_medium=organic&utm_campaign=pilot_14day&utm_content=order_steps)
+**الرابط:** [صفحة السيروم — خطوات الطلب](https://raawaa-store.pages.dev/campaign?utm_source=facebook&utm_medium=organic&utm_campaign=pilot_14day&utm_content=order_steps)
 
 ## المنشور 3 — السعر المرجعي الواضح
 
@@ -42,7 +44,7 @@
 >
 > طريقة الدفع والتوفر ورسوم التوصيل تُراجع في السلة وتُؤكد معك قبل الإتمام. اختاري الحجم واطلعي على التفاصيل من الرابط.
 
-**الرابط:** [صفحة السيروم — الأحجام والأسعار](https://raawaa-store.pages.dev/serum?utm_source=facebook&utm_medium=organic&utm_campaign=pilot_14day&utm_content=reference_prices)
+**الرابط:** [صفحة السيروم — الأحجام والأسعار](https://raawaa-store.pages.dev/campaign?utm_source=facebook&utm_medium=organic&utm_campaign=pilot_14day&utm_content=reference_prices)
 
 ## بعد النشر
 

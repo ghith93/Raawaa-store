@@ -22,7 +22,7 @@ from playwright.sync_api import sync_playwright
 AXE = (Path(__file__).parent / "vendor" / "axe.min.js").read_text(encoding="utf-8")
 
 # تُفحص الصفحة والحوار الفارغ والممتلئ، بما فيه بديل واتساب عند حظر النافذة.
-PAGES = [("/", "page"), ("/serum.html", "page"), ("/privacy.html", "page"),
+PAGES = [("/", "page"), ("/serum.html", "page"), ("/campaign.html", "page"), ("/privacy.html", "page"),
          ("/404.html", "page"), ("/", "empty"), ("/serum.html", "empty"),
          ("/", "cart"), ("/serum.html", "cart"),
          ("/", "fallback"), ("/serum.html", "fallback")]

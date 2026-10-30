@@ -32,9 +32,11 @@ python3 -m http.server 8080 --bind 0.0.0.0
 ## وثائق البدء
 
 - [`PROJECT-ROADMAP-AR.md`](PROJECT-ROADMAP-AR.md) — الحقيقة الحالية، ما اكتمل، وما يعتمد على المالك أو السوق.
+- [`docs/GROWTH-OPERATING-SYSTEM-AR.md`](docs/GROWTH-OPERATING-SYSTEM-AR.md) — توزيع المسؤوليات من العلامة والمحتوى إلى الإعلانات والتسعير والتصنيع.
 - [`IMPROVEMENT_BACKLOG.md`](IMPROVEMENT_BACKLOG.md) — قائمة الأفكار والحالات.
 - [`DECISIONS.md`](DECISIONS.md) — القرارات وحدودها.
 - [`BENCHMARKS.md`](BENCHMARKS.md) — قياسات الأداء والفحوص.
+- [`/campaign`](https://raawaa-store.pages.dev/campaign) — صفحة هبوط للزيارات من حملات المحتوى؛ زوايا UTM مسموحة وأسعارها من `js/config.js`، بلا Pixel أو نشر آلي.
 - [`docs/ORGANIC-TEST-KIT-AR.md`](docs/ORGANIC-TEST-KIT-AR.md) — مسودات منشورات وروابط حملة عضوية؛ غير منشورة.
 - [`docs/organic-test-tracker.csv`](docs/organic-test-tracker.csv) — قالب أعداد مجمعة، بلا بيانات شخصية.
 - `PROMPT-WORLD-CLASS-AR.md`, `PROMPT-MARKETING-AR.md`, `LAUNCH-KIT-AR.md` — مواد تاريخية موسومة بأنها متقادمة؛ لا تنشر منها أسعارًا أو أرقامًا دون مراجعة.
