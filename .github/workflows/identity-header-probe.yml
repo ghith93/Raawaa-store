@@ -23,6 +23,8 @@ jobs:
           set -euo pipefail
           endpoint='https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-header-probe'
           failed=0
+          body_file="$(mktemp)"
+          trap 'rm -f "$body_file"' EXIT
           {
             echo '## Gateway identity-header probe'
             echo
@@ -33,17 +35,21 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
           for header in CF-Connecting-IP X-Forwarded-For X-Real-IP True-Client-IP; do
             nonce="$(date +%s%N)"
-            response="$(curl --fail --silent --show-error --max-time 15 \
-              -H "$header: 8.8.8.8" \
-              -H 'Cache-Control: no-store' \
-              "$endpoint?format=json&probe=$nonce")"
-            result="$(printf '%s' "$response" | python3 -c '
+            if http_code="$(curl --silent --show-error --max-time 15 --output "$body_file" --write-out '%{http_code}' -H "$header: 8.8.8.8" -H 'Cache-Control: no-store' "$endpoint?format=json&probe=$nonce" 2>/dev/null)"; then
+              if [ "$http_code" != '200' ]; then
+                result="GATEWAY_REJECTED_HTTP_${http_code}"
+              else
+                result="$(python3 -c '
           import json,sys
-          d=json.load(sys.stdin)
-          key=sys.argv[1].lower()
+          d=json.load(open(sys.argv[1]))
+          key=sys.argv[2].lower()
           v=d.get(key)
           print("INJECTION_VISIBLE" if isinstance(v,str) and "8.8.8.8" in v else "OVERWRITTEN_OR_ABSENT")
-          ' "$header")"
+          ' "$body_file" "$header")"
+              fi
+            else
+              result='TRANSPORT_ERROR'
+            fi
             echo "$header: $result"
             printf '| `%s` | `%s` |\n' "$header" "$result" >> "$GITHUB_STEP_SUMMARY"
             if [ "$header" = 'CF-Connecting-IP' ] && [ "$result" = 'INJECTION_VISIBLE' ]; then
