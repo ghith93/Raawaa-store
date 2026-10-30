@@ -1,0 +1,25 @@
+name: Droid runner connectivity probe
+
+# Temporary, branch-only connectivity probe. It checks the runner without
+# checking out repository contents or exposing project secrets.
+on:
+  push:
+    branches:
+      - 'arena/1b624c70-raawaa-store'
+
+permissions: {}
+
+jobs:
+  probe:
+    name: Verify self-hosted runner connection
+    runs-on: [self-hosted]
+    timeout-minutes: 3
+    steps:
+      - name: Report minimal runner capabilities
+        shell: bash
+        run: |
+          if [[ "${RUNNER_ENVIRONMENT:-}" != "self-hosted" ]]; then
+            echo "Expected a self-hosted runner, got ${RUNNER_ENVIRONMENT:-unknown}" >&2
+            exit 1
+          fi
+          printf 'Self-hosted runner connected; OS=%s ARCH=%s\n' "$RUNNER_OS" "$RUNNER_ARCH"
