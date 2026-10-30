@@ -66,7 +66,12 @@ function escapeHtml(s) { return s.replaceAll('&','&amp;').replaceAll('<','&lt;')
 export async function main() {
   if (process.env.RAWAA_AI_FREE_PLAN_CONFIRMED !== 'true') throw new Error('Free plan must be confirmed before inference');
   const data = await discover({token:process.env.GITHUB_TOKEN});
-  const text = await requestInference({ accountId:process.env.CLOUDFLARE_ACCOUNT_ID, token:process.env.CLOUDFLARE_AI_TOKEN, messages:buildMessages(data), maxTokens:1600 });
+  // Preserve factual discovery even if inference fails; never include customer data.
+  const discovery = JSON.stringify({ warning:'ترشيح بالنجوم والنشاط وليس GitHub Trending أو مراجعة أمن/ترخيص.', ...data }, null, 2);
+  await mkdir('.cache/rawaa-manager', { recursive:true });
+  await writeFile('.cache/rawaa-manager/github-discovery.json', discovery + '\n', {mode:0o600});
+  if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, `## نتائج بحث GitHub الأولية\n\n<pre>${escapeHtml(discovery)}</pre>\n`);
+  const text = await requestInference({ accountId:process.env.CLOUDFLARE_ACCOUNT_ID, token:process.env.CLOUDFLARE_AI_TOKEN, messages:buildMessages(data), model:'@cf/openai/gpt-oss-120b', maxTokens:1600 });
   const report = validateResearch(text, data.candidates);
   const output = JSON.stringify({ warning: 'نتائج مقترحة وليست تدقيقًا للرخص أو الأمان أو التكلفة. المعروف بالنجوم والنشاط خلال 30 يومًا، والجديد بعمر 90 يومًا أو أقل؛ ليس GitHub Trending ولا قياسًا لنمو النجوم.', ...data, report }, null, 2);
   await mkdir('.cache/rawaa-manager', { recursive:true });
@@ -77,7 +82,7 @@ export async function main() {
 // Expose only predetermined diagnostic categories, never exception content or secrets.
 export function errorCategory(error) {
   const text = typeof error?.message === 'string' ? error.message : '';
-  const fixed = ['Free plan must be confirmed before inference', 'GitHub search request failed', 'Invalid GitHub response', 'Invalid GitHub search response', 'No usable GitHub candidates', 'Cloudflare configuration missing or invalid', 'Cloudflare request failed', 'Invalid Cloudflare response', 'Cloudflare inference failed', 'Model returned no text', 'Research response too long', 'Invalid inference token limit', 'Invalid research JSON', 'Invalid research structure or repository', 'Duplicate recommendation'];
+  const fixed = ['Free plan must be confirmed before inference', 'GitHub search request failed', 'Invalid GitHub response', 'Invalid GitHub search response', 'No usable GitHub candidates', 'Cloudflare configuration missing or invalid', 'Cloudflare request failed', 'Invalid Cloudflare response', 'Cloudflare inference failed', 'Model returned no text', 'Research response too long', 'Invalid inference token limit', 'Model not allowlisted', 'Invalid research JSON', 'Invalid research structure or repository', 'Duplicate recommendation'];
   if (fixed.includes(text)) return text;
   if (/^(GitHub search|Cloudflare request) failed \(HTTP (400|401|403|404|408|429|500|502|503|504)\)$/.test(text)) return text;
   return 'Research operation failed';
