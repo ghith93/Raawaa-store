@@ -19,7 +19,7 @@ export function createOutboxSchedulerHandler({ secret, runBatch }) {
     for(let i=0;i<correct.length;i++)diff|=actual[i]^correct[i];
     if(diff!==0)return respond(401,{error:'unauthorized'});
     const declared=request.headers.get('content-length');
-    if(declared && (!/^\d+$/.test(declared) || Number(declared)>1024))return respond(413,{error:'too_large'});
+    if(declared && (!/^[0-9]+$/.test(declared) || Number(declared)>1024))return respond(413,{error:'too_large'});
     try {
       if(request.body){const reader=request.body.getReader();let size=0;while(true){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>1024){await reader.cancel();return respond(413,{error:'too_large'});}}}
     }catch{return respond(400,{error:'invalid_request'});}

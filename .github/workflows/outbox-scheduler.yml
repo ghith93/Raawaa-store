@@ -1,0 +1,46 @@
+name: Outbox scheduler (staging)
+
+# لماذا هذا الملف؟
+# دفعة تنبيهات الطلبات تحتاج مُشغِّلًا دوريًا ينادي الدالة rawaa-outbox بسرّ مخصص.
+# GitHub Actions هنا مُشغّل **مرحلّي فقط**: الجدولة المجدولة في المستودعات العامة
+# قد تُعطَّل بعد 60 يومًا خمولًا، ولا تُعتمد وحدها لضمان وصول تنبيه طلب حقيقي.
+# التنبيهات تبقى محفوظة في الطابور (outbox) حتى أي تشغيل لاحق — التأخير ليس فقدًا.
+# السرّ RAWAA_OUTBOX_SCHEDULER_SECRET يُنشئه المالك (تعليمات في COPY-PASTE.md)
+# ويُخزَّن في أسرار GitHub وفي أسرار Supabase؛ بدونه يتخطى هذا السير العمل بصمت.
+# الدالة نفسها ترفض كل طلب بلا السرّ (401) أو بلا سرّ مضبوط (503).
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: outbox-scheduler
+  cancel-in-progress: false
+
+jobs:
+  run-batch:
+    name: دفعة التنبيهات
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: إرسال دفعة إلى rawaa-outbox
+        env:
+          RAWAA_OUTBOX_SCHEDULER_SECRET: ${{ secrets.RAWAA_OUTBOX_SCHEDULER_SECRET }}
+          OUTBOX_URL: https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-outbox
+        run: |
+          if [ -z "$RAWAA_OUTBOX_SCHEDULER_SECRET" ]; then
+            echo "لا سرّ مجدول بعد — تخطٍّ (أنشئه بتعليمات COPY-PASTE.md)."
+            exit 0
+          fi
+          code=$(curl -sS -o /tmp/outbox-resp.txt -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer $RAWAA_OUTBOX_SCHEDULER_SECRET" \
+            --max-time 40 "$OUTBOX_URL" || echo 000)
+          echo "HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "استجابة الدالة:"; cat /tmp/outbox-resp.txt 2>/dev/null || true
+            exit 1
+          fi
