@@ -22,7 +22,7 @@ concurrency:
 jobs:
   gate:
     name: بوابة النشر
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'success'
     steps:
