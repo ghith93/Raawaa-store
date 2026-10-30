@@ -7,3 +7,4 @@ repomix-output.xml
 BENCHMARKS-lighthouse.json
 BENCHMARKS-serum.json
 BENCHMARKS-lighthouse-latest.json
+order-system/edge/store-config.generated.mjs
