@@ -75,3 +75,17 @@ test('same offer engine as the browser: server total matches the storefront', ()
   // والحجم الآخر لا يتأثر بالعرض المقيَّد
   assert.equal(prepareOrder({ ...base, items: [{ id: 'serum-30', qty: 1 }] }, withOffer).totalCents, 1710);
 });
+
+test('bundle offer: the server charges the package price, not qty × unit', () => {
+  const withBundle = { ...cfg, offers: { maxPercent: 30, slots: [
+    { id: 'two-50', label: 'عبوتان', type: 'bundle', qty: 2, sizeId: 'serum-50', value: 46, enabled: true }
+  ] } };
+  const order = prepareOrder({ ...base, items: [{ id: 'serum-50', qty: 2 }], method: 'cod' }, withBundle);
+  assert.equal(order.offerCents, 600);       // 52 − 46
+  assert.equal(order.subtotalCents, 4600);
+  assert.equal(order.totalCents, 4800);      // + توصيل حماة 2$
+  // 3 عبوات = عبوتان + واحدة بسعرها
+  const three = prepareOrder({ ...base, items: [{ id: 'serum-50', qty: 3 }], method: 'cod' }, withBundle);
+  assert.equal(three.subtotalCents, 7200);
+  assert.equal(three.totalCents, 7400);
+});

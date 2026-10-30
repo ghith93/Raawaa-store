@@ -102,6 +102,25 @@
     return engine ? engine.badge(slot, CONFIG.currency.symbol) : '';
   }
 
+  /** عروض العبوة (عبوة/عبوتان/ثلاث) المتاحة لهذا الحجم اليوم. */
+  function bundleOffers(product, unitCents) {
+    var engine = offersEngine();
+    if (!engine) return [];
+    return engine.bundlesFor(liveOffers().slots, product.id, toCents(product.price), CONFIG.offers);
+  }
+
+  /** أفضل تركيبة عبوات لكمية معيّنة بسعر الوحدة بعد عرض الحجم. */
+  function planFor(product, qty, unitCents) {
+    var engine = offersEngine();
+    if (!engine) return { totalCents: unitCents * qty, listCents: unitCents * qty, cutCents: 0, singles: qty, sets: [] };
+    return engine.bestPlan(qty, unitCents, bundleOffers(product, unitCents));
+  }
+
+  function bundleText(slot) {
+    var engine = offersEngine();
+    return engine ? engine.bundleText(slot, CONFIG.currency.symbol) : '';
+  }
+
   function getProduct(id) {
     return CONFIG.products.filter(function (p) { return p.id === id; })[0] || null;
   }
@@ -234,6 +253,16 @@
         offerFlag.setAttribute('data-offer-flag', unit.slot.id || unit.slot.label);
         offerFlag.textContent = offerBadge(unit.slot) + ' · ' + unit.slot.label;
         body.appendChild(offerFlag);
+      }
+
+      // عرض العبوة: يظهر نصه على بطاقة الحجم كي تعرف الزبونة أن الكمية تغيّر السعر.
+      var bundlesHere = bundleOffers(product, unit.cents);
+      if (bundlesHere.length) {
+        var bundleFlag = document.createElement('span');
+        bundleFlag.className = 'size-option-flag size-option-flag--bundle';
+        bundleFlag.setAttribute('data-bundle-flag', product.id);
+        bundleFlag.textContent = bundleText(bundlesHere[0]);
+        body.appendChild(bundleFlag);
       }
 
       if (product.badge) {
@@ -419,12 +448,20 @@
 
     entries.forEach(function (entry) {
       var unit = unitOffer(entry.product);
+      // عرض العبوة يعمل على كمية الحجم نفسه: 2 أو 3 بسعر واحد، والباقي بسعره.
+      var plan = planFor(entry.product, entry.qty, unit.cents);
       listCents += toCents(entry.product.price) * entry.qty;
-      productCents += unit.cents * entry.qty;
+      productCents += plan.totalCents;
       scentTotalCents += scentUnitCents * entry.qty;
-      if (unit.cutCents > 0) {
-        offerCents += unit.cutCents * entry.qty;
-        appliedOffers.push({ slot: unit.slot, cents: unit.cutCents * entry.qty });
+      var cut = unit.cutCents * entry.qty + plan.cutCents;
+      if (cut > 0) {
+        offerCents += cut;
+        if (unit.cutCents > 0) appliedOffers.push({ slot: unit.slot, cents: unit.cutCents * entry.qty });
+        plan.sets.forEach(function (set) {
+          // وفّر فرق سعر المجموعة عن سعر وحداتها المفردة، مضروبًا بعدد المجموعات.
+          var perSet = Math.round(Number(set.slot.qty) * unit.cents) - toCents(set.slot.value);
+          appliedOffers.push({ slot: set.slot, cents: perSet * set.count, count: set.count });
+        });
       }
       count += entry.qty;
     });
@@ -1112,16 +1149,24 @@
     head.appendChild(size);
 
     var priced = unitOffer(product);
-    var unitCents = priced.cents + toCents(scentFee());
+    var plan = planFor(product, qty, priced.cents);
+    var scentCents = toCents(scentFee());
+    var unitCents = plan.totalCents / qty + scentCents;
+
+    var notes = [];
+    if (priced.cutCents > 0) notes.push('عرض «' + priced.slot.label + '» بدل ' + money(product.price));
+    plan.sets.forEach(function (set) {
+      notes.push(bundleText(set.slot) + (set.count > 1 ? ' ×' + set.count : ''));
+    });
 
     var unit = document.createElement('p');
     unit.className = 'cart-item-unit';
     unit.textContent = 'سعر الوحدة: ' + money(unitCents / 100) + ' · مرجعي' +
-      (priced.cutCents > 0 ? ' · عرض «' + priced.slot.label + '» بدل ' + money(product.price) : '');
+      (notes.length ? ' · ' + notes.join(' · ') : '');
 
     var line = document.createElement('p');
     line.className = 'cart-item-line';
-    line.textContent = 'مجموع البند: ' + money((unitCents * qty) / 100);
+    line.textContent = 'مجموع البند: ' + money(plan.totalCents / 100 + (scentCents * qty) / 100);
 
     var controls = document.createElement('div');
     controls.className = 'cart-item-controls';
@@ -1263,11 +1308,16 @@
 
     p.entries.forEach(function (entry) {
       var priced = unitOffer(entry.product);
-      var unitCents = priced.cents + toCents(scentFee());
+      var plan = planFor(entry.product, entry.qty, priced.cents);
+      var scentCents = toCents(scentFee()) * entry.qty;
+      var lineTotalCents = plan.totalCents + scentCents;
+      var labels = [];
+      if (priced.cutCents > 0) labels.push(priced.slot.label);
+      plan.sets.forEach(function (set) { labels.push(set.slot.label); });
       lines.push('• ' + entry.product.sizeLabel + ' × ' + entry.qty +
-        ' — ' + money(unitCents / 100) + ' للواحدة = ' +
-        money((unitCents * entry.qty) / 100) +
-        (priced.cutCents > 0 ? ' (بدل ' + money(entry.product.price) + ' — عرض «' + priced.slot.label + '»)' : ''));
+        ' — ' + money(lineTotalCents / entry.qty / 100) + ' للواحدة = ' +
+        money(lineTotalCents / 100) +
+        (labels.length ? ' (بدل ' + money(entry.product.price) + ' — عرض «' + labels.join('» + «') + '»)' : ''));
     });
 
     lines.push('');

@@ -2182,6 +2182,11 @@ details[id="returns"] {
   color: #8A7F70;
   margin-inline-end: 0.2rem;
 }
+.size-option-flag--bundle {
+  color: var(--olive, #4C5A3C);
+  font-weight: 600;
+  font-size: 0.62rem;
+}
 .size-option-flag--offer {
   color: var(--olive, #4C5A3C);
   background: #EFEDE2;

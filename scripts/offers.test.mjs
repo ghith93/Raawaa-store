@@ -134,3 +134,100 @@ test('تركيب التسعير كما في السلة: العرض أولًا ث
 test('لا تُستورد أي مكتبة ولا يُقرأ أي ملف خارجي في محرّك العروض', () => {
   assert.ok(!/require\(|import\s|fetch\(|XMLHttpRequest/.test(source));
 });
+
+// ───────────────────────── عروض العبوات (bundle) ─────────────────────────
+
+const bundle = (qty, value, extra = {}) => ({
+  id: `b${qty}-${value}`, label: `عرض ${qty}`, type: 'bundle', qty, value, enabled: true, ...extra
+});
+
+test('عرض عبوتين: 2 من 50 مل بـ $46 بدل $52', () => {
+  const result = state([bundle(2, 46, { sizeId: 'serum-50' })]);
+  assert.equal(result.slots.length, 1);
+  const available = Offers.bundlesFor(result.slots, 'serum-50', PRICES['serum-50'], { maxPercent: 30 });
+  assert.equal(available.length, 1);
+  const plan = Offers.bestPlan(2, 2600, available);
+  assert.equal(plan.totalCents, 4600);
+  assert.equal(plan.cutCents, 600);
+  assert.equal(plan.sets.length, 1);
+  assert.equal(plan.sets[0].count, 1);
+});
+
+test('الكمية الأكبر تُقسَّم لأفضل تركيبة: 3 عبوات مع عرض «عبوتان» = عبوتان + واحدة', () => {
+  const result = state([bundle(2, 46, { sizeId: 'serum-50' })]);
+  const available = Offers.bundlesFor(result.slots, 'serum-50', PRICES['serum-50'], { maxPercent: 30 });
+  const plan = Offers.bestPlan(3, 2600, available);
+  assert.equal(plan.singles, 1);
+  assert.equal(plan.sets[0].count, 1);
+  assert.equal(plan.totalCents, 4600 + 2600);
+  assert.equal(plan.cutCents, 600);
+});
+
+test('عرض ثلاث عبوات أرخص من عرض عبوتين يُختار تلقائيًا', () => {
+  const result = state([bundle(2, 46), bundle(3, 66)]);
+  const available = Offers.bundlesFor(result.slots, 'serum-100', PRICES['serum-100'], { maxPercent: 30 });
+  const plan = Offers.bestPlan(3, 2900, available);
+  assert.equal(plan.totalCents, 6600, 'ثلاث بـ 66$ أرخص من 46+29=75$');
+  assert.equal(plan.sets[0].slot.qty, 3);
+});
+
+test('٤ عبوات مع عرض «٣ بـ 66$» = 3 + واحدة بسعرها', () => {
+  const result = state([bundle(3, 66)]);
+  const available = Offers.bundlesFor(result.slots, 'serum-100', 2900, { maxPercent: 30 });
+  const plan = Offers.bestPlan(4, 2900, available);
+  assert.equal(plan.totalCents, 6600 + 2900);
+  assert.equal(plan.singles, 1);
+  // وعرض «3 بـ 66$» لا ينفع 30 مل (سعرها 3×19=57$): السعر الأعلى ليس عرضًا
+  assert.equal(Offers.bundlesFor(result.slots, 'serum-30', 1900, { maxPercent: 30 }).length, 0);
+});
+
+test('عرض العبوة المقيَّد بحجم لا يُطبَّق على حجم آخر', () => {
+  const result = state([bundle(2, 46, { sizeId: 'serum-50' })]);
+  assert.equal(Offers.bundlesFor(result.slots, 'serum-30', 1900, { maxPercent: 30 }).length, 0);
+});
+
+test('عرض عبوة واحدة: سعر ثابت لكل حجم يقبله', () => {
+  const result = state([bundle(1, 26)]);
+  const forHundred = Offers.bundlesFor(result.slots, 'serum-100', 2900, { maxPercent: 30 });
+  const forThirty = Offers.bundlesFor(result.slots, 'serum-30', 1900, { maxPercent: 30 });
+  assert.equal(forHundred.length, 1, '26$ أقل من 29$ داخل السقف');
+  assert.equal(forThirty.length, 0, '26$ أغلى من 19$ → لا عرض');
+  assert.equal(Offers.bestPlan(1, 2900, forHundred).totalCents, 2600);
+});
+
+test('عرض عبوة فوق سقف الخصم يُهمَل كاملًا', () => {
+  // 2 من 100 مل = 58$ → 3 بـ 40$ = خصم 54% يتجاوز السقف 30%
+  const result = state([bundle(2, 40, { sizeId: 'serum-100' })]);
+  assert.equal(result.slots.length, 0);
+  assert.equal(result.skipped[0].reason, 'not-a-discount');
+});
+
+test('qty غير صالح يُرفض: صفر، كسر، أو أكبر من الحد', () => {
+  for (const qty of [0, 1.5, 11, 'x']) {
+    const result = state([{ id: 'bad', label: 'خطأ', type: 'bundle', qty, value: 40, enabled: true }]);
+    assert.equal(result.slots.length, 0, `qty=${qty}`);
+    assert.equal(result.skipped[0].reason, 'bad-qty');
+  }
+});
+
+test('عروض العبوات لا تُختار كعرض سعر وحدة ولا كعرض طلب', () => {
+  const result = state([bundle(2, 46)]);
+  assert.equal(Offers.pick(result.slots, 'serum-50'), null);
+  assert.equal(Offers.pick(result.slots, null), null);
+});
+
+test('ترتيب التطبيق: عرض العبوة ← عرض الحجم ← شام كاش', () => {
+  // 10% على 50 مل ثم «عبوتان بـ 46$» — الأرخص يُختار ولا يتضاعف الخصم
+  const result = state([
+    { id: 'pct', label: 'نسبة', type: 'percent', value: 10, sizeId: 'serum-50', enabled: true },
+    bundle(2, 46, { sizeId: 'serum-50' })
+  ]);
+  const unit = Offers.unitPrice(Offers.pick(result.slots, 'serum-50'), 2600);
+  const available = Offers.bundlesFor(result.slots, 'serum-50', 2600, { maxPercent: 30 });
+  const plan = Offers.bestPlan(2, unit.cents, available);
+  // الوحدة بعد النسبة 23.40 → عبوتان 46.80 مقابل عرض العبوة 46.00 → العرض أرخص
+  assert.equal(unit.cents, 2340);
+  assert.equal(plan.totalCents, 4600);
+  const shamcash = Math.round(plan.totalCents * 10 / 100);
+  assert.equal(plan.totalCents - shamcash, 4140); // $41.40 داخل حماة، توصيل مجاني
+});
