@@ -41,10 +41,11 @@ export function validateReport(text) {
   return { priorities: value.priorities.map(({action, reason}) => ({action, reason})), unknowns: value.unknowns };
 }
 
-export async function requestInference({ accountId, token, messages, fetchImpl = fetch, maxTokens = 800 }) {
+export async function requestInference({ accountId, token, messages, fetchImpl = fetch, maxTokens = 800, model = MODEL }) {
   if (!/^[a-f0-9]{32}$/i.test(accountId || '') || typeof token !== 'string' || !token.trim()) throw new Error('Cloudflare configuration missing or invalid');
   if (!Number.isInteger(maxTokens) || maxTokens < 1 || maxTokens > 1600) throw new Error('Invalid inference token limit');
-  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${MODEL}`;
+  if (![MODEL, '@cf/openai/gpt-oss-120b'].includes(model)) throw new Error('Model not allowlisted');
+  const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`;
   let response;
   try {
     response = await fetchImpl(url, {
