@@ -38,6 +38,7 @@ test('fail closed on GitHub failures and invalid or invented recommendations', a
   assert.throws(()=>validateResearch(JSON.stringify({...rec,recommendations:[{...rec.recommendations[0],repository:'invented/repo'}]}),[{repository:'team/project'}]));
   assert.throws(()=>validateResearch(JSON.stringify({...rec,recommendations:[rec.recommendations[0],rec.recommendations[0]]}),[{repository:'team/project'}]));
   assert.throws(()=>validateResearch('{bad',[]));
+  assert.throws(()=>validateResearch(undefined,[]), /Model returned no text/);
 });
 
 test('diagnostics expose only allowlisted errors', () => {

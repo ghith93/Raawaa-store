@@ -41,15 +41,16 @@ export function validateReport(text) {
   return { priorities: value.priorities.map(({action, reason}) => ({action, reason})), unknowns: value.unknowns };
 }
 
-export async function requestInference({ accountId, token, messages, fetchImpl = fetch }) {
+export async function requestInference({ accountId, token, messages, fetchImpl = fetch, maxTokens = 800 }) {
   if (!/^[a-f0-9]{32}$/i.test(accountId || '') || typeof token !== 'string' || !token.trim()) throw new Error('Cloudflare configuration missing or invalid');
+  if (!Number.isInteger(maxTokens) || maxTokens < 1 || maxTokens > 1600) throw new Error('Invalid inference token limit');
   const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${MODEL}`;
   let response;
   try {
     response = await fetchImpl(url, {
       method: 'POST', redirect: 'error', signal: AbortSignal.timeout(45000),
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages, max_completion_tokens: 800, reasoning_effort: 'low', response_format: {type: 'json_object'}, store: false, stream: false }),
+      body: JSON.stringify({ messages, max_completion_tokens: maxTokens, reasoning_effort: 'low', response_format: {type: 'json_object'}, store: false, stream: false }),
     });
   } catch { throw new Error('Cloudflare request failed'); }
   if (!response.ok) throw new Error(`Cloudflare request failed (HTTP ${response.status})`);
