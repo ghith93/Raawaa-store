@@ -53,10 +53,20 @@ docs/
 ## الفحوصات
 
 ```bash
-node --check js/config.js && node --check js/cart.js
-node scripts/check-site.mjs          # 187 فحصًا ساكنًا
-python3 scripts/browser-test.py      # 74 فحص متصفح (يتطلب Playwright + خادم يعمل)
+# بوابات تعمل بلا شبكة وبلا متصفح (الأساس — تُشغَّل دائمًا)
+npm run gates:offline
+#   = ref-audit (مراجع/خطوط/JSON-LD/تسعير/إتاحة) + perf-static (ميزانية الوزن)
+#     + check-site + eslint + html-validate لكل الصفحات
+
+# بوابات تحتاج متصفح Chromium و/أو شبكة
+npm run gates        # كل ما سبق + browser-test + serum-browser-test + axe + Lighthouse + asset-audit
+npm run perf:static  # ميزانية الوزن وحدها
+npm run refs         # تدقيق المراجع وحده
+node scripts/purge-css.mjs --check   # يفشل إن تجاوز CSS الميت 8%
 ```
+
+> ملاحظة: `perf-budget.mjs` و`asset-audit.mjs` يفحصان **الموقع الحيّ**، فلا يعملان بلا شبكة.
+> البوابات التي تعمل دائمًا هي `gates:offline`، وهي ما يُشغَّل في CI بلا متصفح.
 
 ## تصريح عن الصور
 

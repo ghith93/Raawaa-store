@@ -11,7 +11,7 @@ const idempotencyKey = 'e231547a-1e5e-4c4d-af55-f06686a30341';
 
 test('saves a recalculated order before requesting a notification', async () => {
   const events = [];
-  const repository = { async insertPending({ order }) { events.push('saved'); assert.equal(order.totalCents, 2240); return { reference: 'RAWAA-TEST123', result: 'created' }; } };
+  const repository = { async insertPending({ order }) { events.push('saved'); assert.equal(order.totalCents, 2800); return { reference: 'RAWAA-TEST123', result: 'created' }; } };
   const notificationRunner = { async kick(ref) { events.push('notify:' + ref); } };
   assert.deepEqual(await submitOrder({ input, idempotencyKey, config, repository, notificationRunner }), { ok: true, reference: 'RAWAA-TEST123', status: 'pending_review' });
   assert.deepEqual(events, ['saved', 'notify:RAWAA-TEST123']);

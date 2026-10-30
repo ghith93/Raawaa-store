@@ -46,13 +46,16 @@ pre{background:#2E2A26;color:#F3EDE4;padding:12px;border-radius:10px;font-size:.
 
 <script>
 const BR = 'https://raawaa-store.pages.dev/';
+/* عيّنات حقيقية من الأصول المنشورة حاليًا (v6). لا تُضِف اسمًا قبل التحقق من وجوده:
+   العيّنة المكسورة تُنتج «صور معطوبة» وهمية في تقرير الزبونة. تحقّق آليًا عبر
+   `node scripts/ref-audit.mjs`، وهو يفشل إذا أشارت هذه الصفحة إلى ملف مفقود. */
 const SAMPLES = [
-  'assets/img/products/hero-wide-v3-v4-1080.avif',
-  'assets/img/products/trio-v4-1080.avif',
-  'assets/img/products/trio-v4-1080.webp',
-  'assets/img/products/size-30-v4-900.avif',
-  'assets/img/products/size-50-v4-720.jpg',
-  'assets/img/products/editorial-v4-900.webp'
+  'assets/img/products/trio-v6-1080.avif',
+  'assets/img/products/trio-v6-720.avif',
+  'assets/img/products/trio-v6-720.webp',
+  'assets/img/products/size-30-v6-900.avif',
+  'assets/img/products/size-50-v6-720.jpg',
+  'assets/img/products/size-100-v6-720.webp'
 ];
 
 document.getElementById('ua').textContent = navigator.userAgent.slice(0, 60);
@@ -97,7 +100,7 @@ Promise.all(SAMPLES.map(src => new Promise(res => {
 
   // فحص مباشر بلا وسيط
   const fetches = [];
-  ['assets/img/products/trio-v4-1080.avif','assets/img/products/trio-v4-1080.jpg'].forEach(u => {
+  ['assets/img/products/trio-v6-1080.avif','assets/img/products/trio-v6-1080.jpg'].forEach(u => {
     fetch(BR + u, {cache:'no-store'}).then(r => {
       fetches.push(u.split('/').pop() + ' → HTTP ' + r.status + ' · ' + (r.headers.get('content-type')||'?'));
     }).catch(e => fetches.push(u.split('/').pop() + ' → خطأ شبكة'));

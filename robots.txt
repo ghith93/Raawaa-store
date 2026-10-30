@@ -6,5 +6,8 @@ Allow: /
 
 # مسارات لا تُفهرَس
 Disallow: /404.html
+Disallow: /check.html
+Disallow: /setup.html
+Disallow: /owner/
 
 Sitemap: https://raawaa-store.pages.dev/sitemap.xml

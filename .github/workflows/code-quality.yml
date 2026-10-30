@@ -31,8 +31,17 @@ jobs:
         run: |
           npx eslint js/*.js sw.js owner/*.mjs --max-warnings 10
 
-      - name: html-validate — صحة HTML وإمكانية الوصول
-        run: npx html-validate index.html serum.html privacy.html 404.html owner/index.html
+      - name: اختبار محرّك العروض والسلة (jsdom، بلا شبكة)
+        run: node --test scripts/offers.test.mjs scripts/cart-offers.test.mjs
+
+      - name: html-validate — صحة HTML وإمكانية الوصول (كل الصفحات)
+        run: npx html-validate index.html serum.html privacy.html 404.html setup.html check.html owner/index.html
+
+      - name: تدقيق المراجع والأصول (بلا شبكة)
+        run: node scripts/ref-audit.mjs
+
+      - name: ميزانية الوزن الثابتة (بلا شبكة)
+        run: node scripts/perf-static.mjs
 
       - name: صحة JSON-LD والمانيفست
         run: |

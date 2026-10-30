@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
@@ -13,11 +13,11 @@
 <body>
 <h1>إعداد رواء من الآيفون</h1>
 <p class="small">صفحة مؤقتة. توليد السرّ يجري داخل هاتفك فقط؛ لا يُرسل إلى هذه الصفحة أو إلى أي خادم.</p>
-<section><h2>١) ولِّد السرّ</h2><button id="genBtn">ولِّد سرًّا جديدًا</button><div id="secretWrap" hidden><input id="secretOut" readonly dir="ltr" aria-label="السرّ"><button class="alt" id="copySecret">نسخ السرّ</button><p class="small">احفظه عندك. لا ترسله لأحد.</p></div></section>
+<section><h2>١) ولِّد السرّ</h2><button type="button" id="genBtn">ولِّد سرًّا جديدًا</button><div id="secretWrap" hidden><input type="text" id="secretOut" readonly dir="ltr" aria-label="السرّ"><button type="button" class="alt" id="copySecret">نسخ السرّ</button><p class="small">احفظه عندك. لا ترسله لأحد.</p></div></section>
 <section><h2>٢) أضِفه إلى أسرار Supabase</h2><p><a href="https://supabase.com/dashboard/project/oyoyozdugicmnkfhjovo/functions/secrets">افتح أسرار Supabase مباشرة</a> وأضف:</p><p><code onclick="copyText('RAWAA_OUTBOX_SCHEDULER_SECRET')">RAWAA_OUTBOX_SCHEDULER_SECRET</code></p><p class="small">ألصق السرّ الذي ولّدته في الخطوة الأولى.</p></section>
 <section><h2>٣) أضِفه إلى أسرار GitHub</h2><p><a href="https://github.com/ghith93/Raawaa-store/settings/secrets/actions/new">افتح إضافة سرّ GitHub</a> وأدخل الاسم نفسه والقيمة نفسها، ثم اضغط Add secret.</p><p><a href="https://github.com/ghith93/Raawaa-store/actions/workflows/outbox-scheduler.yml">صفحة مجدول التنبيهات</a></p></section>
-<section><h2>٤) مفتاح حماية الطلبات (خطوة لاحقة)</h2><p class="small">هذا مفتاح منفصل عن سرّ المجدول. أنشئه فقط عند متابعة إعداد استقبال الطلبات؛ يُحفظ في Supabase وحده ولا يُضاف إلى GitHub.</p><button id="genRateBtn">ولِّد مفتاح حماية جديدًا</button><div id="rateWrap" hidden><input id="rateOut" readonly dir="ltr" aria-label="مفتاح حماية الطلبات"><button class="alt" id="copyRate">نسخ المفتاح</button></div><p><a href="https://supabase.com/dashboard/project/oyoyozdugicmnkfhjovo/functions/secrets">افتح أسرار Supabase مباشرة</a></p><p>اسم السرّ:<br><code onclick="copyText('RAWAA_RATE_LIMIT_HMAC_KEY')">RAWAA_RATE_LIMIT_HMAC_KEY</code></p><p class="small">لا تضف هذا السر قبل أن نكمل قائمة التحقق ونقرر تفعيل استقبال الطلبات.</p></section>
-<section><h2>٥) فحص ترويسات الاتصال</h2><p class="small">يفحص كل ترويسة مزوّرة على حدة لتحديد ما تقبله البوابة. قد تظهر عناوين IP الحقيقية في النتيجة؛ لا تشاركها.</p><button id="probeBtn">ابدأ الفحص</button><button class="alt" id="copyResult" hidden>نسخ النتيجة</button><pre id="probeOut" aria-live="polite">اضغط للبدء.</pre></section>
+<section><h2>٤) مفتاح حماية الطلبات (خطوة لاحقة)</h2><p class="small">هذا مفتاح منفصل عن سرّ المجدول. أنشئه فقط عند متابعة إعداد استقبال الطلبات؛ يُحفظ في Supabase وحده ولا يُضاف إلى GitHub.</p><button type="button" id="genRateBtn">ولِّد مفتاح حماية جديدًا</button><div id="rateWrap" hidden><input type="text" id="rateOut" readonly dir="ltr" aria-label="مفتاح حماية الطلبات"><button type="button" class="alt" id="copyRate">نسخ المفتاح</button></div><p><a href="https://supabase.com/dashboard/project/oyoyozdugicmnkfhjovo/functions/secrets">افتح أسرار Supabase مباشرة</a></p><p>اسم السرّ:<br><code onclick="copyText('RAWAA_RATE_LIMIT_HMAC_KEY')">RAWAA_RATE_LIMIT_HMAC_KEY</code></p><p class="small">لا تضف هذا السر قبل أن نكمل قائمة التحقق ونقرر تفعيل استقبال الطلبات.</p></section>
+<section><h2>٥) فحص ترويسات الاتصال</h2><p class="small">يفحص كل ترويسة مزوّرة على حدة لتحديد ما تقبله البوابة. قد تظهر عناوين IP الحقيقية في النتيجة؛ لا تشاركها.</p><button type="button" id="probeBtn">ابدأ الفحص</button><button type="button" class="alt" id="copyResult" hidden>نسخ النتيجة</button><pre id="probeOut" aria-live="polite">اضغط للبدء.</pre></section>
 <script>
 const endpoint="https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-header-probe";
 function copyText(text){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>alert("تم النسخ"),()=>alert("انسخ يدويًا: "+text))}else{window.prompt("انسخ النص التالي",text)}}

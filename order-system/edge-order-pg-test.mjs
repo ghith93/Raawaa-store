@@ -23,7 +23,7 @@ assert.equal((await db.query('select count(*)::int n from rawaa_store.orders')).
 assert.equal((await db.query('select count(*)::int n from rawaa_store.notification_outbox')).rows[0].n,0);
 body.order.phone='0990000000';
 const result=await handle(request());assert.equal(result.status,200);assert.match((await result.json()).reference,/^RAWAA-/);
-const saved=await db.query('select details from rawaa_store.orders');assert.equal(saved.rows[0].details.totalCents,1900);
+const saved=await db.query('select details from rawaa_store.orders');assert.equal(saved.rows[0].details.totalCents,2100);
 assert.equal((await db.query("select count(*)::int n from rawaa_store.notification_outbox where state='pending'")).rows[0].n,1);
 assert.equal((await handle(request())).status,200);assert.equal((await db.query('select count(*)::int n from rawaa_store.orders')).rows[0].n,1);
 const missing=createEdgeOrder({getEnv:k=>settings[k],postgresFactory:()=>sql,config:sandbox.window.RAWAA_CONFIG});assert.equal((await missing(request())).status,503);

@@ -114,9 +114,9 @@ function checkConfig(config, source) {
   group('الإعدادات والأسعار');
 
   const expected = [
-    { id: 'serum-30', sizeMl: 30, price: 17 },
-    { id: 'serum-50', sizeMl: 50, price: 20.4 },
-    { id: 'serum-100', sizeMl: 100, price: 25.5 }
+    { id: 'serum-30', sizeMl: 30, price: 19 },
+    { id: 'serum-50', sizeMl: 50, price: 26 },
+    { id: 'serum-100', sizeMl: 100, price: 29 }
   ];
 
   const familyImages = [config.imagery.hero, config.imagery.trio];
@@ -522,11 +522,11 @@ async function checkCartLogic() {
   const price = (id) => config.products.find((p) => p.id === id).price;
 
   const cases = [
-    { cart: { 'serum-30': 1 }, expected: 17 },
-    { cart: { 'serum-50': 2 }, expected: 40.8 },
-    { cart: { 'serum-100': 3 }, expected: 76.5 },
-    { cart: { 'serum-30': 2, 'serum-50': 1 }, expected: 54.4 },
-    { cart: { 'serum-30': 1, 'serum-50': 1, 'serum-100': 1 }, expected: 62.9 }
+    { cart: { 'serum-30': 1 }, expected: 19 },
+    { cart: { 'serum-50': 2 }, expected: 52 },
+    { cart: { 'serum-100': 3 }, expected: 87 },
+    { cart: { 'serum-30': 2, 'serum-50': 1 }, expected: 64 },
+    { cart: { 'serum-30': 1, 'serum-50': 1, 'serum-100': 1 }, expected: 74 }
   ];
 
   for (const c of cases) {
@@ -600,7 +600,6 @@ async function checkAssets() {
 
   const fonts = [
     'assets/fonts/plexar-400.subset.woff2',
-    'assets/fonts/plexar-500.subset.woff2',
     'assets/fonts/plexar-700.subset.woff2',
     'assets/fonts/cormorant-500-latin.subset.woff2',
     'assets/fonts/plexar-latin.subset.woff2',
@@ -1143,7 +1142,16 @@ async function checkProductPage(config) {
   ok(/data-estimate-interface[^>]*hidden/.test(visible) && visible.includes('data-estimate-fallback') && visible.includes('تقدير عبوة واحدة مع التوصيل'), 'التقدير الرقمي مخفي دون JavaScript وله بديل ومحدّد بعبوة واحدة');
   ok(['data-estimate-zone', 'data-estimate-method', 'data-estimate-total', 'data-estimate-discount', 'data-estimate-delivery'].every(hook => visible.includes(hook)), 'خيارات وتفاصيل التقدير موجودة');
   const cartLogic = await read('js/cart.js');
-  ok(cartLogic.includes('calculateAmounts(subtotalCents, count, method, zone)') && cartLogic.includes('calculateAmounts(toCents(product.price + scentFee()), 1, method, zone)'), 'السلة وتقدير المنتج يستخدمان حسابًا مشتركًا');
+  ok(cartLogic.includes('calculateAmounts(productCents + scentTotalCents, count, method, zone)') && cartLogic.includes('calculateAmounts(unitOffer(product).cents + toCents(scentFee()), 1, method, zone)'), 'السلة وتقدير المنتج يستخدمان حسابًا مشتركًا مع العروض');
+  const offersLogic = await read('js/offers.js');
+  ok(config.offers && Array.isArray(config.offers.slots), 'خانات العروض معرَّفة في الإعدادات');
+  ok(config.offers.slots.every(slot => slot.enabled !== true), 'لا يوجد عرض مفعّل بلا قرار صريح من المالك');
+  ok(config.offers.slots.every(slot => !('sizePrice' === slot.type) || config.products.some(p => p.id === slot.sizeId)), 'كل عرض مرتبط بحجم موجود');
+  ok(offersLogic.includes("slot.enabled !== true") && offersLogic.includes('over-cap') && offersLogic.includes('expired'), 'محرّك العروض يفشل مغلقًا: تعطيل صريح وسقف نسبة وانتهاء بتاريخ');
+  const pageFiles = { 'index.html': home, 'serum.html': await read('serum.html') };
+  ok(Object.values(pageFiles).every(page => page.includes('js/offers.js')), 'محرّك العروض محمّل في الصفحتين');
+  ok(Object.values(pageFiles).every(page => page.includes('data-row-offer') && page.includes('data-cart-offer')), 'صف خصم العرض موجود في سلتي الصفحتين');
+  ok((await read('sw.js')).includes("'./js/offers.js'"), 'محرّك العروض داخل ذاكرة عامل الخدمة');
   ok([home, visible].every(page => ['data-cart-order-options','data-cart-context','data-cart-custom-summary','data-cart-shared-notice','cart-share-note'].every(hook => page.includes(hook))), 'السلتان تعرضان سياق الإجمالي والاختيارات وحدود المشاركة');
   ok(cartLogic.includes("var CHOICES_KEY = 'rawaa:choices:v1'") && cartLogic.includes('restoreChoices()') && cartLogic.includes('saveChoices()'), 'الاختيارات الصالحة تُستعاد في جلسة المتصفح');
   const privacy = await read('privacy.html');

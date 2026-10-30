@@ -73,7 +73,7 @@ def run(base: str) -> int:
         sizes = page.locator("#products .size-option-size").all_inner_texts()
         check("الأحجام 30/50/100 مل", [t.strip() for t in sizes] == ["30 مل", "50 مل", "100 مل"], str(sizes))
         prices = page.locator("#products .size-option-price").all_inner_texts()
-        check("الأسعار المعروضة $17 / $20.40 / $25.50", [t.strip() for t in prices] == ["$17", "$20.40", "$25.50"], str(prices))
+        check("الأسعار المعروضة $19 / $26 / $29", [t.strip() for t in prices] == ["$19", "$26", "$29"], str(prices))
         check("إزالة مقارنة تكلفة 10 مل", page.locator('[data-unit-comparison]').count() == 0)
         check("الرئيسية توفّر اختصارات العطر والمكونات والإرجاع",
               [x.get_attribute('href') for x in page.locator('.purchase-shortcuts a').all()] == ['#custom','#ingredients','#returns'])
@@ -167,9 +167,9 @@ def run(base: str) -> int:
             page.locator("#products .size-option").nth(SIZE_INDEX[pid]).click()
             page.wait_for_timeout(120)
             per_ml.append(page.locator("[data-unit-live]").inner_text().split(" ")[0])
-        check("سعر الملليلتر محسوب لكل حجم", per_ml == ["$0.57", "$0.41", "$0.26"], str(per_ml))
+        check("سعر الملليلتر محسوب لكل حجم", per_ml == ["$0.63", "$0.52", "$0.29"], str(per_ml))
         check("السعر الحاضر يتبع الحجم المختار ولا يبقى ثابتًا",
-              page.locator("[data-price-live]").inner_text().startswith("$25.50"),
+              page.locator("[data-price-live]").inner_text().startswith("$29"),
               page.locator("[data-price-live]").inner_text())
 
         add_size(page, "serum-50")
@@ -195,32 +195,32 @@ def run(base: str) -> int:
               f"{inside_flags.count(True)}/{len(inside_flags)}")
 
         # 4) الكميات والمجاميع
-        # الحالة: 30مل×2=12 + 50مل×1=10 + 100مل×1=12 = 34 قيمة منتجات
+        # الحالة بعد التكبير: 30مل×2 + 50مل×1 + 100مل×1 = 93 قيمة منتجات
         page.locator('[data-qty-increase="serum-30"]').click()
         page.wait_for_timeout(150)
 
-        # الافتراضي = شام كاش: خصم 10% = 4.70 → الإجمالي 42.30 وتوصيل مجاني
+        # الافتراضي = شام كاش: خصم 10% = 9.30 → الإجمالي 83.70 وتوصيل مجاني
         check("طريقة الدفع الافتراضية = شام كاش",
               page.evaluate("window.__RAWAA_TEST__.selectedMethod()") == "shamcash",
               str(page.evaluate("window.__RAWAA_TEST__.selectedMethod()")))
         total_text = page.locator("[data-cart-total]").inner_text()
-        check("الشام كاش: قيمة المنتجات $79.90 ← خصم 10% ← الإجمالي $71.91",
-              total_text == "$71.91", total_text)
+        check("الشام كاش: قيمة المنتجات $93 ← خصم 10% ← الإجمالي $83.70",
+              total_text == "$83.70", total_text)
         check("صف قيمة المنتجات يظهر القيمة الصحيحة",
-              page.locator("[data-cart-subtotal]").inner_text() == "$79.90",
+              page.locator("[data-cart-subtotal]").inner_text() == "$93",
               page.locator("[data-cart-subtotal]").inner_text())
-        check("صف الخصم يظهر − $7.99",
-              page.locator("[data-cart-discount]").inner_text() == "− $7.99",
+        check("صف الخصم يظهر − $9.30",
+              page.locator("[data-cart-discount]").inner_text() == "− $9.30",
               page.locator("[data-cart-discount]").inner_text())
         check("التوصيل يظهر «مجاني» مع الشام كاش",
               page.locator("[data-cart-delivery]").inner_text() == "مجاني",
               page.locator("[data-cart-delivery]").inner_text())
 
-        # التبديل إلى الدفع عند الاستلام: بلا خصم + $2 توصيل = 36
+        # التبديل إلى الدفع عند الاستلام: بلا خصم + $2 توصيل = 95
         page.locator('[data-pay-select="cod"]').check()
         page.wait_for_timeout(200)
         cod_total = page.locator("[data-cart-total]").inner_text()
-        check("الدفع عند الاستلام: $79.90 + $2 توصيل = $81.90 بلا خصم", cod_total == "$81.90", cod_total)
+        check("الدفع عند الاستلام: $93 + $2 توصيل = $95 بلا خصم", cod_total == "$95", cod_total)
         check("صف الخصم مخفي مع الدفع عند الاستلام",
               not page.locator("[data-row-discount]").is_visible())
         check("رسوم التوصيل تظهر $2",
@@ -240,20 +240,20 @@ def run(base: str) -> int:
         check("باقي المحافظات + شام كاش: رسوم $4",
               page.locator("[data-cart-delivery]").inner_text() == "$4",
               page.locator("[data-cart-delivery]").inner_text())
-        check("الإجمالي مع محافظات وشام كاش ($79.90 − 10% + $4 = $75.91)",
-              page.locator("[data-cart-total]").inner_text() == "$75.91",
+        check("الإجمالي مع محافظات وشام كاش ($93 − 10% + $4 = $87.70)",
+              page.locator("[data-cart-total]").inner_text() == "$87.70",
               page.locator("[data-cart-total]").inner_text())
 
         page.locator('[data-pay-select="cod"]').check()
         page.wait_for_timeout(250)
-        check("محافظات + استلام: $79.90 + $4 = $83.90",
-              page.locator("[data-cart-total]").inner_text() == "$83.90",
+        check("محافظات + استلام: $93 + $4 = $97",
+              page.locator("[data-cart-total]").inner_text() == "$97",
               page.locator("[data-cart-total]").inner_text())
 
         page.locator('[data-zone-select="hama"]').check()
         page.wait_for_timeout(250)
-        check("حماة + استلام: $79.90 + $2 = $81.90",
-              page.locator("[data-cart-total]").inner_text() == "$81.90",
+        check("حماة + استلام: $93 + $2 = $95",
+              page.locator("[data-cart-total]").inner_text() == "$95",
               page.locator("[data-cart-total]").inner_text())
 
         # التحقق المستقل من المعادلة في JS
@@ -271,10 +271,10 @@ def run(base: str) -> int:
                 };
             }"""
         )
-        check("المعادلة: استلام/محافظات = 8390 سنتًا",
-              zone_pricing["codOther"] == 8390, json.dumps(zone_pricing))
-        check("المعادلة: شام كاش/محافظات = 7591 سنتًا وتوصيل 400",
-              zone_pricing["scOther"] == 7591 and zone_pricing["scDelivery"] == 400,
+        check("المعادلة: استلام/محافظات = 9700 سنتًا",
+              zone_pricing["codOther"] == 9700, json.dumps(zone_pricing))
+        check("المعادلة: شام كاش/محافظات = 8770 سنتًا وتوصيل 400",
+              zone_pricing["scOther"] == 8770 and zone_pricing["scDelivery"] == 400,
               json.dumps(zone_pricing))
 
         # نصوص طرق الدفع يجب أن تعكس المنطقة لا رقمًا ثابتًا (كانت تعرض $2 دائمًا)
@@ -331,14 +331,14 @@ def run(base: str) -> int:
                          disc: t.pricing().discountCents, del: t.pricing().deliveryCents };
             }"""
         )
-        check("المعادلة في JS: 7990 − 799 + 0 = 7191 سنتًا",
-              pricing == {"sc": 7191, "sub": 7990, "disc": 799, "del": 0}, json.dumps(pricing))
+        check("المعادلة في JS: 9300 − 930 + 0 = 8370 سنتًا",
+              pricing == {"sc": 8370, "sub": 9300, "disc": 930, "del": 0}, json.dumps(pricing))
 
         page.locator('[data-qty-decrease="serum-30"]').click()
         page.wait_for_timeout(150)
-        # 8+10+12 = 30 − 3.00 = 27
-        check("بعد تقليل الكمية: $56.61",
-              page.locator("[data-cart-total]").inner_text() == "$56.61",
+        # 19+26+29 = 74 − 7.40 = 66.60
+        check("بعد تقليل الكمية: $66.60",
+              page.locator("[data-cart-total]").inner_text() == "$66.60",
               page.locator("[data-cart-total]").inner_text())
 
         # زر التقليل معطّل عند 1
@@ -384,7 +384,7 @@ def run(base: str) -> int:
                 "الرسالة تحتوي 50 مل": "50 مل" in decoded,
                 "الرسالة تحتوي 100 مل": "100 مل" in decoded,
                 "الرسالة تحتوي الكميات (×)": "×" in decoded,
-                "الرسالة تحتوي أسعار الوحدات": "$17" in decoded and "$20.40" in decoded and "$25.50" in decoded,
+                "الرسالة تحتوي أسعار الوحدات": "$19" in decoded and "$26" in decoded and "$29" in decoded,
                 "الرسالة تحتوي المجموع المرجعي": "المجموع المرجعي" in decoded,
                 "الرسالة تحتوي قيمة المنتجات قبل الخصم": "قيمة المنتجات:" in decoded,
                 "الرسالة تذكر طريقة الدفع المختارة": "طريقة الدفع المطلوبة:" in decoded,
@@ -460,8 +460,8 @@ def run(base: str) -> int:
         op.wait_for_timeout(300)
         op.locator("[data-cart-open]").first.click()
         op.wait_for_timeout(350)
-        check("الحساب مع ?offer=cod: $25.50 + $2 = $27.50",
-              op.locator("[data-cart-total]").inner_text() == "$27.50",
+        check("الحساب مع ?offer=cod: $29 + $2 = $31",
+              op.locator("[data-cart-total]").inner_text() == "$31",
               op.locator("[data-cart-total]").inner_text())
         check("رابط مشاركة لكل طريقة دفع", op.locator(".pay-share").count() >= 0)  # خارج السلة
 
@@ -502,8 +502,8 @@ def run(base: str) -> int:
               sp.locator("[data-cart-count]").inner_text())
         sp.locator("[data-cart-open]").first.click()
         sp.wait_for_timeout(500)
-        check("إجمالي السلة المشتركة صحيح ($42.50 − 10% = $38.25)",
-              sp.locator("[data-cart-total]").inner_text() == "$38.25",
+        check("إجمالي السلة المشتركة صحيح ($48 − 10% = $43.20)",
+              sp.locator("[data-cart-total]").inner_text() == "$43.20",
               sp.locator("[data-cart-total]").inner_text())
 
         # رابط سلة غير صالح يجب ألا يكسر الصفحة
@@ -538,8 +538,8 @@ def run(base: str) -> int:
         check("شريط السلة يوضح أن المبلغ تقديري", "تقديري" in m.locator("[data-sticky-bar]").inner_text())
         check("الشريط يعرض عدد القطع", m.locator("[data-sticky-count]").inner_text() == "1",
               m.locator("[data-sticky-count]").inner_text())
-        check("الشريط يعرض الإجمالي المرجعي مع خصم شام كاش ($17 − 10% = $15.30)",
-              m.locator("[data-sticky-total]").inner_text() == "$15.30",
+        check("الشريط يعرض الإجمالي المرجعي مع خصم شام كاش ($19 − 10% = $17.10)",
+              m.locator("[data-sticky-total]").inner_text() == "$17.10",
               m.locator("[data-sticky-total]").inner_text())
         m.locator("[data-sticky-bar] button").click()
         m.wait_for_timeout(400)
@@ -604,8 +604,8 @@ def run(base: str) -> int:
         check("السلة تعمل بلا إنترنت", pw.locator("[data-cart-count]").inner_text() == "1")
         pw.locator("[data-cart-open]").first.click()
         pw.wait_for_timeout(500)
-        check("الحساب يعمل بلا إنترنت ($18.36 مع شام كاش)",
-              pw.locator("[data-cart-total]").inner_text() == "$18.36",
+        check("الحساب يعمل بلا إنترنت ($23.40 مع شام كاش)",
+              pw.locator("[data-cart-total]").inner_text() == "$23.40",
               pw.locator("[data-cart-total]").inner_text())
         pwa_ctx.set_offline(False)
         pwa_ctx.close()

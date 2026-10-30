@@ -14,7 +14,7 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'v1793312618';
+const CACHE_VERSION = 'v1793373735';
 // استبدال الذاكرة القديمة يمسح مفاتيحها التي ربما احتوت استعلامات روابط.
 const RUNTIME = 'rawaa-runtime-v7';
 
@@ -30,6 +30,7 @@ const CORE = [
   './css/serum.css',
   './js/config.js',
   './js/marketing.js',
+  './js/offers.js',
   './js/cart.js',
   './js/serum-views.js',
   './assets/icons/icon-192.png',
@@ -40,7 +41,6 @@ const CORE = [
   // الخطوط — مولَّدة من ملفات حقيقية؛ لا أسماء ميتة (عطل 2026-10-28)
   './assets/fonts/cormorant-500-latin.subset.woff2',
   './assets/fonts/plexar-400.subset.woff2',
-  './assets/fonts/plexar-500.subset.woff2',
   './assets/fonts/plexar-700.subset.woff2',
   './assets/fonts/plexar-bold-latin.subset.woff2',
   './assets/fonts/plexar-latin.subset.woff2',
