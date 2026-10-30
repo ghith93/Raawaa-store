@@ -73,6 +73,9 @@ jobs:
             if(fs.existsSync(f)) src+=fs.readFileSync(f,'utf8');
           for(const f of fs.readdirSync('js').filter(x=>x.endsWith('.js')))
             src+=fs.readFileSync(path.join('js',f),'utf8');
+          // هذان المولّدان يقرآن SVG الهوية المصدرية لتوليد أيقونات PWA المنشورة.
+          for(const f of ['scripts/make_icons.py','scripts/make_identity.py'])
+            src+=fs.readFileSync(f,'utf8');
           src+=fs.readFileSync('css/styles.css','utf8');   // الخطوط تُشار إليها من CSS
           const dead=[];
           // الصور المنشورة سابقًا محفوظة عمدًا كي لا تنكسر روابط الزبائن القديمة.
