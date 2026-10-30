@@ -564,6 +564,10 @@ def run(base: str) -> int:
         pw.goto(base + "/index.html", wait_until="load")
         pw.wait_for_selector("#products [data-add-current]")
         pw.wait_for_timeout(4000)
+        if not pw.evaluate("!!navigator.serviceWorker.controller"):
+            # عند أول زيارة يحتاج عامل الخدمة إعادة تنقّل بعد التثبيت كي يتحكم بالصفحة.
+            pw.reload(wait_until="load")
+            pw.wait_for_function("!!navigator.serviceWorker.controller", timeout=12000)
 
         import json as _json
         mani_href = pw.evaluate("document.querySelector('link[rel=manifest]')?.href || ''")
@@ -609,6 +613,28 @@ def run(base: str) -> int:
         check("الحساب يعمل بلا إنترنت ($23.40 مع شام كاش)",
               pw.locator("[data-cart-total]").inner_text() == "$23.40",
               pw.locator("[data-cart-total]").inner_text())
+
+        # تنقّل حقيقي بلا شبكة: يجب أن يعيد عامل الخدمة جذر الموقع إلى index.html المخزنة
+        # حتى مع وجود query للحملة، وأن يبقي صفحة الخصوصية المستقلة متاحة من CORE.
+        root_response = pw.goto(base + "/?utm_campaign=offline-browser-probe", wait_until="load")
+        root_loaded = (pw.locator(".product-hero").count() == 1 and
+                       pw.evaluate("location.pathname") == "/")
+        check("تنقّل الجذر مع استعلام حملة يرجع إلى الرئيسية المخزنة بلا إنترنت",
+              root_loaded, f"HTTP={root_response.status if root_response else 'n/a'}; path={pw.evaluate('location.pathname')}")
+        privacy_response = pw.goto(base + "/privacy.html", wait_until="load")
+        privacy_loaded = pw.locator("h1").inner_text().strip() == "سياسة الخصوصية"
+        check("صفحة الخصوصية المسبقة التخزين تفتح بلا إنترنت",
+              privacy_loaded, f"HTTP={privacy_response.status if privacy_response else 'n/a'}")
+
+        query_cache_urls = pw.evaluate("""async () => {
+          const names = await caches.keys();
+          const requests = (await Promise.all(names.map(async name =>
+            (await (await caches.open(name)).keys()).map(request => request.url)
+          ))).flat();
+          return requests.filter(url => new URL(url).search);
+        }""")
+        check("التنقل بحملة بلا إنترنت لا يضيف مفتاحًا ذا query إلى CacheStorage",
+              not query_cache_urls, str(query_cache_urls))
         pwa_ctx.set_offline(False)
         pwa_ctx.close()
 
