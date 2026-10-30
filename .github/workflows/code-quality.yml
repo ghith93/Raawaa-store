@@ -32,7 +32,7 @@ jobs:
           npx eslint js/*.js sw.js owner/*.mjs --max-warnings 10
 
       - name: اختبار محرّك العروض والسلة (jsdom، بلا شبكة)
-        run: node --test scripts/offers.test.mjs scripts/cart-offers.test.mjs scripts/service-worker-offline.test.mjs
+        run: node --test scripts/offers.test.mjs scripts/cart-offers.test.mjs scripts/service-worker-offline.test.mjs scripts/pwa-install.test.mjs
 
       - name: html-validate — صحة HTML وإمكانية الوصول (كل الصفحات)
         run: npx html-validate index.html serum.html privacy.html 404.html setup.html check.html owner/index.html

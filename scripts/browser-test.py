@@ -599,6 +599,25 @@ def run(base: str) -> int:
         )
         check("أيقونة آيفون (apple-touch-icon) معلنة", "apple-touch-icon" in apple_icon, apple_icon)
 
+        # دعوة التثبيت اختيارية: تظهر عند توفر واجهة المتصفح فقط، ويظل الشرح اليدوي حاضرًا.
+        install_flow = pw.evaluate("""async () => {
+          const button = document.querySelector('[data-pwa-install]');
+          const manual = document.querySelector('#install-app');
+          if (!button || !manual) return {ok: false, reason: 'missing install controls'};
+          const event = new Event('beforeinstallprompt', {cancelable: true});
+          let calls = 0;
+          event.prompt = () => { calls += 1; return Promise.resolve(); };
+          event.userChoice = Promise.resolve({outcome: 'accepted'});
+          window.dispatchEvent(event);
+          const shown = !button.hidden && event.defaultPrevented;
+          button.click();
+          await new Promise(resolve => setTimeout(resolve, 0));
+          window.dispatchEvent(new Event('appinstalled'));
+          return {ok: shown && calls === 1 && button.hidden && manual.id === 'install-app', calls};
+        }""")
+        check("زر تثبيت PWA يعمل عند دعم المتصفح وتبقى إرشادات iOS/Android", install_flow.get("ok"),
+              json.dumps(install_flow, ensure_ascii=False))
+
         # القطع الحقيقي: إعادة التحميل بلا شبكة
         pwa_ctx.set_offline(True)
         pw.reload(wait_until="load")

@@ -41,12 +41,12 @@ const BUDGET = {
 const PAGES = {
   'index.html': {
     css: ['css/styles.css'],
-    js: ['js/config.js', 'js/marketing.js', 'js/cart.js'],
+    js: ['js/config.js', 'js/marketing.js', 'js/cart.js', 'js/pwa-install.js'],
     hero: ['assets/img/products/trio-v6-480.avif']
   },
   'serum.html': {
     css: ['css/styles.css', 'css/serum.css'],
-    js: ['js/config.js', 'js/marketing.js', 'js/cart.js', 'js/serum-views.js'],
+    js: ['js/config.js', 'js/marketing.js', 'js/cart.js', 'js/serum-views.js', 'js/pwa-install.js'],
     hero: ['assets/img/products/size-50-v6-480.avif']
   }
 };

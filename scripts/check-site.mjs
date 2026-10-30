@@ -87,7 +87,7 @@ async function checkRequiredFiles() {
     [/BEGIN (?:RSA|OPENSSH|PGP) PRIVATE KEY/, 'private key'],
     [/sk-[A-Za-z0-9]{20,}/, 'API secret']
   ];
-  const scan = ['index.html', 'serum.html', 'privacy.html', 'js/config.js', 'js/cart.js', 'scripts/check-site.mjs'];
+  const scan = ['index.html', 'serum.html', 'privacy.html', 'js/config.js', 'js/cart.js', 'js/pwa-install.js', 'scripts/check-site.mjs'];
   let leak = null;
   for (const f of scan) {
     if (!(await exists(f))) continue;
@@ -226,7 +226,7 @@ async function checkNoScatteredPrices() {
 /* ------------------------- 3) صحة JavaScript ------------------------- */
 async function checkJsSyntax() {
   group('صحة JavaScript');
-  for (const file of ['js/config.js', 'js/cart.js', 'js/marketing.js', 'js/serum-views.js']) {
+  for (const file of ['js/config.js', 'js/cart.js', 'js/marketing.js', 'js/serum-views.js', 'js/pwa-install.js']) {
     try {
       new vm.Script(await read(file), { filename: file });
       pass(`بناء سليم: ${file}`);
@@ -1118,6 +1118,11 @@ async function checkProductPage(config) {
   const homeHero = home.match(/<section[^>]*class="hero"[\s\S]*?<\/section>/)?.[0] || '';
   // يحتوي قسم الشراء أقسامًا متداخلة؛ نصل إلى إغلاقه الذي يسبق الفوائد، لا أول إغلاق داخلي.
   const landing = visible.match(/<section[^>]*class="serum-landing"[\s\S]*?<\/section>\s*(?=<section[^>]*id="benefits")/)?.[0] || '';
+  for (const [label, page] of [['الرئيسية', home], ['المنتج', visible]]) {
+    ok(page.includes('src="js/pwa-install.js"') && page.includes('data-pwa-install') &&
+      page.includes('id="install-app"') && page.includes('Safari') && page.includes('Android') &&
+      page.includes('واتساب يحتاج اتصالًا بالإنترنت'), `${label}: إرشادات تثبيت واضحة وزر متوافق واتصال واتساب مطلوب`);
+  }
   const benefits = visible.match(/<section[^>]*id="benefits"[\s\S]*?<\/section>/)?.[0] || '';
   ok(homeHero.includes('الباهت') && homeHero.includes('المتطاير') && homeHero.includes('لمعة') &&
     homeHero.includes('href="/serum" data-discover-serum'), 'الرئيسية تشرح الحاجة والفائدة وتوجّه لاختيار الحجم');
