@@ -1,0 +1,58 @@
+name: Verify trusted client-IP header
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: identity-header-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    name: Probe gateway header overwrites
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Test forged headers without logging IP values
+        id: probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          endpoint='https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-header-probe'
+          failed=0
+          {
+            echo '## Gateway identity-header probe'
+            echo
+            echo 'The probe sent the same synthetic value for each header. Actual IP values are deliberately not logged.'
+            echo
+            echo '| Header | Result |'
+            echo '|---|---|'
+          } >> "$GITHUB_STEP_SUMMARY"
+          for header in CF-Connecting-IP X-Forwarded-For X-Real-IP True-Client-IP; do
+            nonce="$(date +%s%N)"
+            response="$(curl --fail --silent --show-error --max-time 15 \
+              -H "$header: 8.8.8.8" \
+              -H 'Cache-Control: no-store' \
+              "$endpoint?format=json&probe=$nonce")"
+            result="$(printf '%s' "$response" | python3 -c '
+          import json,sys
+          d=json.load(sys.stdin)
+          key=sys.argv[1].lower()
+          v=d.get(key)
+          print("INJECTION_VISIBLE" if isinstance(v,str) and "8.8.8.8" in v else "OVERWRITTEN_OR_ABSENT")
+          ' "$header")"
+            echo "$header: $result"
+            printf '| `%s` | `%s` |\n' "$header" "$result" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$header" = 'CF-Connecting-IP' ] && [ "$result" = 'INJECTION_VISIBLE' ]; then
+              failed=1
+            fi
+          done
+          if [ "$failed" -ne 0 ]; then
+            echo '::error::CF-Connecting-IP accepted the synthetic client value; do not trust it.'
+            exit 1
+          fi
+          echo
+          echo 'This validates gateway overwrite behavior from a server-side client, not browser JavaScript.' >> "$GITHUB_STEP_SUMMARY"
