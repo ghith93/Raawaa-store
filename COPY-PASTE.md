@@ -467,7 +467,7 @@ curl -s https://raawaa-store.pages.dev/sw.js | grep CACHE_VERSION
 **٣.١) صفحة الإعداد (افتحها من سفاري على الآيفون)**
 
 ```
-https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-header-probe
+https://raawaa-store.pages.dev/setup.html
 ```
 
 من الصفحة: «ولِّد سرًّا جديدًا» ← «نسخ السرّ» ← ألصقه في المكانين التاليين.
