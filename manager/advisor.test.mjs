@@ -51,3 +51,16 @@ test('fails closed on bad credentials, errors, or malformed model output', async
   assert.throws(() => validateReport(JSON.stringify({...data, unknowns:['bad\ncommand']})));
   assert.deepEqual(validateReport(JSON.stringify({...data, secret:'discarded'})),data);
 });
+
+test('inference restricts models and token budgets', async () => {
+  const { requestInference } = await import('./advisor.mjs');
+  const accountId = 'a'.repeat(32);
+  await assert.rejects(requestInference({accountId,token:'x',messages:[],model:'unknown',fetchImpl:()=>{throw Error('called');}}), /allowlisted/);
+  await assert.rejects(requestInference({accountId,token:'x',messages:[],maxTokens:1601,fetchImpl:()=>{throw Error('called');}}), /token limit/);
+  const result = await requestInference({accountId,token:'x',messages:[],model:'@cf/openai/gpt-oss-120b',maxTokens:1600,fetchImpl:async(url, options)=>{
+    assert.ok(url.endsWith('/@cf/openai/gpt-oss-120b'));
+    assert.equal(JSON.parse(options.body).max_completion_tokens,1600);
+    return {ok:true,json:async()=>({success:true,result:{response:'ok'}})};
+  }});
+  assert.equal(result,'ok');
+});
