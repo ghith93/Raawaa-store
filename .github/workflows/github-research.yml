@@ -1,0 +1,51 @@
+name: Rawaa GitHub research advisor
+on:
+  pull_request:
+    paths:
+      - 'manager/**'
+      - '.github/workflows/github-research.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'manager/**'
+      - '.github/workflows/github-research.yml'
+  schedule:
+    - cron: '23 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rawaa-github-research-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - run: node --test manager/*.test.mjs
+
+  research:
+    # No secrets for PRs. The free plan confirmation also gates any inference.
+    if: (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'push') && github.ref == 'refs/heads/main' && vars.RAWAA_AI_FREE_PLAN_CONFIRMED == 'true'
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Research public GitHub metadata and propose uses
+        env:
+          RAWAA_AI_FREE_PLAN_CONFIRMED: ${{ vars.RAWAA_AI_FREE_PLAN_CONFIRMED }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.RAWAA_AI_ACCOUNT_ID }}
+          CLOUDFLARE_AI_TOKEN: ${{ secrets.RAWAA_AI_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node manager/github-researcher.mjs
