@@ -14,7 +14,7 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'v1793397369';
+const CACHE_VERSION = 'v1793398425';
 // استبدال الذاكرة القديمة يمسح مفاتيحها التي ربما احتوت استعلامات روابط.
 const RUNTIME = 'rawaa-runtime-v7';
 
@@ -32,6 +32,7 @@ const CORE = [
   './js/offers.js',
   './js/cart.js',
   './js/serum-views.js',
+  './js/pwa-install.js',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/icons/apple-touch-icon.png',

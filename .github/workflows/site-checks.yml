@@ -36,6 +36,7 @@ jobs:
         run: |
           node --check js/config.js
           node --check js/cart.js
+          node --check js/pwa-install.js
 
       - name: تدقيق المراجع والأصول
         run: node scripts/ref-audit.mjs

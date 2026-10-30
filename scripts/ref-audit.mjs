@@ -38,7 +38,7 @@ function fail(msg, detail) { failures.push(detail ? `${msg} — ${detail}` : msg
 function note(msg) { notes.push(msg); if (!QUIET) console.log(`  · ${msg}`); }
 
 const PAGES = ['index.html', 'serum.html', 'privacy.html', '404.html', 'check.html', 'setup.html'];
-const SCRIPTS = ['js/config.js', 'js/cart.js', 'js/marketing.js', 'js/serum-views.js'];
+const SCRIPTS = ['js/config.js', 'js/cart.js', 'js/marketing.js', 'js/serum-views.js', 'js/pwa-install.js'];
 const STYLES = ['css/styles.css', 'css/serum.css'];
 const EXTERNAL = /^(?:[a-z]+:|\/\/|#|data:|mailto:|tel:)/i;
 

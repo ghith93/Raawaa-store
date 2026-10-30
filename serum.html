@@ -40,6 +40,7 @@
 <script src="js/offers.js" defer></script>
 <script src="js/cart.js" defer></script>
 <script src="js/serum-views.js" defer></script>
+<script src="js/pwa-install.js" defer></script>
 <script type="application/ld+json">{
   "@context": "https://schema.org",
   "@type": "Product",
@@ -109,6 +110,7 @@
         <li><a href="#how">كيف تطلبين</a></li>
         <li><a href="#payment">الدفع والتوصيل</a></li>
         <li><a href="#faq">الأسئلة الشائعة</a></li>
+        <li><a href="#install-app">إضافة رواء إلى الشاشة</a></li>
       </ul>
     </nav>
 
@@ -384,6 +386,11 @@
       <details><summary>هل يترك الشعر دهنيًا؟</summary><p>يعتمد الإحساس على طبيعة الشعر والكمية. ابدئي بكمية صغيرة على الأطراف؛ فالكمية الزائدة قد تجعل الشعر يبدو أثقل.</p></details>
       <details id="returns"><summary>كيف أعرف شروط الاستبدال والإرجاع؟</summary><p>يمكنك <a href="https://wa.me/963997310856?text=%D9%85%D8%B1%D8%AD%D8%A8%D9%8B%D8%A7%20%D8%B1%D9%88%D8%A7%D8%A1%D8%8C%20%D8%A3%D8%B1%D9%8A%D8%AF%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D8%B4%D8%B1%D9%88%D8%B7%20%D8%A7%D9%84%D8%A7%D8%B3%D8%AA%D8%A8%D8%AF%D8%A7%D9%84%20%D9%88%D8%A7%D9%84%D8%A5%D8%B1%D8%AC%D8%A7%D8%B9%20%D9%82%D8%A8%D9%84%20%D8%A7%D9%84%D8%B7%D9%84%D8%A8." rel="noopener" data-wa-direct>الاستفسار عن الشروط على واتساب</a> قبل تأكيد الطلب.</p></details>
       <details><summary>هل الطلب مؤكد بمجرد فتح واتساب؟</summary><p>لا. يُفتح استفسار برسالة جاهزة، وتُؤكّد التفاصيل معك في المحادثة قبل الشحن.</p></details>
+      <details id="install-app"><summary>كيف أضيف رواء إلى الشاشة الرئيسية؟</summary>
+        <p><strong>على iPhone أو iPad:</strong> افتحي الموقع في Safari، واضغطي زر المشاركة ثم «إضافة إلى الشاشة الرئيسية» واتّبعي الخطوات.</p>
+        <p><strong>على Android:</strong> افتحي قائمة المتصفح واختاري «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية» إذا ظهر الخيار. وقد يظهر زر «تثبيت رواء على الجهاز» في تذييل الصفحة في المتصفحات الداعمة.</p>
+        <p>بعد زيارة الموقع مرة مع اتصال، تتيح المتصفحات الداعمة فتح الصفحات واستخدام السلة دون اتصال. لكن إرسال استفسار واتساب يحتاج اتصالًا بالإنترنت، وفتح الموقع أو واتساب لا يرسل رسالة ولا يؤكد طلبًا تلقائيًا.</p>
+      </details>
     </div>
   </div>
 </section>
@@ -429,6 +436,7 @@
       <h2 class="footer-title">التواصل</h2>
       <ul>
         <li><a href="https://wa.me/963997310856">واتساب: 0997310856</a></li>
+        <li><button class="pwa-install-button" type="button" data-pwa-install hidden>تثبيت رواء على الجهاز</button><span class="sr-only" data-pwa-install-status aria-live="polite"></span></li>
         <li><a href="/privacy">سياسة الخصوصية</a></li>
         <li><button class="consent-settings" type="button" data-consent-settings hidden>تفضيلات القياس</button></li>
       </ul>

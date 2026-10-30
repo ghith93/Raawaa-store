@@ -39,6 +39,7 @@
 <script src="js/marketing.js" defer></script>
 <script src="js/offers.js" defer></script>
 <script src="js/cart.js" defer></script>
+<script src="js/pwa-install.js" defer></script>
 <script type="application/ld+json">{
   "@context": "https://schema.org",
   "@graph": [
@@ -192,6 +193,14 @@
             "@type": "Answer",
             "text": "تختارين الحجم والكمية، ثم تُرسلين رسالة واتساب جاهزة بالتفاصيل، ويُؤكَّد معك التوفّر والسعر والتوصيل قبل الشحن."
           }
+        },
+        {
+          "@type": "Question",
+          "name": "كيف أضيف رواء إلى الشاشة الرئيسية؟",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "على iPhone وiPad افتحي الموقع في Safari، ثم اختاري مشاركة وإضافة إلى الشاشة الرئيسية. على Android اختاري تثبيت التطبيق أو إضافة إلى الشاشة الرئيسية من قائمة المتصفح. بعد الزيارة الأولى، يمكن للمتصفحات الداعمة عرض الصفحات والسلة بلا اتصال؛ إرسال استفسار واتساب يحتاج اتصالًا بالإنترنت."
+          }
         }
       ]
     }
@@ -224,6 +233,7 @@
         <li><a href="#how">كيف تطلبين</a></li>
         <li><a href="#payment">الدفع والتوصيل</a></li>
         <li><a href="#faq">الأسئلة الشائعة</a></li>
+        <li><a href="#install-app">إضافة رواء إلى الشاشة</a></li>
       </ul>
     </nav>
 
@@ -753,6 +763,12 @@
             تُنشر هنا كما هي. حتى ذلك الحين، اسألي أي سؤال عن المكوّنات أو النتيجة قبل الشراء.
           </p>
         </details>
+        <details id="install-app">
+          <summary>كيف أضيف رواء إلى الشاشة الرئيسية؟</summary>
+          <p><strong>على iPhone أو iPad:</strong> افتحي الموقع في Safari، واضغطي زر المشاركة ثم «إضافة إلى الشاشة الرئيسية» واتّبعي الخطوات.</p>
+          <p><strong>على Android:</strong> افتحي قائمة المتصفح واختاري «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية» إذا ظهر الخيار. وقد يظهر زر «تثبيت رواء على الجهاز» في تذييل الصفحة في المتصفحات الداعمة.</p>
+          <p>بعد زيارة الموقع مرة مع اتصال، تتيح المتصفحات الداعمة فتح الصفحات واستخدام السلة دون اتصال. لكن إرسال استفسار واتساب يحتاج اتصالًا بالإنترنت، وفتح الموقع أو واتساب لا يرسل رسالة ولا يؤكد طلبًا تلقائيًا.</p>
+        </details>
       </div>
     </div>
   </section>
@@ -814,6 +830,7 @@
       <h2 class="footer-title">التواصل</h2>
       <ul>
         <li><a href="https://wa.me/963997310856">واتساب: 0997310856</a></li>
+        <li><button class="pwa-install-button" type="button" data-pwa-install hidden>تثبيت رواء على الجهاز</button><span class="sr-only" data-pwa-install-status aria-live="polite"></span></li>
         <li><a href="/privacy">سياسة الخصوصية</a></li>
         <li><button class="consent-settings" type="button" data-consent-settings hidden>تفضيلات القياس</button></li>
       </ul>

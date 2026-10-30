@@ -84,7 +84,7 @@ test('install precaches only the compact offline shell and required small image 
   const imagePaths = paths.filter((path) => /\.(?:avif|webp|jpe?g)$/i.test(path));
   const allPaths = paths.join('\n');
 
-  assert.equal(paths.length, 37, '37 required shell resources are pre-cached');
+  assert.equal(paths.length, 38, '38 required shell resources are pre-cached');
   assert.ok(!paths.includes('/'), 'the root is not cached separately from index.html');
   assert.equal(imagePaths.length, 15, 'three formats for each of four product images plus the ritual scene');
   assert.ok(!allPaths.includes('/assets/brand/logo-'), 'unused brand SVGs are not pre-cached');
