@@ -73,4 +73,12 @@ export async function main() {
   if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, `## بحث GitHub — للمراجعة فقط\n\n<pre>${escapeHtml(output)}</pre>\n`);
   console.log('GitHub research saved; no repositories installed or changed.');
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(e => { console.error(e.message); process.exitCode = 1; });
+// Expose only predetermined diagnostic categories, never exception content or secrets.
+export function errorCategory(error) {
+  const text = typeof error?.message === 'string' ? error.message : '';
+  const fixed = ['Free plan must be confirmed before inference', 'GitHub search request failed', 'Invalid GitHub response', 'Invalid GitHub search response', 'No usable GitHub candidates', 'Cloudflare configuration missing or invalid', 'Cloudflare request failed', 'Invalid Cloudflare response', 'Cloudflare inference failed', 'Invalid research response', 'Invalid research JSON', 'Invalid research structure or repository', 'Duplicate recommendation'];
+  if (fixed.includes(text)) return text;
+  if (/^(GitHub search|Cloudflare request) failed \(HTTP (400|401|403|404|408|429|500|502|503|504)\)$/.test(text)) return text;
+  return 'Research operation failed';
+}
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(e => { console.error(`::error::${errorCategory(e)}`); process.exitCode = 1; });
