@@ -84,7 +84,7 @@ test('install precaches only the compact offline shell and required small image 
   const imagePaths = paths.filter((path) => /\.(?:avif|webp|jpe?g)$/i.test(path));
   const allPaths = paths.join('\n');
 
-  assert.equal(paths.length, 38, '38 required shell resources are pre-cached');
+  assert.equal(paths.length, 41, '41 required shell resources are pre-cached');
   assert.ok(!paths.includes('/'), 'the root is not cached separately from index.html');
   assert.equal(imagePaths.length, 15, 'three formats for each of four product images plus the ritual scene');
   assert.ok(!allPaths.includes('/assets/brand/logo-'), 'unused brand SVGs are not pre-cached');
@@ -115,6 +115,11 @@ test('offline root uses cached index.html while product and privacy routes remai
 
   const queried = await offlineRequest('/serum?utm_campaign=offline-probe', 'navigate');
   assert.equal(await queried.text(), 'cached:./serum', 'campaign query is not required for the cached page');
+
+  const campaign = await offlineRequest('/campaign', 'navigate');
+  assert.equal(await campaign.text(), 'cached:./campaign');
+  const queriedCampaign = await offlineRequest('/campaign?utm_campaign=offline-probe', 'navigate');
+  assert.equal(await queriedCampaign.text(), 'cached:./campaign', 'campaign route ignores tracking query when finding its cached shell');
 
   const privacy = await offlineRequest('/privacy.html', 'navigate');
   assert.equal(await privacy.text(), 'cached:./privacy.html');

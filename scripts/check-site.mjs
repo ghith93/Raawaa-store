@@ -87,7 +87,7 @@ async function checkRequiredFiles() {
     [/BEGIN (?:RSA|OPENSSH|PGP) PRIVATE KEY/, 'private key'],
     [/sk-[A-Za-z0-9]{20,}/, 'API secret']
   ];
-  const scan = ['index.html', 'serum.html', 'privacy.html', 'js/config.js', 'js/cart.js', 'js/pwa-install.js', 'scripts/check-site.mjs'];
+  const scan = ['index.html', 'serum.html', 'campaign.html', 'privacy.html', 'js/config.js', 'js/cart.js', 'js/campaign.js', 'js/pwa-install.js', 'scripts/check-site.mjs'];
   let leak = null;
   for (const f of scan) {
     if (!(await exists(f))) continue;
@@ -172,7 +172,7 @@ function stripNonCopy(text) {
 
 async function checkNoScatteredPrices() {
   group('الإعدادات والأسعار');
-  const files = ['index.html', 'serum.html', 'privacy.html', 'js/cart.js', 'css/styles.css'];
+  const files = ['index.html', 'serum.html', 'campaign.html', 'privacy.html', 'js/cart.js', 'css/styles.css'];
 
   /**
    * الصفحة صار فيها شرح مرئي لطرق الدفع، ومن حقّه ذكر رقم السعر لعرض مثال.
@@ -297,7 +297,7 @@ async function checkHtmlHooks() {
 /* ------------------------- 5) سلامة الروابط والملفات المشار إليها ------------------------- */
 async function checkLinks() {
   group('الروابط والأصول');
-  for (const page of ['index.html', 'serum.html', 'privacy.html']) {
+  for (const page of ['index.html', 'serum.html', 'campaign.html', 'privacy.html']) {
     const html = await read(page);
     const isPrivacy = page === 'privacy.html';
 
@@ -1192,7 +1192,10 @@ async function checkProductPage(config) {
   ok(config.order.confirmationPoints.some(point => point.includes('موعد تجهيز العبوة')), 'رسالة واتساب تطلب تأكيد موعد تجهيز العبوة');
   ok(visible.includes('لا يسجّل طلبًا تلقائيًا ولا يؤكّده'), 'فتح واتساب ليس إتمام طلب');
   ok((await read('sitemap.xml')).includes('https://raawaa-store.pages.dev/serum</loc>'), 'صفحة السيروم في خريطة الموقع');
-  ok((await read('scripts/build-deploy.sh')).includes('index.html serum.html'), 'صفحة السيروم تدخل حزمة النشر');
+  ok((await read('scripts/build-deploy.sh')).includes('index.html serum.html campaign.html'), 'صفحة الهبوط للحملات تدخل حزمة النشر');
+  const campaign = await read('campaign.html');
+  ok(campaign.includes('name="robots" content="noindex,follow"') && campaign.includes('data-campaign-products') && campaign.includes('css/campaign.css'), 'صفحة الحملة مفهرسة بشكل مقيد، ومحتواها السعري ديناميكي من الإعدادات');
+  ok((await read('sw.js')).includes("'./campaign'") && (await read('sw.js')).includes("'./js/campaign.js'"), 'صفحة الحملة وسكربتها تدخلان ذاكرة PWA');
   const rules = (await read('_redirects')).split('\n').map(x => x.trim()).filter(x => x && !x.startsWith('#'));
   for (const rule of rules) {
     const [from, target] = rule.split(/\s+/);

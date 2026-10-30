@@ -36,6 +36,7 @@ jobs:
         run: |
           node --check js/config.js
           node --check js/cart.js
+          node --check js/campaign.js
           node --check js/pwa-install.js
 
       - name: تدقيق المراجع والأصول
@@ -147,6 +148,8 @@ jobs:
         run: python scripts/browser-test.py --base http://127.0.0.1:8080
       - name: اختبار صفحة السيروم ومسار الإعلان
         run: python scripts/serum-browser-test.py --base http://127.0.0.1:8080 --path /serum.html
+      - name: اختبار صفحة الهبوط للحملات
+        run: python scripts/campaign-browser-test.py --base http://127.0.0.1:8080 --browser chromium
 
   browser-webkit:
     name: اختبار WebKit على HTTPS
@@ -172,6 +175,8 @@ jobs:
           curl -ksf -o /dev/null https://127.0.0.1:8443/serum.html
       - name: اختبار صفحة السيروم بمحرك WebKit المشابه لسفاري
         run: python scripts/serum-browser-test.py --base https://127.0.0.1:8443 --path /serum.html --browser webkit --ignore-https-errors
+      - name: اختبار صفحة الهبوط للحملات في WebKit
+        run: python scripts/campaign-browser-test.py --base https://127.0.0.1:8443 --browser webkit --ignore-https-errors
 
   # Keep the original check name: neither a failure nor a skipped child is success.
   browser:

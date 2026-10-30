@@ -48,11 +48,16 @@ const PAGES = {
     css: ['css/styles.css', 'css/serum.css'],
     js: ['js/config.js', 'js/marketing.js', 'js/cart.js', 'js/serum-views.js', 'js/pwa-install.js'],
     hero: ['assets/img/products/size-50-v6-480.avif']
+  },
+  'campaign.html': {
+    css: ['css/styles.css', 'css/campaign.css'],
+    js: ['js/config.js', 'js/marketing.js', 'js/campaign.js'],
+    hero: ['assets/img/products/trio-v6-480.avif']
   }
 };
 
 const fonts = [...new Set(
-  ['css/styles.css', 'css/serum.css']
+  ['css/styles.css', 'css/serum.css', 'css/campaign.css']
     .map((f) => read(f).toString('utf8')).join('\n')
     .match(/fonts\/[A-Za-z0-9._-]+\.woff2/g) || []
 )].map((f) => `assets/${f}`);

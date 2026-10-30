@@ -93,6 +93,36 @@ def run(base: str) -> int:
             )
             findings[label] = result
 
+            # صفحة الحملة لها رحلة وصورة وصفّ أسعار مستقلان؛ افحصها على المقاس نفسه.
+            campaign_page = ctx.new_page()
+            campaign_page.goto(base + "/campaign.html?utm_source=facebook&utm_medium=organic&utm_campaign=a11y_probe&utm_content=benefit", wait_until="load")
+            campaign_page.wait_for_selector(".campaign-product-card")
+            campaign_page.add_script_tag(content=axe_src)
+            campaign_result = campaign_page.evaluate(
+                """async () => {
+                    const r = await axe.run(document, {
+                      runOnly: { type: 'tag', values: ['wcag2a','wcag2aa','wcag21a','wcag21aa','best-practice'] }
+                    });
+                    return {
+                      violations: r.violations.map(v => ({
+                        id: v.id, impact: v.impact, help: v.help,
+                        nodes: v.nodes.length,
+                        targets: v.nodes.slice(0, 3).map(n => n.target.join(' '))
+                      })),
+                      passes: r.passes.length,
+                      incomplete: r.incomplete.map(i => i.id)
+                    };
+                }"""
+            )
+            findings[label + " — صفحة الحملة"] = campaign_result
+            if campaign_page.evaluate("document.documentElement.scrollWidth > innerWidth + 1"):
+                findings[label + " — صفحة الحملة"]["violations"].append({
+                    "id": "horizontal-overflow", "impact": "serious",
+                    "help": "لا تمرير أفقي على عرض الهاتف", "nodes": 1,
+                    "targets": ["document.documentElement"]
+                })
+            campaign_page.close()
+
             # نافذة السلة مفتوحة أيضًا
             page.locator("#products .size-option").nth(1).click()
             page.wait_for_timeout(120)
