@@ -85,161 +85,9 @@
 
 
   /** يبني عنصر <picture> من إعدادات الصورة (AVIF ← WebP ← JPEG). */
-  function buildPicture(image, opts) {
-    opts = opts || {};
-    var picture = document.createElement('picture');
-
-    function addSource(list, type, dir) {
-      if (!list || !list.length) return;
-      var source = document.createElement('source');
-      source.type = type;
-      source.srcset = list.map(function (file, i) {
-        return dir + file + ' ' + image.widths[i] + 'w';
-      }).join(', ');
-      if (opts.sizes) source.sizes = opts.sizes;
-      picture.appendChild(source);
-    }
-
-    var dir = opts.dir || 'assets/img/products/';
-    addSource(image.avif, 'image/avif', dir);
-    addSource(image.webp, 'image/webp', dir);
-
-    var img = document.createElement('img');
-    img.src = image.src;
-    img.width = image.width;
-    img.height = image.height;
-    img.alt = opts.alt || image.alt || '';
-    img.loading = opts.eager ? 'eager' : 'lazy';
-    img.decoding = 'async';
-    if (opts.eager) img.fetchPriority = 'high';
-    if (opts.className) img.className = opts.className;
-    picture.appendChild(img);
-    return picture;
-  }
 
   /* ------------------------------ بناء بطاقات المنتجات ------------------------------ */
 
-  function buildProductCard(product) {
-    var article = document.createElement('article');
-    article.className = 'product-card';
-    article.setAttribute('aria-labelledby', 'name-' + product.id);
-
-    var media = document.createElement('figure');
-    media.className = 'product-media';
-
-    var picture = buildPicture(product.image, {
-      sizes: '(min-width: 900px) 30vw, (min-width: 600px) 31vw, 92vw'
-    });
-
-    var badge = document.createElement('span');
-    badge.className = 'product-badge';
-    badge.textContent = product.sizeLabel;
-
-    media.appendChild(picture);
-    media.appendChild(badge);
-
-    var body = document.createElement('div');
-    body.className = 'product-body';
-
-    var top = document.createElement('div');
-    top.className = 'product-top';
-
-    var heading = document.createElement('h3');
-    heading.className = 'product-name';
-    heading.id = 'name-' + product.id;
-    heading.textContent = product.name;
-
-    var size = document.createElement('p');
-    size.className = 'product-size';
-    size.textContent = product.sizeLabel;
-
-    top.appendChild(heading);
-    top.appendChild(size);
-
-    var price = document.createElement('p');
-    price.className = 'product-price';
-    var amount = document.createElement('span');
-    amount.className = 'amount';
-    amount.textContent = money(product.price);
-    var unit = document.createElement('span');
-    unit.className = 'unit-note';
-    unit.textContent = 'السعر';
-    price.appendChild(amount);
-    price.appendChild(unit);
-
-    /**
-     * سعر الوحدة — المرحلة ٢ من برومت الكفاءة العالمية.
-     * أغلب المتاجر لا تعرضه (Baymard 2026: ثمانية من كل عشرة)، وعرضه يُسهّل قرار الحجم
-     * ويرفع الطلب على العبوة الكبيرة **بلا أي خصم**.
-     * القيمة تُحسب من price ÷ sizeMl هنا، ولا تُكتب يدويًا في أي ملف.
-     */
-    if (CONFIG.showPricePerUnit && product.sizeMl && product.price) {
-      var per = product.price / product.sizeMl;
-      var perText = per >= 0.1 ? per.toFixed(2) : per.toFixed(3);
-      var perMlNode = document.createElement('p');
-      perMlNode.className = 'unit-price';
-      perMlNode.innerHTML = '<bdi>$' + perText + '</bdi> لكل مل — كل حجم أوفر من الذي قبله';
-      price.appendChild(perMlNode);
-    }
-
-    // شارة الحجم المميّز داخل رأس البطاقة
-    if (product.badge) {
-      var flag = document.createElement('p');
-      flag.className = 'product-flag';
-      flag.textContent = product.badge;
-      top.appendChild(flag);
-    }
-
-    // سطر «السعر النهائي بحسب طريقة الدفع» — محسوب من نفس معادلة السلة
-    var priceByMethod = document.createElement('p');
-    priceByMethod.className = 'product-pay-preview';
-    availableMethods.slice(0, 1).forEach(function (method) {
-      var unitCents = toCents(product.price);
-      var disc = Math.round(unitCents * (method.discountPercent || 0) / 100);
-      var del = toCents(deliveryFeeFor(method, activeZone()));
-      var item = document.createElement('span');
-      item.className = 'pay-preview-item';
-      var label = document.createElement('span');
-      label.textContent = method.short + ':';
-      var amount = document.createElement('bdi');
-      amount.className = 'pay-preview-amount';
-      amount.textContent = money((unitCents - disc + del) / 100);
-      item.appendChild(label);
-      item.appendChild(amount);
-      priceByMethod.appendChild(item);
-    });
-
-    // وصف قصير للحجم
-    var note = null;
-    if (product.note) {
-      note = document.createElement('p');
-      note.className = 'product-note';
-      note.textContent = product.note;
-    }
-
-    var button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'btn btn-primary btn-block';
-    button.dataset.addToCart = product.id;
-    button.setAttribute('aria-describedby', 'feedback-' + product.id);
-    button.textContent = 'إضافة إلى السلة';
-
-    var feedback = document.createElement('p');
-    feedback.className = 'product-feedback';
-    feedback.id = 'feedback-' + product.id;
-    feedback.setAttribute('role', 'status');
-
-    body.appendChild(top);
-    body.appendChild(price);
-    body.appendChild(priceByMethod);
-    if (note) body.appendChild(note);
-    body.appendChild(button);
-    body.appendChild(feedback);
-
-    article.appendChild(media);
-    article.appendChild(body);
-    return article;
-  }
 
   /* ------------------------ اختيار الحجم -----------------------------
      منتج واحد، ثلاثة أحجام. القرار يصبح «أي حجم» لا «أي منتج» — وهذا ما
@@ -390,13 +238,6 @@
     refreshOrderEstimate();
   }
 
-  function renderProducts() {
-    if (!el.grid) return;
-    el.grid.textContent = '';
-    CONFIG.products.forEach(function (product) {
-      el.grid.appendChild(buildProductCard(product));
-    });
-  }
 
   /* ---------------------------- التخصيص ------------------------------
      العطر والزيوت المضافة — تُحفظ في الذاكرة وتُرسل في رسالة واتساب.
@@ -1785,7 +1626,6 @@
   }
 
   function init() {
-    el.grid = document.querySelector('[data-product-grid]');
     el.toastRegion = document.querySelector('[data-toast-region]');
     el.count = document.querySelector('[data-cart-count]');
     el.dialog = document.getElementById('cart-dialog');
@@ -1846,7 +1686,6 @@
     applyOfferFromUrl(restoredMethod);
     var restoredCart = restoreCart();
     loadCartFromUrl(restoredCart);
-    renderProducts();
     renderSizePicker();
     renderRoutines();
     renderCustomPickers();

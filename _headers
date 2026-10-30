@@ -15,10 +15,24 @@
 /assets/fonts/*
   Cache-Control: public, max-age=31536000, immutable
 
+# صفحات HTML: تُعاد المراجعة دائمًا. السبب: بعد كل نشر تتغيّر أسماء الأصول
+# (sw.js، الصور المرقّمة)؛ نسخة HTML قديمة في الكاش تطلب ملفًا لم يبقَ.
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+/serum
+  Cache-Control: public, max-age=0, must-revalidate
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 /sw.js
   Cache-Control: no-cache
+
+# صفحات تشخيص وإعداد داخلية: لا تُفهرس ولا تُؤرشف (احتياطًا لوسم meta).
+/check.html
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Cache-Control: no-store
+/setup.html
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Cache-Control: no-store
 
 # القياس اختياري ولا يعمل بلا معرّف وموافقة؛ تُسمح نطاقات Meta فقط لتهيئته مستقبلًا.
 /js/*.js

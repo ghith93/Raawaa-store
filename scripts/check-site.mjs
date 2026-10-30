@@ -600,7 +600,6 @@ async function checkAssets() {
 
   const fonts = [
     'assets/fonts/plexar-400.subset.woff2',
-    'assets/fonts/plexar-500.subset.woff2',
     'assets/fonts/plexar-700.subset.woff2',
     'assets/fonts/cormorant-500-latin.subset.woff2',
     'assets/fonts/plexar-latin.subset.woff2',

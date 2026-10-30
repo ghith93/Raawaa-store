@@ -8,19 +8,16 @@
    ارتفاع x أعلى (0.52 مقابل 0.45 في Tajawal)، تغطية محارف كاملة للنص،
    ورخصة SIL OFL تسمح بالتضمين والتعديل التجاري.
    العرض: Cormorant Garamond للاتينية الفخمة فقط.
+
+   حُذف وزن 500 من Plex Arabic (22.4KB) بعد قياس: لا قاعدة CSS واحدة تطلب
+   font-weight: 500، فلم يكن المتصفح يختار ذلك الملف أبدًا — لكنه كان يُنشر
+   ويُخزَّن مسبقًا في عامل الخدمة، أي 22.4KB تُنزّلها كل زائنة بلا مقابل.
+   قبل إعادة أي وزن: استعمليه في CSS فعلًا، وإلا فهو وزن ميت.
    ------------------------------------------------------------------ */
 @font-face {
   font-family: 'Plex Arabic';
   src: url('../assets/fonts/plexar-400.subset.woff2') format('woff2');
   font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-  unicode-range: U+0600-06FF, U+2000-206F, U+FB50-FDFF, U+FE70-FEFF;
-}
-@font-face {
-  font-family: 'Plex Arabic';
-  src: url('../assets/fonts/plexar-500.subset.woff2') format('woff2');
-  font-weight: 500;
   font-style: normal;
   font-display: swap;
   unicode-range: U+0600-06FF, U+2000-206F, U+FB50-FDFF, U+FE70-FEFF;
@@ -408,10 +405,6 @@ bdi { unicode-bidi: isolate; }
   background: var(--gold);
   flex: none;
 }
-
-/* ---------- قسم تصميم العبوة ---------- */
-.design-grid { display: grid; gap: var(--space-6); }
-.design-hero { margin: 0; }
 .design-hero img {
   width: 100%;
   border-radius: var(--radius);
@@ -423,15 +416,7 @@ bdi { unicode-bidi: isolate; }
   font-size: 0.74rem;
   color: var(--taupe);
 }
-.design-specs {
-  background: var(--white);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius);
-  padding: var(--space-5);
-}
 .design-specs h3 { margin-bottom: var(--space-4); }
-
-.spec-list { margin: 0 0 var(--space-4); }
 .spec-list > div {
   display: grid;
   grid-template-columns: 6.5rem 1fr;
@@ -443,23 +428,6 @@ bdi { unicode-bidi: isolate; }
 .spec-list > div:last-child { border-bottom: none; }
 .spec-list dt { color: var(--taupe); }
 .spec-list dd { margin: 0; color: var(--ink-soft); }
-
-.design-note {
-  font-size: 0.8rem;
-  color: var(--taupe);
-  line-height: 1.9;
-  margin: 0;
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--line-soft);
-}
-
-.gallery {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-3);
-  margin-top: var(--space-6);
-}
-.gallery-item { margin: 0; }
 .gallery-item img {
   width: 100%;
   height: auto;
@@ -498,13 +466,6 @@ bdi { unicode-bidi: isolate; }
 }
 .notice-quiet { background: transparent; border-inline-start-color: var(--sand-deep); }
 
-/* ---------- بطاقات المنتجات ---------- */
-.product-grid {
-  display: grid;
-  gap: var(--space-5);
-  grid-template-columns: 1fr;
-}
-
 .product-card {
   display: flex;
   flex-direction: column;
@@ -518,13 +479,6 @@ bdi { unicode-bidi: isolate; }
   border-color: var(--sand-deep);
   box-shadow: var(--shadow-soft);
 }
-
-.product-media {
-  position: relative;
-  margin: 0;
-  background: var(--cream);
-  overflow: hidden;
-}
 .product-media img {
   width: 100%;
   height: auto;
@@ -532,75 +486,18 @@ bdi { unicode-bidi: isolate; }
   object-fit: cover;
   object-position: center;
 }
-.product-badge {
-  position: absolute;
-  inset-block-start: 12px;
-  inset-inline-start: 12px;
-  background: rgba(251, 248, 243, 0.94);
-  color: var(--brown);
-  border-radius: var(--radius-pill);
-  padding: 4px 12px;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-}
-
-.product-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-5) var(--space-4) var(--space-5);
-  flex: 1;
-}
 /* يدفع زر الإضافة إلى أسفل البطاقة فتتساوى البطاقات الثلاث */
 .product-body > .btn { margin-top: auto; }
-.product-top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 6px var(--space-3);
-}
 /* الاسم يأخذ السطر كاملًا إن ضاقت المساحة، فلا ينكسر بشكل عشوائي */
 .product-top .product-name { flex: 1 1 100%; }
-.product-top .product-size { flex: none; }
 .product-name {
   font-family: var(--font-display);
   font-size: 1.22rem;
   margin: 0;
   color: var(--ink);
 }
-.product-size {
-  font-size: 0.86rem;
-  color: var(--olive);
-  letter-spacing: 0.04em;
-  margin: 0;
-  white-space: nowrap;
-}
-.product-price {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 0;
-}
-.product-price .amount {
-  font-family: var(--font-latin);
-  font-size: 1.75rem;
-  line-height: 1;
-  color: var(--ink);
-  letter-spacing: 0.02em;
-  /* أرقام خطية لا قديمة، لتبقى الأسعار واضحة */
-  font-variant-numeric: lining-nums tabular-nums;
-  font-feature-settings: "lnum" 1, "onum" 0, "tnum" 1;
-}
-.product-price .unit-note { font-size: 0.76rem; color: var(--taupe); padding-inline-start: 2px; }
 
 .product-card .btn { margin-top: auto; }
-.product-feedback {
-  min-height: 1.25rem;
-  font-size: 0.78rem;
-  color: var(--olive);
-  margin: 0;
-}
 
 /* ---------- قصة العلامة ---------- */
 .story-grid { display: grid; gap: var(--space-6); align-items: center; }
@@ -948,7 +845,6 @@ bdi { unicode-bidi: isolate; }
 /* مع تكبير النص قد يصبح التذييل أطول من الشاشة حتى إن كان ارتفاعها عاديًا. */
 .cart-inner--flow .cart-foot { position: static; }
 .cart-inner--flow { scroll-padding-block-end: 1rem; }
-.cart-note { margin: var(--space-3) 0 var(--space-4); font-size: 0.76rem; line-height: 1.8; color: var(--taupe); }
 .cart-share { margin-top: 8px; }
 .cart-share[hidden] { display: none; }
 .cart-share-note { margin: .35rem 0 0; font-size: .74rem; line-height: 1.6; color: var(--ink-soft); }
@@ -976,33 +872,6 @@ bdi { unicode-bidi: isolate; }
 [data-cart-copy-manual][hidden] { display: none; }
 [data-cart-copy-manual] label { display: block; margin-bottom: var(--space-2); font-size: 0.82rem; }
 [data-cart-copy-text] { width: 100%; min-height: 10rem; padding: var(--space-3); border: 1px solid var(--sand); border-radius: var(--radius-sm); font: inherit; line-height: 1.6; color: var(--ink); background: var(--cream); }
-
-/* ---------- معاينة السعر النهائي في بطاقة المنتج ---------- */
-.product-pay-preview {
-  margin: 0 0 var(--space-3);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
-  font-size: 0.78rem;
-  line-height: 1.9;
-  color: var(--taupe);
-}
-.pay-preview-amount {
-  font-family: var(--font-latin);
-  font-size: 0.98rem;
-  font-weight: 600;
-  color: var(--brown);
-  font-variant-numeric: lining-nums tabular-nums;
-  font-feature-settings: "lnum" 1, "onum" 0, "tnum" 1;
-  unicode-bidi: isolate;
-}
-.pay-preview-item {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  unicode-bidi: isolate;
-  white-space: nowrap;
-}
 .product-pay-preview strong {
   color: var(--brown);
   font-family: var(--font-latin);
@@ -1010,23 +879,6 @@ bdi { unicode-bidi: isolate; }
   font-weight: 600;
   font-variant-numeric: lining-nums tabular-nums;
   font-feature-settings: "lnum" 1, "onum" 0, "tnum" 1;
-}
-.product-flag {
-  display: inline-block;
-  margin: 0 0 6px;
-  padding: 3px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--sand);
-  color: var(--brown);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-.product-note {
-  margin: 0 0 var(--space-3);
-  font-size: 0.8rem;
-  line-height: 1.8;
-  color: var(--ink-soft);
 }
 
 /* ---------- طرق الدفع والتوصيل (قسم الصفحة) ---------- */
@@ -1285,14 +1137,6 @@ bdi { unicode-bidi: isolate; }
   line-height: 1.8;
   color: var(--taupe);
 }
-
-/* ---------- سعر الملليلتر ---------- */
-.product-per-ml {
-  margin: -4px 0 var(--space-2);
-  font-size: 0.74rem;
-  line-height: 1.8;
-  color: var(--taupe);
-}
 .product-per-ml bdi {
   font-family: var(--font-latin);
   font-size: 0.92rem;
@@ -1530,6 +1374,13 @@ bdi { unicode-bidi: isolate; }
   color: var(--taupe, #8A8378);
 }
 .notfound-help a { color: var(--gold, #9A7B45); }
+/* زران في صفحة 404: العودة للرئيسية أو الانتقال مباشرة لصفحة المنتج. */
+.notfound-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+}
 
 /* ---------- قسم «ما لا نقدّمه» — بصريات هادئة، بلا أيقونات صارخة ---------- */
 .trust-grid {
@@ -1713,29 +1564,6 @@ p, li, dd, dt { line-height: 1.85; }
 body.has-shop-bar { padding-block-end: 76px; }
 @media (min-width: 900px) { .shop-bar { display: none !important; } }
 
-/* ============================================================
-   الطبقة التسويقية — شريط السعر، زر واتساب، شريط الموافقة
-   الهدف: زائرة قادمة من إعلان فيسبوك تعرف السعر وتطلب
-   قبل أن تمرّر الشاشة.
-   ============================================================ */
-
-/* شريط السعر — ثلاث خانات، الأوسط مُبرَز */
-.price-strip {
-  display: grid;
-  /* direction صريح: بدونه يعكس المتصفح ترتيب الأعمدة في سياق RTL */
-  direction: rtl;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
-  margin: 1.75rem 0 0;
-  padding: 0;
-  list-style: none;
-  border: 1px solid var(--line, #E4DCD0);
-  border-radius: 14px;
-  overflow: hidden;
-  background: var(--line, #E4DCD0);
-  max-width: 460px;
-}
-
 .price-strip li {
   display: flex;
   flex-direction: column;
@@ -1744,42 +1572,6 @@ body.has-shop-bar { padding-block-end: 76px; }
   padding: 0.85rem 0.4rem;
   background: var(--surface, #FFFDFA);
   text-align: center;
-}
-
-.price-strip .ps-size {
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  color: var(--muted, #7A6E61);
-}
-
-.price-strip .ps-price {
-  font-size: 1.3rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink, #2E2A26);
-  line-height: 1.1;
-}
-
-.price-strip .ps-featured {
-  background: var(--ink, #2E2A26);
-}
-.price-strip .ps-featured .ps-size,
-.price-strip .ps-featured .ps-price { color: #FFFDFA; }
-
-.price-strip .ps-tag {
-  font-size: 0.68rem;
-  line-height: 1.35;
-  letter-spacing: 0.01em;
-  color: #D9C7A7;
-  margin-top: 1px;
-}
-
-.price-strip-note {
-  margin: 0.7rem 0 0;
-  font-size: 0.78rem;
-  line-height: 1.6;
-  color: var(--muted, #7A6E61);
-  max-width: 460px;
 }
 
 /* زر واتساب — أخضر هادئ لا صارخ، يحترم هوية العلامة */
@@ -1855,9 +1647,6 @@ body.has-shop-bar { padding-block-end: 76px; }
 .price-strip .ps-featured,
 .price-strip .ps-featured * {
   color: #FFFDFA;
-}
-.price-strip .ps-featured .ps-tag {
-  color: #D9C7A7; /* 8.59 على الداكن */
 }
 
 /* ٢) أهداف لمسية: قواعد التنقل كانت 23px ارتفاعًا — أصغر من الحد الأدنى 44px.
@@ -1976,18 +1765,6 @@ p a[href^="https://wa.me"] {
 }
 .section.products { padding-top: 32px; }
 
-/* سعر الوحدة — صغير ومقروء، لا ينافس السعر الرئيسي */
-.unit-price {
-  display: block;
-  margin: 0.3rem 0 0;
-  font-size: 0.72rem;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  color: var(--muted, #7A6E61);
-  font-variant-numeric: tabular-nums;
-}
-.product-price .unit-price { margin-top: 0.35rem; }
-
 /* ═══════════════════════════════════════════════════════════
    المرحلة ٣ — الفخامة كما تفعلها Aesop: انضباط لا زخرفة
    الدرس المقيس: صفحة Aesop = 47 عنصر DOM. الرفاهية في القِلّة.
@@ -2092,41 +1869,11 @@ figcaption {
   color: #655A4E; /* 6.34 على #FBF8F3 · 6.62 على #FFFDFA */
 }
 
-/* ═══════════════════════════════════════════════════════════
-   قسم المكوّنات — الفخامة في الدقّة
-   الفكرة البصرية: كل مكوّن سطر واحد واضح، بلا زخرفة.
-   ═══════════════════════════════════════════════════════════ */
-
-.ingredient-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 1px;
-  background: var(--line, #E4DCD0);
-  border: 1px solid var(--line, #E4DCD0);
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-.ingredient {
-  background: var(--surface, #FFFDFA);
-  padding: 1.15rem 1.25rem;
-}
-
 .ingredient h3 {
   margin: 0;
   font-size: var(--step-1, 1.125rem);
   font-weight: 700;
   color: var(--ink, #2E2A26);
-}
-
-.ingredient-role {
-  margin: 0.2rem 0 0.55rem;
-  font-size: var(--step--1, 0.8125rem);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: #8A5F2E; /* نحاسي غامق — مقروء، ويحمل هوية العلامة */
 }
 
 .ingredient p:last-child {
@@ -2135,15 +1882,6 @@ figcaption {
   line-height: 1.7;
   color: var(--ink-soft, #4A443C);
   max-width: var(--reading, 34rem);
-}
-
-/* صندوق «ما لا نفعله» — حواف نحاسية رقيقة، لا خلفية صارخة */
-.ingredient-honesty {
-  margin-top: 1.75rem;
-  padding: 1.15rem 1.25rem;
-  border: 1px solid #D9C0A0;
-  border-radius: 14px;
-  background: #FDF9F2;
 }
 .ingredient-honesty h3 {
   margin: 0 0 0.6rem;
@@ -2443,24 +2181,6 @@ details[id="returns"] {
 .purchase-shortcuts a { min-width: 0; min-height: 44px; display: flex; align-items: center; justify-content: center; padding: .4rem .25rem; border: 1px solid #D9CCBA; border-radius: 8px; color: #41372D; font-size: .75rem; font-weight: 700; line-height: 1.45; text-align: center; text-decoration: none; }
 .purchase-shortcuts a:hover { border-color: #75512D; background: #F1E9DE; }
 .purchase-shortcuts a:focus-visible { outline: 3px solid #75512D; outline-offset: 2px; }
-
-/* مقارنة الأحجام قبل الخصم والتوصيل؛ تبقى مقروءة دون JavaScript. */
-.unit-comparison {
-  margin-top: .85rem;
-  padding: .75rem .85rem;
-  border: 1px solid var(--line, #E4DCD0);
-  border-radius: 10px;
-  background: var(--ivory, #F7F2EA);
-}
-.unit-comparison-title { margin: 0 0 .5rem; font-size: .83rem; line-height: 1.5; }
-.unit-comparison-list {
-  list-style: none;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 4rem), 1fr));
-  gap: .35rem;
-  padding: 0;
-  margin: 0;
-}
 .unit-comparison-list li {
   display: grid;
   gap: .1rem;
@@ -2473,27 +2193,10 @@ details[id="returns"] {
 }
 .unit-comparison-list span { color: var(--ink-soft, #4A443C); font-size: .75rem; }
 .unit-comparison-list strong { font-size: .88rem; }
-.unit-comparison-note { margin: .55rem 0 0; color: var(--ink-soft, #4A443C); font-size: .73rem; line-height: 1.6; }
-
-/* ── السعر الحيّ ── */
-.product-hero-price {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  margin: var(--space-4) 0 0.15rem;
-  font-size: 1.6rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
 .product-hero-price span {
   font-size: 0.8rem;
   font-weight: 400;
   color: var(--ink-soft, #4A443C);
-}
-.product-hero-unit {
-  margin: 0 0 var(--space-4);
-  font-size: 0.76rem;
-  color: var(--taupe, #6E6053);
 }
 .product-hero-actions { margin-top: 0; }
 .product-hero-feedback {
@@ -2624,94 +2327,18 @@ details[id="returns"] {
   font-weight: 700;
   line-height: 1.4;
 }
-.formula-group-pct {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #8A5F2E;
-  flex-shrink: 0;
-}
 .formula-group-role {
   margin: 0 0 0.9rem;
   font-size: 0.78rem;
   line-height: 1.65;
   color: var(--ink-soft, #4A443C);
 }
-
-.formula-rows { margin: 0; }
-.formula-row {
-  position: relative;
-  /* النسبة تأتي أولًا في DOM (dd قبل dt لشرعية <dl>) لكن موضعها البصري
-     يبقى كما كان: الاسم يمينًا والنسبة يسارًا، عبر تحديد الأعمدة صراحةً. */
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.15rem 0.6rem;
-  padding: 0.55rem 0 0.7rem;
-  border-bottom: 1px solid var(--line-soft, #F0EAE0);
-}
 .formula-row:last-child { border-bottom: 0; padding-bottom: 0.2rem; }
-.formula-inci-name {
-  grid-column: 1;
-  grid-row: 1;
-  margin: 0;
-  font-family: var(--font-latin, Georgia, serif);
-  font-size: 0.82rem;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--ink, #2E2A26);
-  word-break: break-word;
-}
-.formula-detail {
-  grid-column: 1 / -1;
-  grid-row: 2;
-  margin: 0;
-}
-.formula-why {
-  grid-column: 1 / -1;
-  margin: 0.2rem 0 0;
-  font-family: var(--font-body, sans-serif);
-  font-size: 0.75rem;
-  line-height: 1.6;
-  color: var(--ink-soft, #4A443C);
-}
-.formula-pct {
-  grid-column: 2;
-  grid-row: 1;
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 700;
-  text-align: end;
-  color: var(--ink, #2E2A26);
-}
-/* الشريط: عرضه من الرقم، ومقياسه ثابت حتى تُقارن النِسب بالعين */
-.formula-bar {
-  grid-column: 1 / -1;
-  height: 3px;
-  margin-top: 0.45rem;
-  border-radius: 2px;
-  background: var(--line-soft, #F0EAE0);
-  overflow: hidden;
-}
-.formula-bar-fill {
-  display: block;
-  height: 100%;
-  background: #8A5F2E;
-  border-radius: 2px;
-}
 
 .formula-total {
   margin: var(--space-4) 0 0;
   font-size: 0.8rem;
   color: var(--taupe, #6E6053);
-}
-
-/* صندوق الصدق — أجرأ ما في الصفحة، فيُعرض بهدوء */
-.formula-honesty {
-  margin-top: var(--space-6);
-  padding: 1.25rem 1.2rem 1.35rem;
-  border: 1px solid var(--line, #E4DCD0);
-  border-inline-start: 3px solid #8A5F2E;
-  border-radius: 10px;
-  background: var(--cream, #F7F2EA);
 }
 .formula-honesty h3 {
   margin: 0 0 0.7rem;
@@ -2728,15 +2355,6 @@ details[id="returns"] {
   font-size: 0.82rem;
   line-height: 1.75;
   color: var(--ink-soft, #4A443C);
-}
-
-.formula-inci {
-  margin: var(--space-4) 0 0;
-  font-family: var(--font-latin, Georgia, serif);
-  font-size: 0.7rem;
-  line-height: 1.7;
-  color: var(--taupe, #6E6053);
-  word-break: break-word;
 }
 
 /* يظهر فقط بعد إعداد قياس اختياري، لإمكانية تغيير قرار الموافقة. */
@@ -2793,9 +2411,7 @@ details[id="returns"] {
 .size-option { min-width: 0; }
 .size-option-body > span { max-width: 100%; overflow-wrap: anywhere; }
 .topbar p { white-space: normal; overflow: visible; text-overflow: clip; }
-.price-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .price-strip li { min-width: 0; }
-.price-strip .ps-size, .price-strip .ps-price, .price-strip .ps-tag { max-width: 100%; overflow-wrap: anywhere; }
 
 /* صورة العائلة الجديدة تُعرض كاملة على سطح المكتب؛ القصّ 2:1 كان يخفي رؤوس العبوات وقواعدها. */
 @media (min-width: 900px) {

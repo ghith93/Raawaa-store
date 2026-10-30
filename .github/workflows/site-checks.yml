@@ -37,6 +37,12 @@ jobs:
           node --check js/config.js
           node --check js/cart.js
 
+      - name: تدقيق المراجع والأصول
+        run: node scripts/ref-audit.mjs
+
+      - name: ميزانية الوزن الثابتة
+        run: node scripts/perf-static.mjs
+
       - name: الفحص الآلي للموقع
         run: node scripts/check-site.mjs
 
