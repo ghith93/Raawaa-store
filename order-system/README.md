@@ -32,7 +32,7 @@ The staged `order-http.mjs` requires explicit consent, bounded requests, a serve
 
 `customer-order-client.mjs` is a local prototype only. It stores only an opaque idempotency key in session storage and requires a new challenge for each retry. Requests now have a 15-second default timeout (configurable within 1–30 seconds); an abort is an uncertain outcome, not proof that saving failed. After reload, re-entering the same details reuses that key; closing the tab or clearing browser data can still lose it. The timeout relies on the fetch implementation honoring AbortSignal. The customer UI and those remaining recovery cases must be addressed before enabling it.
 
-`turnstile-controller.mjs` is a local adapter tested with a mocked widget. Tokens are held only in memory, cleared on expiration, consumed once, and never logged. The actual sitekey/secret and hostname have not yet been verified together with Cloudflare.
+`turnstile-controller.mjs` is a local adapter tested with a mocked widget. Tokens are held only in memory, cleared on expiration, consumed once, and never logged. The server verifier distinguishes token-specific rejection (403) from unavailable or misconfigured Siteverify (503), failing closed in either case; local tests use mock responses. The actual sitekey/secret and hostname have not yet been verified together with Cloudflare.
 
 `edge-order-runtime.mjs` composes the staged order handler, server-side validation, rate limiter and private database adapter. It deliberately refuses configuration without an injected trusted identity provider and leaves notification jobs pending for a scheduler. It is not deployed; no production trusted identity, scheduler or customer form has been enabled.
 

@@ -12,7 +12,7 @@ const settings={SUPABASE_DB_URL:'postgres://dummy',RAWAA_TURNSTILE_SECRET:'fake-
 const sql={unsafe:async(text,args)=>(await db.query(text,args)).rows,begin:async cb=>db.transaction(async tx=>cb({unsafe:async(text,args)=>(await tx.query(text,args)).rows}))};
 let identity=null,challengeGood=true;
 const handle=createEdgeOrder({getEnv:k=>settings[k],postgresFactory:()=>sql,config:sandbox.window.RAWAA_CONFIG,getTrustedIdentity:async()=>identity,
- fetchImpl:async(url,init)=>{assert.equal(url,'https://challenges.cloudflare.com/turnstile/v0/siteverify');assert.equal(JSON.parse(init.body).secret,'fake-secret');return {ok:true,json:async()=>({success:challengeGood,hostname:'store.example',action:'rawaa_order'})};}});
+ fetchImpl:async(url,init)=>{assert.equal(url,'https://challenges.cloudflare.com/turnstile/v0/siteverify');assert.equal(JSON.parse(init.body).secret,'fake-secret');return {ok:true,json:async()=>({success:challengeGood,hostname:'store.example',action:'rawaa_order',...(challengeGood ? {} : {'error-codes':['timeout-or-duplicate']})})};}});
 const body={idempotencyKey:crypto.randomUUID(),consent:true,challengeToken:'test',order:{name:'Synthetic',phone:'0990000000',address:'Synthetic',items:[{id:'serum-30',qty:1}],zone:'hama',method:'cod',totalCents:1}};
 const request=()=>new Request('https://edge.example/orders',{method:'POST',headers:{origin:'https://store.example','content-type':'application/json'},body:JSON.stringify(body)});
 assert.equal((await handle(request())).status,503);identity='synthetic-client';challengeGood=false;assert.equal((await handle(request())).status,403);

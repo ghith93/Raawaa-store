@@ -19,7 +19,7 @@ const usedTokens=new Set(),alerts=[];
 const fetchImpl=async(url,init)=>{
  if(url==='https://challenges.cloudflare.com/turnstile/v0/siteverify'){
   const payload=JSON.parse(init.body);const fresh=!usedTokens.has(payload.response);usedTokens.add(payload.response);
-  return {ok:true,json:async()=>({success:fresh,hostname:'store.example',action:'rawaa_order'})};
+  return {ok:true,json:async()=>({success:fresh,hostname:'store.example',action:'rawaa_order',...(fresh ? {} : {'error-codes':['timeout-or-duplicate']})})};
  }
  if(url.startsWith('https://api.telegram.org/')){const body=JSON.parse(init.body);alerts.push(body);return {ok:true,json:async()=>({ok:true,result:{message_id:17,chat:{id:12345}}})};}
  if(url==='https://example.supabase.co/auth/v1/user')return {ok:init.headers.authorization==='Bearer owner',json:async()=>({id:ownerId})};
