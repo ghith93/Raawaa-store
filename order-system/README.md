@@ -45,3 +45,5 @@ The staged `order-http.mjs` requires explicit consent, bounded requests, a serve
 For a local, AST-only architecture scan using Graphify, see `docs/GRAPHIFY-AR.md`. The graph is not a substitute for runtime verification.
 
 The retry design was compared against [Stripe’s general idempotency guidance](https://docs.stripe.com/error-low-level): preserve the key and reconcile an unknown prior attempt before starting a new one. This is a design reference, not evidence of a Stripe integration. Siteverify tokens remain single-use according to [Cloudflare](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/).
+
+The staged server checks that phone input contains at least seven ASCII or Arabic-Indic digits, with one optional leading plus and common formatting; it does not prove a number exists or is reachable. Any customer UI must describe and match the tested rules before launch. See [MDN](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/tel) and [OWASP input validation](https://top10proactive.owasp.org/the-top-10/c3-validate-input-and-handle-exceptions/).
