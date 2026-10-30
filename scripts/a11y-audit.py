@@ -174,6 +174,12 @@ def run(base: str) -> int:
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"\nالتقرير الكامل: {OUT}")
     print(f"\nالإجمالي: {total_violations} مخالفة إتاحة")
+    if total_violations and os.environ.get("GITHUB_ACTIONS") == "true":
+        for label, data in findings.items():
+            for item in data["violations"]:
+                targets = ", ".join(item.get("targets", [])[:3])
+                # الاسم وselectors لا يتضمنان أسرارًا؛ يساعدان في تحديد المشكلة دون فتح الأثر.
+                print(f"::error title=axe {item['id']}::{label} — {targets}", flush=True)
     return 0 if total_violations == 0 else 1
 
 

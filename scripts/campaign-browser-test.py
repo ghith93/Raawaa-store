@@ -3,6 +3,7 @@
 from __future__ import annotations
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -13,9 +14,26 @@ AXE = (ROOT / "scripts/vendor/axe.min.js").read_text(encoding="utf-8")
 checks: list[tuple[str, bool, str]] = []
 
 
+def report_exception(exc_type, value, traceback):
+    if os.environ.get('GITHUB_ACTIONS') == 'true':
+        frame = traceback
+        location = 'unknown'
+        while frame:
+            if Path(frame.tb_frame.f_code.co_filename).name == 'campaign-browser-test.py':
+                location = f'campaign-browser-test.py:{frame.tb_lineno}'
+            frame = frame.tb_next
+        print(f'::error::Campaign browser test raised {exc_type.__name__} ({location})', flush=True)
+    sys.__excepthook__(exc_type, value, traceback)
+
+
+sys.excepthook = report_exception
+
+
 def check(name: str, condition: bool, detail: str = "") -> None:
     checks.append((name, bool(condition), detail))
     print(f"  {'✓' if condition else '✗'} {name}" + (f" — {detail}" if detail else ""))
+    if not condition and os.environ.get('GITHUB_ACTIONS') == 'true':
+        print(f'::error::{name}', flush=True)
 
 
 def run(base: str, browser_name: str, ignore_https: bool) -> int:
