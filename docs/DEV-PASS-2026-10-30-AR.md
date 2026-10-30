@@ -3,10 +3,7 @@
 > **النطاق:** تدقيق كامل للمشروع (بنية، أصول، أوزان، بوابات، JS ميت، CSS ميت، HTML، SEO،
 > إتاحة) ثم تنفيذ الإصلاحات والتحسينات، مع قياس قبل/بعد لكل بند.
 >
-> **القيود الصريحة في هذه الجلسة:** لا شبكة خارجية (لا يمكن الوصول إلى
-> `raawaa-store.pages.dev` ولا تنزيل Chromium)، فلا تشغيل لـ Playwright ولا Lighthouse
-> ولا `asset-audit` ولا `perf-budget`. كل ما دون «متحقَّق» أدناه تحقّق **بفحص ثابت**
-> (قراءة ملفات + بوابات محلية) وليس بمتصفح. **لم يُنشر شيء.**
+> **السياق التاريخي:** قيود الجولة الأولى كانت عدم توفر الشبكة وChromium محليًا، لذلك لم يُنشر شيء في تلك المرحلة. أُضيف لاحقًا اختبار Chromium في CI، ثم دُمج PR #89 ونُشر؛ حالة الدمج والنشر النهائية موثقة في §15 أدناه. لا تُقرأ عبارات «لم يُنشر» في الأقسام الأقدم على أنها الحالة الحالية.
 
 ---
 
@@ -401,4 +398,18 @@ CSS أو استهداف الظهور. لا تغيير مرئي أو سلوكي �
 - استمر اختبار السلة ومجموعها دون اتصال. لا يتغير كود الموقع المنشور ولا الأسعار أو الرسوم.
 - محليًا: `npm run gates:offline` نجح (Node 40/40، `check-site` 485/485، ومراجع/أداء/ESLint/HTML validation ناجحة)، و`git diff --check` نظيف.
 - اجتاز CI الفعلي على Chromium وWebKit وبقية وظائف البوابة في التشغيل [41115104488](https://github.com/ghith93/Raawaa-store/actions/runs/41115104488)؛ ونجح `ESLint + html-validate` في [41115104537](https://github.com/ghith93/Raawaa-store/actions/runs/41115104537).
-- طلب الدمج [#89](https://github.com/ghith93/Raawaa-store/pull/89) مفتوح؛ لا يوجد تحقق مستقل على هاتف حقيقي. لا نشر لهذا التغيير.
+- عند نهاية هذا القسم كان طلب الدمج مفتوحًا؛ الحالة اللاحقة موثقة في §15. لا يوجد تحقق مستقل على هاتف حقيقي.
+
+## 15) الدمج والنشر والتحقق النهائي — 2026-10-30
+
+بناءً على تفويض المالك بمتابعة PR #89 دون الرجوع إليه، اكتمل الدمج والنشر:
+
+- دُمج [PR #89](https://github.com/ghith93/Raawaa-store/pull/89) إلى `main` عند `2026-10-30T19:34:50Z`؛ commit الدمج `15a8dfa1a673546959d41e99cdca7b0ee305834d`.
+- نجحت فحوص ما بعد الدمج: Site checks [41116408355](https://github.com/ghith93/Raawaa-store/actions/runs/41116408355)، Code quality [41116408480](https://github.com/ghith93/Raawaa-store/actions/runs/41116408480)، وGraphify [41116408493](https://github.com/ghith93/Raawaa-store/actions/runs/41116408493).
+- نجح نشر Cloudflare [41116408539](https://github.com/ghith93/Raawaa-store/actions/runs/41116408539)، بما فيه البناء والنشر وتشخيص Cloudflare وفحص HTTP الحي بعد النشر.
+- غطى PR اختبار Chromium للتنقل دون اتصال إلى `/` مع query وصفحة الخصوصية، عدم تخزين عناوين query، ومطابقة بايتات بدائل صور AVIF/WebP/JPEG مع fallbacks المخزنة. لا تعديل في أسعار البيع أو رسوم التوصيل.
+- لم يُجرَ اختبار على هاتف حقيقي، ولم يُثبت استلام رسالة واتساب أو طلب. لا تُستنتج هذه النتائج من نجاح CI أو فتح رابط WhatsApp.
+- ظهر تحذيران غير مانعين في سجل النشر: `cloudflare/wrangler-action@v3` يستخدم Node.js 20، و`ubuntu-latest` سيتحول مستقبلًا إلى Ubuntu 26. استجابةً لهما، عُدّل `.github/workflows/deploy.yml` على فرع الجلسة إلى `cloudflare/wrangler-action@v4.1.3` (Node 24) و`ubuntu-24.04`. نجح Site checks [41119046307](https://github.com/ghith93/Raawaa-store/actions/runs/41119046307) على commit `08044f9735a4d36983d849ae22ef19babc4994e7` بكافة الوظائف الست، ومنها Chromium وWebKit والإتاحة. التعديل لم يُدمج إلى `main` ولم ينفّذ نشرًا.
+- Dispatch مستقل لمراقبة uptime فشل بـ `403 Resource not accessible by integration`؛ لم تُوسّع صلاحيات GitHub، وفحص النشر الحي المدمج نجح.
+
+**الخلاصة:** PR #89 مدمج ومنشور ومتحقق منه على مستوى workflow وفحص HTTP الحي. لا يلزم تغيير أسعار أو إعادة نشر في هذه المتابعة.
