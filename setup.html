@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#101418">
+<title>إعداد رواء من الآيفون</title>
+<style>
+:root{color-scheme:dark}body{font-family:-apple-system,"Segoe UI",Tahoma,sans-serif;background:#101418;color:#eef2f5;margin:0;padding:16px;line-height:1.7;max-width:760px;margin-inline:auto}h1{font-size:1.3rem;margin:0 0 4px}h2{font-size:1.05rem;margin:0 0 8px;color:#ffd479}section{background:#1a2129;border-radius:14px;padding:16px;margin:14px 0}button{font-size:1rem;padding:12px 18px;border-radius:12px;border:0;background:#2f81f7;color:#fff;margin:6px 4px 6px 0;min-height:48px}button.alt{background:#3a4653}input,pre{width:100%;box-sizing:border-box;background:#0d1117;color:#7ee787;border:1px solid #30363d;border-radius:10px;padding:10px;font-size:.95rem;margin:8px 0}pre{white-space:pre-wrap;word-break:break-word;direction:ltr;text-align:left}a{color:#79c0ff}.small{font-size:.88rem;color:#b2bdc6}code{direction:ltr;display:inline-block;background:#0d1117;padding:4px 8px;border-radius:8px;word-break:break-all}
+</style>
+</head>
+<body>
+<h1>إعداد رواء من الآيفون</h1>
+<p class="small">صفحة مؤقتة. توليد السرّ يجري داخل هاتفك فقط؛ لا يُرسل إلى هذه الصفحة أو إلى أي خادم.</p>
+<section><h2>١) ولِّد السرّ</h2><button id="genBtn">ولِّد سرًّا جديدًا</button><div id="secretWrap" hidden><input id="secretOut" readonly dir="ltr" aria-label="السرّ"><button class="alt" id="copySecret">نسخ السرّ</button><p class="small">احفظه عندك. لا ترسله لأحد.</p></div></section>
+<section><h2>٢) أضِفه إلى أسرار Supabase</h2><p><a href="https://supabase.com/dashboard/project/oyoyozdugicmnkfhjovo/functions">افتح لوحة Supabase</a> ثم Manage (الإدارة) ← Secrets (الأسرار) وأضف:</p><p><code onclick="copyText('RAWAA_OUTBOX_SCHEDULER_SECRET')">RAWAA_OUTBOX_SCHEDULER_SECRET</code></p><p class="small">ألصق السرّ الذي ولّدته في الخطوة الأولى.</p></section>
+<section><h2>٣) أضِفه إلى أسرار GitHub</h2><p><a href="https://github.com/ghith93/Raawaa-store/settings/secrets/actions/new">افتح إضافة سرّ GitHub</a> وأدخل الاسم نفسه والقيمة نفسها، ثم اضغط Add secret.</p><p><a href="https://github.com/ghith93/Raawaa-store/actions/workflows/outbox-scheduler.yml">صفحة مجدول التنبيهات</a></p></section>
+<section><h2>٤) فحص ترويسات الاتصال</h2><p class="small">يفحص ما يصل إلى الدالة عند الاتصال العادي، ثم يجرّب ترويسات مزوّرة. لا يرسل بيانات شخصية.</p><button id="probeBtn">ابدأ الفحص</button><button class="alt" id="copyResult" hidden>نسخ النتيجة</button><pre id="probeOut" aria-live="polite">اضغط للبدء.</pre></section>
+<script>
+const endpoint="https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-header-probe";
+function copyText(text){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>alert("تم النسخ"),()=>alert("انسخ يدويًا: "+text))}else{window.prompt("انسخ النص التالي",text)}}
+document.getElementById("genBtn").onclick=()=>{const bytes=crypto.getRandomValues(new Uint8Array(48));let binary="";for(const byte of bytes)binary+=String.fromCharCode(byte);document.getElementById("secretOut").value=btoa(binary).replaceAll("+","-").replaceAll("/","_").replaceAll("=","");document.getElementById("secretWrap").hidden=false};
+document.getElementById("copySecret").onclick=()=>copyText(document.getElementById("secretOut").value);
+document.getElementById("probeBtn").onclick=async()=>{const out=document.getElementById("probeOut"),lines=[];out.textContent="جارٍ الفحص…";for(const [label,options] of [["الاتصال العادي",{method:"GET",cache:"no-store"}],["اختبار الترويسات المزوّرة",{method:"POST",cache:"no-store",headers:{"X-Forwarded-For":"8.8.8.8","X-Real-IP":"8.8.8.8","CF-Connecting-IP":"8.8.8.8"}}]]){try{const response=await fetch(endpoint+"?format=json&nocache="+Date.now(),options);lines.push("== "+label+" ==",JSON.stringify(await response.json(),null,2))}catch{lines.push("== "+label+" ==","تعذّر إكمال الطلب؛ قد تكون البوابة رفضت الترويسات.")}}out.textContent=lines.join("\n\n");document.getElementById("copyResult").hidden=false};
+document.getElementById("copyResult").onclick=()=>copyText(document.getElementById("probeOut").textContent);
+</script>
+</body>
+</html>

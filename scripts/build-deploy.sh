@@ -16,7 +16,7 @@ rm -rf "$OUT"
 mkdir -p "$OUT"
 
 # 1) ملفات الجذر التي يطلبها المتصفح
-for f in index.html serum.html privacy.html check.html 404.html manifest.webmanifest sw.js robots.txt sitemap.xml _headers _redirects .nojekyll; do
+for f in index.html serum.html privacy.html check.html setup.html 404.html manifest.webmanifest sw.js robots.txt sitemap.xml _headers _redirects .nojekyll; do
   [ -f "$ROOT/$f" ] && cp "$ROOT/$f" "$OUT/"
 done
 

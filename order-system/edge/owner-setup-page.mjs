@@ -39,7 +39,7 @@ const HTML = `<!doctype html>
 <div id="secretWrap" hidden>
 <input id="secretOut" readonly dir="ltr" onclick="this.select()">
 <button class="alt" id="copySecret">نسخ السرّ</button>
-<p class="small">احفظه عندك. لا ترسله لأحد — نه أنا ولا غيري.</p>
+<p class="small">احفظه عندك. لا ترسله لأحد، حتى لي.</p>
 </div>
 </section>
 
@@ -144,6 +144,11 @@ Deno.serve(request => {
   }
   return new Response(HTML, {
     status: 200,
-    headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }
+    headers: {
+      'content-type': 'text/html; charset=utf-8',
+      'content-disposition': 'inline; filename="index.html"',
+      'cache-control': 'no-store, no-cache, must-revalidate',
+      'x-content-type-options': 'nosniff'
+    }
   });
 });
