@@ -2,9 +2,9 @@
 // (2026-10-30) sent 8.8.8.8 as CF-Connecting-IP and got HTTP 403; X-Forwarded-For was
 // overwritten, X-Real-IP was absent, and True-Client-IP accepted the synthetic value.
 // Therefore use only cf-connecting-ip; never trust the other client-supplied headers.
-// Deployment remains gated on:
-//   1) the owner creating a separate RAWAA_RATE_LIMIT_HMAC_KEY (>=32 chars) in Supabase;
-//   2) the gradual-rollout checklist in docs/RAWAA-AUTOMATION-MASTER-PLAN-AR.md (M1).
+// The owner has provisioned RAWAA_RATE_LIMIT_HMAC_KEY in Supabase (its value is not read
+// into this repository/session). Deployment remains gated on the M1 gradual-rollout
+// checklist, privacy/data-retention review, and end-to-end tests with synthetic orders.
 // The store config is inlined at bundle time from js/config.js so prices are always
 // recomputed server-side from the single trusted source, never from client input.
 import postgres from 'npm:postgres@3.4.7';
