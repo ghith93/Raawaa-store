@@ -41,7 +41,7 @@ export function validateReport(text) {
   return { priorities: value.priorities.map(({action, reason}) => ({action, reason})), unknowns: value.unknowns };
 }
 
-export async function createReport({ accountId, token, checks, fetchImpl = fetch }) {
+export async function requestInference({ accountId, token, messages, fetchImpl = fetch }) {
   if (!/^[a-f0-9]{32}$/i.test(accountId || '') || typeof token !== 'string' || !token.trim()) throw new Error('Cloudflare configuration missing or invalid');
   const url = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${MODEL}`;
   let response;
@@ -49,14 +49,18 @@ export async function createReport({ accountId, token, checks, fetchImpl = fetch
     response = await fetchImpl(url, {
       method: 'POST', redirect: 'error', signal: AbortSignal.timeout(45000),
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: buildMessages(checks), max_completion_tokens: 800, reasoning_effort: 'low', response_format: {type: 'json_object'}, store: false, stream: false }),
+      body: JSON.stringify({ messages, max_completion_tokens: 800, reasoning_effort: 'low', response_format: {type: 'json_object'}, store: false, stream: false }),
     });
   } catch { throw new Error('Cloudflare request failed'); }
   if (!response.ok) throw new Error(`Cloudflare request failed (HTTP ${response.status})`);
   let payload;
   try { payload = await response.json(); } catch { throw new Error('Invalid Cloudflare response'); }
   if (payload?.success !== true) throw new Error('Cloudflare inference failed');
-  return validateReport(payload.result?.choices?.[0]?.message?.content ?? payload.result?.response);
+  return payload.result?.choices?.[0]?.message?.content ?? payload.result?.response;
+}
+
+export async function createReport({ accountId, token, checks, fetchImpl = fetch }) {
+  return validateReport(await requestInference({ accountId, token, messages: buildMessages(checks), fetchImpl }));
 }
 
 function escapeHtml(s) { return s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;'); }
