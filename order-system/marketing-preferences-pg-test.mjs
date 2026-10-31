@@ -57,7 +57,7 @@ try {
     order by ordinal_position
   `)).rows.map(row => row.column_name);
   assert.deepEqual(columns, ['event_id', 'phone_key', 'event', 'consent_version', 'source', 'occurred_at']);
-  assert.equal(columns.some(name => /(^|_)(raw_?)?phone(_|$)/i.test(name)), false);
+  assert.equal(columns.some(name => /^(?:raw_?phone|phone|phone_number|normalized_phone)$/i.test(name)), false);
 
   for (const role of ['anon', 'authenticated']) {
     await db.exec(`set role ${role}`);
