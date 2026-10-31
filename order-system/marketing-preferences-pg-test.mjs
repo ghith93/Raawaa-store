@@ -118,6 +118,14 @@ try {
   await db.exec(rollback);
   assert.equal((await db.query(`select to_regclass('rawaa_store.marketing_preference_events') as table_name`)).rows[0].table_name, null);
   assert.equal((await db.query(`select to_regprocedure('rawaa_store.redact_expired_marketing_preference_events(integer)') as function_name`)).rows[0].function_name, null);
+} catch (error) {
+  // GitHub Actions annotations expose a concise failure reason through the Checks API
+  // even when hosted-runner log archives are unavailable to this environment.
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    const detail = String(error?.message ?? error).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A').slice(0, 500);
+    console.log(`::error title=PGlite candidate migration integration::${detail}`);
+  }
+  throw error;
 } finally {
   await db.close();
 }
