@@ -44,13 +44,21 @@
 
   /* ------------------------------ أدوات مساعدة ------------------------------ */
 
+  /**
+   * أسعار الواجهة المرجعية تُعرض كأعداد صحيحة بلا فواصل آلاف.
+   * أي مبلغ محسوب يحوي كسورًا يُقرَّب لأقرب دولار ويُعلَّم بـ ≈؛
+   * تبقى الحسابات الداخلية بالسنتات كما هي ولا يتغير السعر النهائي المحاسبي.
+   */
   function money(value) {
-    var isInt = Math.abs(value - Math.round(value)) < 0.005;
+    var amount = Number(value);
+    var rounded = Math.round(amount);
+    var isWhole = Math.abs(amount - rounded) < 0.005;
     var formatted = new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: isInt ? 0 : 2,
-      maximumFractionDigits: 2
-    }).format(value);
-    return CONFIG.currency.symbol + formatted;
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+      useGrouping: false
+    }).format(rounded);
+    return (isWhole ? '' : '≈ ') + CONFIG.currency.symbol + formatted;
   }
 
   /** تحويل إلى سنتات لتجنّب أخطاء الفواصل العشرية في الجمع. */

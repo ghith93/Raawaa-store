@@ -206,13 +206,13 @@ def run(base: str) -> int:
               page.evaluate("window.__RAWAA_TEST__.selectedMethod()") == "shamcash",
               str(page.evaluate("window.__RAWAA_TEST__.selectedMethod()")))
         total_text = page.locator("[data-cart-total]").inner_text()
-        check("الشام كاش: قيمة المنتجات $93 ← خصم 10% ← الإجمالي $83.70",
-              total_text == "$83.70", total_text)
+        check("الشام كاش: قيمة المنتجات $93 ← خصم 10% ← الإجمالي ≈ $84",
+              total_text == "≈ $84", total_text)
         check("صف قيمة المنتجات يظهر القيمة الصحيحة",
               page.locator("[data-cart-subtotal]").inner_text() == "$93",
               page.locator("[data-cart-subtotal]").inner_text())
-        check("صف الخصم يظهر − $9.30",
-              page.locator("[data-cart-discount]").inner_text() == "− $9.30",
+        check("صف الخصم يظهر − ≈ $9",
+              page.locator("[data-cart-discount]").inner_text() == "− ≈ $9",
               page.locator("[data-cart-discount]").inner_text())
         check("التوصيل يظهر «مجاني» مع الشام كاش",
               page.locator("[data-cart-delivery]").inner_text() == "مجاني",
@@ -242,8 +242,8 @@ def run(base: str) -> int:
         check("باقي المحافظات + شام كاش: رسوم $4",
               page.locator("[data-cart-delivery]").inner_text() == "$4",
               page.locator("[data-cart-delivery]").inner_text())
-        check("الإجمالي مع محافظات وشام كاش ($93 − 10% + $4 = $87.70)",
-              page.locator("[data-cart-total]").inner_text() == "$87.70",
+        check("الإجمالي مع محافظات وشام كاش ($93 − 10% + $4 = ≈ $88)",
+              page.locator("[data-cart-total]").inner_text() == "≈ $88",
               page.locator("[data-cart-total]").inner_text())
 
         page.locator('[data-pay-select="cod"]').check()
@@ -339,8 +339,8 @@ def run(base: str) -> int:
         page.locator('[data-qty-decrease="serum-30"]').click()
         page.wait_for_timeout(150)
         # 19+26+29 = 74 − 7.40 = 66.60
-        check("بعد تقليل الكمية: $66.60",
-              page.locator("[data-cart-total]").inner_text() == "$66.60",
+        check("بعد تقليل الكمية: ≈ $67",
+              page.locator("[data-cart-total]").inner_text() == "≈ $67",
               page.locator("[data-cart-total]").inner_text())
 
         # زر التقليل معطّل عند 1
@@ -504,8 +504,8 @@ def run(base: str) -> int:
               sp.locator("[data-cart-count]").inner_text())
         sp.locator("[data-cart-open]").first.click()
         sp.wait_for_timeout(500)
-        check("إجمالي السلة المشتركة صحيح ($48 − 10% = $43.20)",
-              sp.locator("[data-cart-total]").inner_text() == "$43.20",
+        check("إجمالي السلة المشتركة صحيح ($48 − 10% = ≈ $43)",
+              sp.locator("[data-cart-total]").inner_text() == "≈ $43",
               sp.locator("[data-cart-total]").inner_text())
 
         # رابط سلة غير صالح يجب ألا يكسر الصفحة
@@ -540,8 +540,8 @@ def run(base: str) -> int:
         check("شريط السلة يوضح أن المبلغ تقديري", "تقديري" in m.locator("[data-sticky-bar]").inner_text())
         check("الشريط يعرض عدد القطع", m.locator("[data-sticky-count]").inner_text() == "1",
               m.locator("[data-sticky-count]").inner_text())
-        check("الشريط يعرض الإجمالي المرجعي مع خصم شام كاش ($19 − 10% = $17.10)",
-              m.locator("[data-sticky-total]").inner_text() == "$17.10",
+        check("الشريط يعرض الإجمالي المرجعي مع خصم شام كاش ($19 − 10% = ≈ $17)",
+              m.locator("[data-sticky-total]").inner_text() == "≈ $17",
               m.locator("[data-sticky-total]").inner_text())
         m.locator("[data-sticky-bar] button").click()
         m.wait_for_timeout(400)
@@ -629,8 +629,8 @@ def run(base: str) -> int:
         check("السلة تعمل بلا إنترنت", pw.locator("[data-cart-count]").inner_text() == "1")
         pw.locator("[data-cart-open]").first.click()
         pw.wait_for_timeout(500)
-        check("الحساب يعمل بلا إنترنت ($23.40 مع شام كاش)",
-              pw.locator("[data-cart-total]").inner_text() == "$23.40",
+        check("الحساب يعمل بلا إنترنت (≈ $23 مع شام كاش)",
+              pw.locator("[data-cart-total]").inner_text() == "≈ $23",
               pw.locator("[data-cart-total]").inner_text())
 
         # تنقّل حقيقي بلا شبكة: يجب أن يعيد عامل الخدمة جذر الموقع إلى index.html المخزنة

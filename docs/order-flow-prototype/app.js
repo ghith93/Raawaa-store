@@ -6,12 +6,13 @@
   var withdrawalText = 'أرغب بإلغاء موافقتي على الرسائل التسويقية من رواء';
 
   function formatPrice(product, storeConfig) {
-    return storeConfig.currency.symbol + Number(product.price).toFixed(Number.isInteger(Number(product.price)) ? 0 : 2);
+    return storeConfig.currency.symbol + String(Math.round(Number(product.price)));
   }
   function formatAmount(valueInCents, storeConfig) {
     var value = Number(valueInCents) / 100;
-    var formatted = Number.isInteger(value) ? value.toFixed(0) : value.toFixed(2);
-    return storeConfig.currency.symbol + formatted;
+    var rounded = Math.round(value);
+    var isWhole = Math.abs(value - rounded) < 0.005;
+    return (isWhole ? '' : '≈ ') + storeConfig.currency.symbol + String(rounded);
   }
   function buildWithdrawalUrl(number) {
     var digits = String(number || '');

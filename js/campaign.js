@@ -47,7 +47,13 @@
 
   function formatMoney(value) {
     var amount = Number(value);
-    return config.currency.symbol + amount.toFixed(Number.isInteger(amount) ? 0 : 2);
+    var rounded = Math.round(amount);
+    var isWhole = Math.abs(amount - rounded) < 0.005;
+    return (isWhole ? '' : '≈ ') + config.currency.symbol + String(rounded);
+  }
+
+  function formatUnitMoney(value) {
+    return config.currency.symbol + Number(value).toFixed(2);
   }
 
   function productCard(product) {
@@ -64,7 +70,7 @@
     meta.textContent = product.shortLabel || product.note || '';
     var unit = document.createElement('p');
     unit.className = 'campaign-product-unit';
-    unit.textContent = formatMoney(product.price / product.sizeMl) + ' لكل مل تقريبًا · قبل الخصم والتوصيل';
+    unit.textContent = formatUnitMoney(product.price / product.sizeMl) + ' لكل مل تقريبًا · قبل الخصم والتوصيل';
     var link = document.createElement('a');
     link.href = productUrl(source);
     link.textContent = 'راجعي الحجم في صفحة السيروم';

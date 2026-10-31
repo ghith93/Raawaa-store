@@ -98,11 +98,13 @@ test('local form validation discards synthetic fields and never calls network or
   assert.equal(api.validPhone('0991234567'), true);
   assert.equal(api.validPhone('٠٩٩١٢٣٤٥٦٧'), true);
   assert.equal(api.validPhone('letters-only'), false);
-  assert.equal(ids['estimate-total'].textContent, '$17.10');
+  assert.equal(ids['estimate-total'].textContent, '≈ $17');
+  assert.equal(api.formatAmount(2340, config), '≈ $23');
+  assert.equal(api.formatAmount(123400, config), '$1234');
   ids.quantity.value = '2';
   ids.quantity.listeners.input();
   assert.equal(ids['estimate-products'].textContent, '$38');
-  assert.equal(ids['estimate-total'].textContent, '$34.20');
+  assert.equal(ids['estimate-total'].textContent, '≈ $34');
   ids['payment-method'].value = 'cod';
   ids['scent-option'].value = 'vanilla';
   ids['payment-method'].listeners.change();

@@ -59,6 +59,14 @@ const HALF_50 = [{
   sizeId: 'serum-50', enabled: true, badge: '−10%'
 }];
 
+test('عرض السعر بلا فواصل آلاف وبعدد صحيح مع وسم التقريب للمبالغ الكسرية', async () => {
+  const w = await boot(NO_OFFER);
+  assert.equal(w.__RAWAA_TEST__.money(1234), '$1234');
+  assert.equal(w.__RAWAA_TEST__.money(26), '$26');
+  assert.equal(w.__RAWAA_TEST__.money(23.4), '≈ $23');
+  assert.equal(w.__RAWAA_TEST__.money(23.5), '≈ $24');
+});
+
 test('بلا عروض: الأسعار كما هي 19 / 26 / 29', async () => {
   const w = await boot(NO_OFFER);
   const shown = [...w.document.querySelectorAll('#products .size-option-price')].map((n) => n.textContent.trim());
@@ -87,7 +95,7 @@ test('عرض 10% على 50 مل يظهر قبل/بعد ويُحتسب في ال�
   const doc = w.document;
 
   const priceNode = doc.querySelector('[data-size-for="serum-50"] .size-option-price');
-  assert.equal(priceNode.textContent.replace(/\s+/g, ' ').trim(), '$26 $23.40');
+  assert.equal(priceNode.textContent.replace(/\s+/g, ' ').trim(), '$26 ≈ $23');
   assert.ok(priceNode.querySelector('s'), 'السعر القديم مشطوب لا محذوف');
   const flag = doc.querySelector('[data-size-for="serum-50"] .size-option-flag--offer');
   assert.equal(flag.textContent, '−10% · عرض نصف');
@@ -105,15 +113,15 @@ test('عرض 10% على 50 مل يظهر قبل/بعد ويُحتسب في ال�
 
   const row = doc.querySelector('[data-row-offer]');
   assert.equal(row.hidden, false);
-  assert.equal(doc.querySelector('[data-cart-offer]').textContent, '− $2.60');
+  assert.equal(doc.querySelector('[data-cart-offer]').textContent, '− ≈ $3');
   assert.match(doc.querySelector('[data-offer-label]').textContent, /عرض نصف/);
 
   const msg = api.buildOrderMessage();
-  assert.match(msg, /23\.40/);
+  assert.match(msg, /≈ \$23/);
   assert.match(msg, /بدل \$26/);
-  assert.match(msg, /خصم عرض «عرض نصف»: − \$2\.60/);
+  assert.match(msg, /خصم عرض «عرض نصف»: − ≈ \$3/);
   assert.match(msg, /قيمة المنتجات: \$26/);
-  assert.match(msg, /المجموع المرجعي: \$25\.40/);
+  assert.match(msg, /المجموع المرجعي: ≈ \$25/);
 });
 
 test('العرض المقيَّد بحجم لا يمسّ بقية الأحجام', async () => {
@@ -181,12 +189,12 @@ test('سعر خاص لحجم يُعرض ويُحتسب كسعر جديد', async
 test('صفحة السيروم تحمل العرض نفسه ولا تختلف عن الرئيسية', async () => {
   const w = await boot(HALF_50, serumHtml);
   const node = w.document.querySelector('[data-size-for="serum-50"] .size-option-price');
-  assert.equal(node.textContent.replace(/\s+/g, ' ').trim(), '$26 $23.40');
+  assert.equal(node.textContent.replace(/\s+/g, ' ').trim(), '$26 ≈ $23');
   const api = w.__RAWAA_TEST__;
   api.addToCart('serum-50');
   api.setMethod('shamcash', true);
   assert.equal(api.totals().amount, 21.06);
-  assert.equal(w.document.querySelector('[data-cart-offer]').textContent, '− $2.60');
+  assert.equal(w.document.querySelector('[data-cart-offer]').textContent, '− ≈ $3');
 });
 
 // ───────────────────── عروض العبوات في السلة الحقيقية ─────────────────────
