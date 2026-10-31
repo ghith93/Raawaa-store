@@ -1,0 +1,54 @@
+name: Customer-data retention (staging)
+
+# Fail closed unless the owner explicitly enables the reviewed schedule with BOTH
+# repository variables below. Keep both unset until policy approval, isolated
+# staging E2E, and migration/endpoint verification are complete. The endpoint
+# calls bounded cleanup for orders and marketing events; it reveals no row counts.
+# This workflow is local-only until intentionally merged and configured; no SLA.
+on:
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+    inputs:
+      confirm_reviewed_run:
+        description: 'Run only after approved migration, endpoint, and isolated staging verification'
+        type: choice
+        required: true
+        default: 'disabled'
+        options:
+          - disabled
+          - run_after_review
+
+permissions:
+  contents: read
+
+concurrency:
+  group: retention-scheduler
+  cancel-in-progress: false
+
+jobs:
+  redact-expired-contacts:
+    name: تنظيف بيانات التواصل المنتهية
+    # Explicit repository-side opt-in plus a separate review latch. Manual runs
+    # require a confirmation choice; the default is disabled.
+    if: ${{ vars.RAWAA_RETENTION_ENABLED == 'true' && vars.RAWAA_RETENTION_REVIEWED == 'true' && (github.event_name == 'schedule' || inputs.confirm_reviewed_run == 'run_after_review') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: استدعاء مهمة الاحتفاظ المرحلية
+        env:
+          RAWAA_RETENTION_SCHEDULER_SECRET: ${{ secrets.RAWAA_RETENTION_SCHEDULER_SECRET }}
+          RETENTION_URL: https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-retention
+        run: |
+          if [ -z "$RAWAA_RETENTION_SCHEDULER_SECRET" ]; then
+            echo "لم يُضبط سرّ مهمة الاحتفاظ بعد — تخطٍّ آمن."
+            exit 0
+          fi
+          code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer $RAWAA_RETENTION_SCHEDULER_SECRET" \
+            --max-time 40 "$RETENTION_URL" || echo 000)
+          echo "Retention endpoint HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "فشلت مهمة الاحتفاظ؛ لا تُعرض تفاصيل قاعدة البيانات في السجل."
+            exit 1
+          fi

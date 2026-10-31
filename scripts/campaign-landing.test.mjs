@@ -29,6 +29,10 @@ test('campaign creative angle is selected only from the allowlist', () => {
   const prices = page('https://store.test/campaign?utm_content=reference_prices');
   assert.equal(prices.window.document.documentElement.dataset.campaignAngle, 'reference_prices');
   assert.match(prices.window.document.querySelector('h1').textContent, /قارني الأحجام/);
+
+  const sizeGuide = page('https://store.test/campaign?utm_content=size_guide');
+  assert.equal(sizeGuide.window.document.documentElement.dataset.campaignAngle, 'size_guide');
+  assert.match(sizeGuide.window.document.querySelector('h1').textContent, /اختاري الحجم/);
 });
 
 test('price cards are generated from central config and link to product page with safe UTM tags', () => {

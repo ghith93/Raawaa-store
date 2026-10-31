@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; frame-ancestors 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>معاينة نموذج الطلب — رواء</title>
+  <link rel="stylesheet" href="app.css">
+  <script src="../../js/config.js" defer></script>
+  <script src="../../js/offers.js" defer></script>
+  <script src="../../order-system/order-pricing.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">تخطّي إلى النموذج</a>
+  <header class="topbar"><a href="../marketing-studio/" class="brand">RAWAA <span>رواء</span></a><span class="badge">نموذج تجريبي غير مفعّل</span></header>
+  <main id="main" class="shell">
+    <section class="intro">
+      <p class="eyebrow">معاينة محلية فقط</p>
+      <h1>نموذج طلب رواء</h1>
+      <p>هذه واجهة لمراجعة تجربة الطلب والموافقات. لا تُدخلي معلومات حقيقية أو بيانات عميلة.</p>
+      <div class="warning" role="note"><strong>لا يُرسل هذا النموذج طلبًا ولا يحفظ بيانات.</strong> لا يوجد endpoint متصل. زر المعاينة يفحص المدخلات في المتصفح فقط.</div>
+    </section>
+
+    <form id="order-form" class="panel" novalidate>
+      <fieldset>
+        <legend>اختيار المنتج</legend>
+        <label for="product">الحجم</label>
+        <select id="product" name="product" required></select>
+        <p id="product-reference" class="help" aria-live="polite"></p>
+        <label for="quantity">الكمية</label>
+        <input id="quantity" name="quantity" type="number" min="1" max="10" step="1" value="1" inputmode="numeric" required>
+        <p class="help">الأسعار المعروضة مرجعية للمنتج قبل العطر والتوصيل وأي تفاصيل تتأكد في المحادثة.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>بيانات التواصل والتوصيل</legend>
+        <label for="customer-name">الاسم</label>
+        <input id="customer-name" name="name" type="text" maxlength="80" autocomplete="off" required>
+        <label for="customer-phone">رقم الهاتف</label>
+        <input id="customer-phone" name="phone" type="tel" maxlength="30" autocomplete="off" inputmode="tel" required>
+        <label for="customer-address">المنطقة والعنوان</label>
+        <textarea id="customer-address" name="address" maxlength="200" autocomplete="off" rows="3" required></textarea>
+        <p class="help">المعاينة لا تتحقق من إمكانية الوصول إلى رقم الهاتف ولا تؤكد التوفر أو موعد التوصيل.</p>
+        <label for="delivery-zone">منطقة التوصيل</label>
+        <select id="delivery-zone" name="zone" required></select>
+        <p id="delivery-reference" class="help"></p>
+        <label for="payment-method">طريقة الدفع</label>
+        <select id="payment-method" name="method" required></select>
+        <p id="payment-reference" class="help"></p>
+        <label for="scent-option">العطر (اختياري)</label>
+        <select id="scent-option" name="scent"></select>
+        <label for="oil-option">إضافة زيت (اختياري)</label>
+        <select id="oil-option" name="oil"></select>
+        <p id="customization-reference" class="help"></p>
+      </fieldset>
+
+      <section class="estimate" aria-labelledby="estimate-title">
+        <h2 id="estimate-title">ملخص السعر المرجعي</h2>
+        <p class="help">يتحدّث مع اختياراتك، وتقارن اختبارات المعاينة حسابه بحساب الخادم. ليس عرضًا نهائيًا ولا يرسل بيانات.</p>
+        <dl class="estimate-list">
+          <div><dt>المنتجات بعد العروض المفعّلة</dt><dd id="estimate-products">—</dd></div>
+          <div><dt>العطر المحدد</dt><dd id="estimate-scent">—</dd></div>
+          <div><dt>المجموع قبل خصم الدفع</dt><dd id="estimate-subtotal">—</dd></div>
+          <div><dt>خصم طريقة الدفع</dt><dd id="estimate-discount">—</dd></div>
+          <div><dt>التوصيل المرجعي</dt><dd id="estimate-delivery">—</dd></div>
+          <div class="estimate-total"><dt>الإجمالي المرجعي</dt><dd id="estimate-total" aria-live="polite" aria-atomic="true">—</dd></div>
+        </dl>
+        <p id="estimate-note" class="help" role="status" aria-live="polite"></p>
+      </section>
+
+      <fieldset class="consent-group">
+        <legend>الموافقات — منفصلة وواضحة</legend>
+        <label class="check-row" for="processing-consent">
+          <input id="processing-consent" name="processingConsent" type="checkbox" required>
+          <span><strong>موافقة لازمة لمعالجة هذا الطلب التجريبي.</strong> تُستخدم بيانات التواصل والاختيارات — عند تفعيل الخدمة مستقبلًا — لمراجعة الطلب والتواصل بشأنه فقط، وفق سياسة خصوصية معتمدة. إذا لم توافقي فلن تتابعي الطلب.</span>
+        </label>
+        <label class="check-row optional" for="marketing-consent">
+          <input id="marketing-consent" name="marketingConsent" type="checkbox">
+          <span><strong>اختياري — أوافق على رسائل تسويقية يدوية من رواء عبر WhatsApp</strong> عن المنتجات والعروض. تركه فارغًا لا يمنع معالجة الطلب، ولا توجد رسائل آلية أو قوائم إعلانية في هذه المعاينة.</span>
+        </label>
+        <p class="help">هذه معاينة: لا تُسجّل أي موافقة ولا تُحفظ كدليل، سواء اخترتِ أحد المربعين أم لا.</p>
+      </fieldset>
+
+      <button class="primary" type="submit">فحص المعاينة محليًا — لا إرسال</button>
+      <p id="form-status" class="status" role="status" aria-live="polite"></p>
+    </form>
+
+    <section class="panel withdrawal" aria-labelledby="withdraw-title">
+      <p class="eyebrow">حق الانسحاب</p>
+      <h2 id="withdraw-title">إلغاء الرسائل التسويقية</h2>
+      <p>إذا اشتركتِ مستقبلًا، يمكنكِ طلب الإلغاء في أي وقت برسالة WhatsApp. الرابط يفتح مسودة رسالة فقط؛ لن تُرسل حتى تضغطي «إرسال» بنفسك.</p>
+      <a id="withdraw-link" class="secondary" aria-disabled="true" target="_blank" rel="noopener noreferrer">افتحي رسالة طلب الإلغاء</a>
+      <p class="help">المسار الحالي يدوي وغير مربوط بسجل إلغاء أو نظام إرسال. لا توجد قائمة تسويق مفعّلة؛ لا تُرسل رسائل تسويقية إلى أن يُبنى سجل انسحاب موثوق ويُختبر.</p>
+    </section>
+
+    <footer><p>مسودة داخلية غير منشورة. لم تُربط هذه الواجهة بالموقع أو قاعدة البيانات.</p><a href="../PRIVACY-ORDER-COLLECTION-DRAFT-AR.md">مسودة الخصوصية الداخلية</a></footer>
+  </main>
+</body>
+</html>

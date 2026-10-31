@@ -37,10 +37,11 @@ export function createCustomerOrderClient({ endpoint, allowedOrigin, storage, fe
     if (typeof key!=='string' || !keyPattern.test(key)) throw new Error('INVALID_CONFIGURATION');
     intent={order:copy,key,phase:restored?.phase==='pending'?'uncertain':'ready',usedChallenges:new Set()};
   }
-  async function submit({challengeToken, consent}) {
+  async function submit({challengeToken, consent, marketingConsent = false}) {
     if (!intent) throw new Error('NO_INTENT');
     if (inFlight) throw new Error('IN_FLIGHT');
     if (intent.phase==='complete') throw new Error('ALREADY_COMPLETE');
+    if (typeof marketingConsent!=='boolean') throw new Error('INVALID_MARKETING_CONSENT');
     if (consent!==true || typeof challengeToken!=='string' || !challengeToken || challengeToken.length>2048 || intent.usedChallenges.has(challengeToken)) throw new Error('INVALID_CHALLENGE');
     // Persist only a random key before sending. After reload, user must re-enter
     // the same details; the server enforces key/intent consistency atomically.
@@ -48,14 +49,17 @@ export function createCustomerOrderClient({ endpoint, allowedOrigin, storage, fe
     const current=intent;current.usedChallenges.add(challengeToken);inFlight=true;
     try {
       const response=await fetchImpl(parsed.href,{method:'POST',cache:'no-store',credentials:'omit',redirect:'error',signal:AbortSignal.timeout(requestTimeoutMs),
-        headers:{'content-type':'application/json'},body:JSON.stringify({order:current.order,idempotencyKey:current.key,challengeToken,consent:true})});
+        headers:{'content-type':'application/json'},body:JSON.stringify({order:current.order,idempotencyKey:current.key,challengeToken,consent:true,marketingConsent})});
       if(response.status===200){
         const data=await response.json();
         if(typeof data?.reference==='string' && refPattern.test(data.reference) && data.status==='pending_review'){
           current.phase='complete';
           // If this write fails, keep the pending key: retry is safer than duplication.
           try {persist({key:current.key,phase:'complete',reference:data.reference});} catch { /* saved response still authoritative */ }
-          return {status:'saved',reference:data.reference};
+          const marketingOptInStatus=['recorded','not_recorded','unknown'].includes(data.marketingOptInStatus)
+            ? data.marketingOptInStatus : 'unknown';
+          return {status:'saved',reference:data.reference,
+            ...(marketingConsent ? {marketingOptInStatus} : {})};
         }
         current.phase='uncertain';return {status:'uncertain'};
       }

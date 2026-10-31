@@ -1,7 +1,7 @@
 import { submitOrder } from './order-service.mjs';
 
 /** Staged handler only. rateLimit must be distributed and use a trusted client identity. */
-export function createOrderHandler({ origin, config, repository, notificationRunner, verifyChallenge, rateLimit }) {
+export function createOrderHandler({ origin, config, repository, notificationRunner, verifyChallenge, rateLimit, recordMarketingOptIn }) {
   const validConfig = typeof origin === 'string' && /^https:\/\/[^/]+$/.test(origin) && config &&
     typeof repository?.insertPending === 'function' && typeof notificationRunner?.kick === 'function' &&
     typeof verifyChallenge === 'function' && typeof rateLimit === 'function';
@@ -37,7 +37,8 @@ export function createOrderHandler({ origin, config, repository, notificationRun
     } catch { return respond(400, { error:'invalid_request' }, true); }
     const key = body?.idempotencyKey;
     if (body?.consent !== true || typeof body.challengeToken !== 'string' || body.challengeToken.length < 1 || body.challengeToken.length > 2048 ||
-        typeof key !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(key) || !body.order || typeof body.order !== 'object' || Array.isArray(body.order)) {
+        typeof key !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(key) || !body.order || typeof body.order !== 'object' || Array.isArray(body.order) ||
+      (body.marketingConsent !== undefined && typeof body.marketingConsent !== 'boolean')) {
       return respond(400, { error:'invalid_request' }, true);
     }
     try {
@@ -46,13 +47,17 @@ export function createOrderHandler({ origin, config, repository, notificationRun
       if (limit !== true) return respond(503, { error:'unavailable' }, true);
       if (await verifyChallenge(body.challengeToken) !== true) return respond(403, { error:'challenge_failed' }, true);
     } catch { return respond(503, { error:'unavailable' }, true); }
-    const result = await submitOrder({ input:body.order, idempotencyKey:key, config, repository, notificationRunner });
+    const marketingConsent = body.marketingConsent === true;
+    const result = await submitOrder({ input:body.order, idempotencyKey:key, config, repository, notificationRunner,
+      marketingConsent, recordMarketingOptIn });
     if (!result.ok) {
       if (result.code === 'INVALID_REQUEST') return respond(400, {error:'invalid_request'}, true);
       if (result.code === 'INTENT_MISMATCH') return respond(409, {error:'intent_mismatch'}, true);
       return respond(503, {error:'save_uncertain'}, true);
     }
-    return respond(200, { reference:result.reference, status:'pending_review' }, true);
+    return respond(200, { reference:result.reference, status:'pending_review',
+      ...(marketingConsent ? { marketingOptInStatus: ['recorded', 'not_recorded', 'unknown'].includes(result.marketingOptInStatus)
+        ? result.marketingOptInStatus : 'unknown' } : {}) }, true);
   };
 }
 

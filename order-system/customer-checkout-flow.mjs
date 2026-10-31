@@ -7,15 +7,16 @@ export function createCheckoutFlow({client, challenge}) {
     if(busy || started)throw Error('INTENT_IN_PROGRESS');
     client.begin(order);started=true;
   }
-  async function submit(consent) {
+  async function submit(consent, marketingConsent = false) {
     if(!started)throw Error('NO_INTENT');
     if(busy)throw Error('IN_FLIGHT');
     if(consent!==true)return {status:'consent_required'};
+    if(typeof marketingConsent!=='boolean')return {status:'invalid_marketing_consent'};
     const challengeToken=challenge.take();
     if(!challengeToken)return {status:'challenge_required'};
     busy=true;
     try {
-      return await client.submit({challengeToken,consent:true});
+      return await client.submit({challengeToken,consent:true,marketingConsent});
     } finally {
       // Tokens are single-use even on network failure or provider errors.
       try {challenge.reset();} catch { /* Never mask a confirmed save or an uncertain result. */ }

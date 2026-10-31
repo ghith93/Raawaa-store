@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import { prepareOrder, formatOwnerAlert } from './order-core.mjs';
+import pricing from './order-pricing.js';
 
 const source = await readFile(new URL('../js/config.js', import.meta.url), 'utf8');
 const sandbox = { window: {} };
@@ -43,6 +44,28 @@ test('fails closed on malformed contact, products, quantities, options and deliv
     { scent: 'custom' }, { oil: 'other' }
   ];
   for (const change of invalid) assert.throws(() => prepareOrder({ ...base, ...change }, cfg));
+});
+
+test('the browser estimate matches server preparation across offers, options and delivery methods', () => {
+  const cases = [
+    { items: [{ id: 'serum-30', qty: 1 }], zone: 'hama', method: 'shamcash', scent: 'vanilla', oil: '' },
+    { items: [{ id: 'serum-50', qty: 2 }], zone: 'other', method: 'cod', scent: 'unscented', oil: 'argan' },
+    { items: [{ id: 'serum-100', qty: 1 }], zone: 'other', method: 'shamcash', scent: 'rose', oil: '' }
+  ];
+  const withBundle = { ...cfg, offers: { maxPercent: 30, slots: [
+    { id: 'two-50', label: 'عبوتان', type: 'bundle', qty: 2, sizeId: 'serum-50', value: 46, enabled: true }
+  ] } };
+  assert.throws(() => pricing.calculateOrderEstimate(cases[0], withBundle, null), /PRICING_UNAVAILABLE/);
+  cases.push({ items: [{ id: 'serum-50', qty: 2 }], zone: 'hama', method: 'cod', scent: 'unscented', oil: '' });
+
+  for (const [index, selection] of cases.entries()) {
+    const config = index === cases.length - 1 ? withBundle : cfg;
+    const preview = pricing.calculateOrderEstimate(selection, config);
+    const order = prepareOrder({ ...base, ...selection, totalCents: 1 }, config);
+    for (const key of ['entries', 'subtotalCents', 'offerCents', 'discountCents', 'deliveryCents', 'totalCents', 'oilPricePending']) {
+      assert.deepEqual(preview[key], order[key], `${key} mismatch for case ${index + 1}`);
+    }
+  }
 });
 
 test('notification contains only a valid reference, not customer details', () => {

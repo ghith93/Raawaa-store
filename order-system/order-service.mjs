@@ -5,7 +5,7 @@ import { prepareOrder } from './order-core.mjs';
  * repository.insertPending must atomically enforce idempotency and persist an outbox
  * in the same transaction. notificationRunner must claim an outbox job atomically.
  */
-export async function submitOrder({ input, idempotencyKey, config, repository, notificationRunner }) {
+export async function submitOrder({ input, idempotencyKey, config, repository, notificationRunner, marketingConsent = false, recordMarketingOptIn }) {
   if (typeof idempotencyKey !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(idempotencyKey)) {
     return { ok: false, code: 'INVALID_REQUEST' };
   }
@@ -19,10 +19,22 @@ export async function submitOrder({ input, idempotencyKey, config, repository, n
   // Don't report success unless storage returned a valid durable order reference.
   if (!saved || typeof saved.reference !== 'string' || !/^RAWAA-[A-Z0-9]{6,30}$/.test(saved.reference) ||
       (saved.result !== 'created' && saved.result !== 'existing')) return { ok: false, code: 'SAVE_UNCERTAIN' };
+  let marketingOptInStatus;
+  if (marketingConsent === true) {
+    marketingOptInStatus = saved.result === 'created' ? 'not_recorded' : 'unknown';
+    // Record only once, alongside the first successful intent. An idempotent
+    // retry must never resurrect consent after a later owner-recorded withdrawal.
+    if (saved.result === 'created' && typeof recordMarketingOptIn === 'function') {
+      try {
+        if ((await recordMarketingOptIn({ phone: order.phone }))?.recorded === true) marketingOptInStatus = 'recorded';
+      } catch { /* order remains durable; marketing stays ineligible */ }
+    }
+  }
   // The durable outbox is authoritative. Failed sends are recoverable separately;
   // an ambiguous Telegram timeout is not considered delivery, and needs review.
   if (saved.result === 'created') {
     try { await notificationRunner.kick(saved.reference); } catch { /* pending outbox remains */ }
   }
-  return { ok: true, reference: saved.reference, status: 'pending_review' };
+  return { ok: true, reference: saved.reference, status: 'pending_review',
+    ...(marketingConsent === true ? { marketingOptInStatus } : {}) };
 }

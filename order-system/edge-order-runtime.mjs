@@ -1,6 +1,8 @@
 import {createOrderHandler,createTurnstileVerifier} from './order-http.mjs';
 import {createPostgresRepository} from './postgres-repository.mjs';
 import {createPostgresRateLimiter} from './postgres-rate-limiter.mjs';
+import {createMarketingPreferenceService,MARKETING_CONSENT_VERSION} from './marketing-preferences.mjs';
+import {createPostgresMarketingPreferenceRepository} from './marketing-preference-repository.mjs';
 
 /**
  * Staged public intake adapter. Do not deploy with a client-provided IP header.
@@ -26,6 +28,19 @@ export function createEdgeOrder({getEnv,postgresFactory,getTrustedIdentity,confi
   const repository=createPostgresRepository(db);
   const limiter=createPostgresRateLimiter({db,identityKey:pepper,getTrustedIdentity});
   const verifyChallenge=createTurnstileVerifier({secret,hostname:new URL(origin).hostname,fetchImpl});
-  return createOrderHandler({origin,config,repository,rateLimit:limiter.rateLimit,verifyChallenge,
+  let recordMarketingOptIn;
+  try {
+    const marketingKey=getEnv('RAWAA_MARKETING_HMAC_KEY');
+    if (typeof marketingKey==='string' && marketingKey) {
+      const preferences=createMarketingPreferenceService({
+        repository:createPostgresMarketingPreferenceRepository(db),
+        hmacSecret:marketingKey
+      });
+      recordMarketingOptIn=({phone})=>preferences.recordOptIn({
+        phone,explicitConsent:true,consentVersion:MARKETING_CONSENT_VERSION
+      });
+    }
+  } catch { /* order intake remains available; optional marketing consent stays unrecorded */ }
+  return createOrderHandler({origin,config,repository,rateLimit:limiter.rateLimit,verifyChallenge,recordMarketingOptIn,
     notificationRunner:{async kick(){/* Saved to durable outbox; scheduler will process. */}}});
 }

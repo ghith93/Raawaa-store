@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; frame-ancestors 'none'; upgrade-insecure-requests">
+  <meta name="theme-color" content="#f7f2eb">
+  <title>مكتب تسويق رواء — أداة محلية</title>
+  <link rel="stylesheet" href="app.css">
+  <script src="../../js/config.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">تخطّي إلى المحتوى</a>
+  <header class="topbar">
+    <div class="brand"><span class="brand-en">RAWAA</span><span>مكتب رواء</span></div>
+    <span class="local-badge">محلي · لا نشر ولا اتصال بحسابات</span>
+  </header>
+
+  <main id="main" class="shell">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">مسودات · روابط · أرقام مجمّعة</p>
+      <h1 id="page-title">مساحة العمل التسويقية</h1>
+      <p class="intro-copy">مكان واحد لمراجعة مسودات رواء، وبناء رابط حملة، وتسجيل النتائج التي شاهدها المالك. لا تُرسل هذه الصفحة شيئًا إلى Meta أو Google أو أي خدمة، ولا تحتوي زر نشر.</p>
+      <div class="notice" role="note"><strong>الحالة الحالية: مسودات فقط.</strong> لا تنشري أو تجدولي من هذه الأداة. لا تدخلي أسماء أو أرقام هواتف أو نصوص محادثات؛ الأعداد المجمّعة تكفي.</div>
+    </section>
+
+    <section class="toolbar card" aria-labelledby="utm-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">أداة ١</p><h2 id="utm-title">رابط تتبّع بسيط</h2></div>
+        <span class="source-note">وجهته صفحة الحملة المنشورة</span>
+      </div>
+      <div class="utm-controls">
+        <label>القناة
+          <select id="utm-source"><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="whatsapp">WhatsApp</option></select>
+        </label>
+        <label>زاوية المحتوى
+          <select id="utm-content"><option value="benefit">اللمسة التجميلية</option><option value="order_steps">خطوات الطلب</option><option value="reference_prices">الأحجام والأسعار</option><option value="size_guide" disabled>رسم مقارنة الأحجام — يتطلب تحديث صفحة الحملة</option></select>
+        </label>
+        <label>اسم الدورة
+          <input id="utm-campaign" type="text" value="pilot_14day" maxlength="40" pattern="[a-z0-9_-]{1,40}" autocomplete="off" spellcheck="false" aria-describedby="utm-campaign-status">
+        </label>
+      </div>
+      <div class="link-output">
+        <label for="utm-link">الرابط الناتج</label>
+        <div class="link-row"><input id="utm-link" readonly dir="ltr" aria-describedby="utm-help"><button class="button button-secondary" id="copy-link" type="button">نسخ الرابط</button></div>
+        <p class="field-help" id="utm-help">لا تستخدمي أسماء أو أرقام أو معلومات شخصية داخل الوسوم. وجود UTM لا يثبت رسالة أو طلبًا أو بيعًا.</p>
+        <p class="field-help" id="utm-campaign-status" role="status" aria-live="polite"></p>
+        <p id="copy-status" class="sr-status" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="drafts" aria-labelledby="drafts-title">
+      <div class="section-heading section-heading-main"><div><p class="eyebrow">أداة ٢</p><h2 id="drafts-title">مكتبة المسودات</h2></div><p class="source-note">الأسعار تُقرأ من <code>js/config.js</code> عند فتح الأداة.</p></div>
+      <div id="draft-list" class="draft-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="card metrics" aria-labelledby="metrics-title">
+      <div class="section-heading"><div><p class="eyebrow">أداة ٣</p><h2 id="metrics-title">سجل النتائج المجمّعة</h2></div><span class="local-badge">يحفظ على هذا الجهاز فقط</span></div>
+      <p class="metrics-intro">أدخلي أرقامًا مجمّعة بعد النشر اليدوي. لا تحفظ الأداة إلا أعدادًا، لا أسماء ولا هواتف. «نقرة» ليست رسالة، والرسالة ليست طلبًا مؤكدًا.</p>
+      <form id="metrics-form">
+        <div class="metrics-controls">
+          <label>نسخة المحتوى
+            <select id="metric-post"><option value="benefit">اللمسة التجميلية</option><option value="order_steps">خطوات الطلب</option><option value="reference_prices">الأحجام والأسعار</option><option value="size_guide">رسم مقارنة الأحجام</option></select>
+          </label>
+          <label>تاريخ أول نشر (اختياري)<input id="metric-date" type="date"></label>
+          <label>الوصول كما تعرضه المنصة<input id="metric-reach" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+          <label>نقرات الرابط كما تعرضها المنصة<input id="metric-clicks" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+          <label>رسائل وصلت فعلًا للمالك<input id="metric-messages" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+          <label>استفسارات مؤهلة<input id="metric-inquiries" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+          <label>طلبات أكدها المالك<input id="metric-orders" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+          <label>طلبات سُلّمت<input id="metric-delivered" type="number" min="0" step="1" inputmode="numeric" value="0"></label>
+        </div>
+        <div class="form-actions"><button class="button button-primary" type="submit">حفظ الأرقام على هذا الجهاز</button><button class="button button-secondary" id="export-csv" type="button">تنزيل CSV</button><button class="button button-danger" id="clear-metrics" type="button">مسح السجل المحلي</button></div>
+        <p id="metrics-status" class="sr-status" role="status" aria-live="polite"></p>
+      </form>
+      <div class="table-wrap"><table><caption>الدورات التي سُجّلت على هذا الجهاز</caption><thead><tr><th scope="col">الزاوية</th><th scope="col">تاريخ النشر</th><th scope="col">الوصول</th><th scope="col">نقرات</th><th scope="col">رسائل</th><th scope="col">استفسارات</th><th scope="col">مؤكدة</th><th scope="col">مسلّمة</th></tr></thead><tbody id="metrics-rows"><tr><td colspan="8">لا توجد أرقام مسجلة بعد.</td></tr></tbody></table></div>
+      <p class="fine-print">الأرقام تقارير يدوية/منصة وليست تحليلات مؤكدة أو دليلًا على السببية. لا ترفعي الملف أو الجدول إلى خدمة خارجية دون قرار ومراجعة الخصوصية.</p>
+    </section>
+
+    <footer class="footer"><p>مكتب داخلي غير مفهرس. لا يتصل بحسابات رواء ولا يرسل أو يجدول محتوى. صفحة الحملة لا تستقبل طلبات إلكترونية حتى الآن.</p><div><a href="../ORGANIC-TEST-KIT-AR.md">حزمة المسودات النصية</a> · <a href="../order-flow-prototype/">معاينة نموذج الطلب والموافقات</a></div></footer>
+  </main>
+</body>
+</html>

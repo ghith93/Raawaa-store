@@ -9,9 +9,9 @@ for (const width of [320,390,430]) {
     const ctx = await browser.newContext({viewport:{width,height:844}, isMobile:true, hasTouch:true, locale:'ar'});
     const page = await ctx.newPage(), errors=[];
     page.on('pageerror', error => errors.push(error.message));
-    let rejectNext = false, logoutCalls = 0;
+    let rejectNext = false, logoutCalls = 0, withdrawalCalls = 0;
     const cors = {'access-control-allow-origin':'*','access-control-allow-headers':'authorization, apikey, content-type','access-control-allow-methods':'GET, POST, OPTIONS'};
-    await page.route('**/settings.mjs', route => route.fulfill({contentType:'application/javascript',body:`export const settings={ownerOrigin:${JSON.stringify(new URL(process.env.OWNER_URL).origin)},supabaseUrl:'https://example.supabase.co',ownerEndpoint:'https://example.functions.supabase.co/orders',pairingEndpoint:'https://example.functions.supabase.co/pair',telegramTestEndpoint:'https://example.functions.supabase.co/test',publishableKey:'fake-public-key'};`}));
+    await page.route('**/settings.mjs', route => route.fulfill({contentType:'application/javascript',body:`export const settings={ownerOrigin:${JSON.stringify(new URL(process.env.OWNER_URL).origin)},supabaseUrl:'https://example.supabase.co',ownerEndpoint:'https://example.functions.supabase.co/orders',pairingEndpoint:'https://example.functions.supabase.co/pair',telegramTestEndpoint:'https://example.functions.supabase.co/test',marketingPreferencesEndpoint:'https://example.functions.supabase.co/marketing',publishableKey:'fake-public-key'};`}));
     await page.route('https://example.supabase.co/**', async route => {
       if(route.request().method()==='OPTIONS') return route.fulfill({status:204,headers:cors});
       if(route.request().url().includes('/logout')) {logoutCalls++; return route.fulfill({status:204,headers:cors});}
@@ -23,6 +23,12 @@ for (const width of [320,390,430]) {
       if(route.request().method()==='OPTIONS') return route.fulfill({status:204,headers:cors});
       assert.equal(route.request().headers().authorization,'Bearer fake.valid.jwt');
       if(rejectNext) return route.fulfill({status:401,headers:cors,contentType:'application/json',body:'{}'});
+      if(route.request().url().endsWith('/marketing')) {
+        withdrawalCalls++;
+        assert.equal(route.request().method(),'POST');
+        assert.deepEqual(route.request().postDataJSON(),{action:'withdraw',phone:'0997310856'});
+        return route.fulfill({status:200,headers:cors,contentType:'application/json',body:'{"ok":true}'});
+      }
       if (route.request().url().endsWith('/test')) return route.fulfill({status:200,headers:cors,contentType:'application/json',body:'{"ok":true}'});
       if (route.request().url().endsWith('/pair')) {
         const data=route.request().postDataJSON();
@@ -41,6 +47,13 @@ for (const width of [320,390,430]) {
     assert.match(await page.locator('.card').first().innerText(),/22\.40/);
     assert.equal(await page.evaluate('document.documentElement.scrollWidth <= innerWidth'),true);
     assert.equal(await page.evaluate('localStorage.length + sessionStorage.length'),0);
+    assert.equal(await page.locator('#marketing-withdraw-button').isEnabled(),true);
+    await page.locator('#marketing-phone').fill('0997310856');
+    await page.locator('#marketing-withdraw-button').click();
+    await page.waitForFunction(() => document.querySelector('#marketing-withdraw-status').textContent.includes('سُجّل طلب الإلغاء'));
+    assert.equal(withdrawalCalls,1);
+    assert.equal(await page.locator('#marketing-phone').inputValue(),'');
+    assert.equal((await page.locator('#marketing-withdraw-status').innerText()).includes('0997310856'),false);
     if (await page.locator('#pair-start').count()) {
       await page.locator('#pair-start').click(); await page.locator('#pair-code').waitFor();
       await page.waitForFunction(() => document.querySelector('#pair-code').textContent.startsWith('/pair '));
