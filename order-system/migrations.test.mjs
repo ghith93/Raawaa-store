@@ -11,6 +11,7 @@ const ciWorkflow = await readFile(new URL('../.github/workflows/site-checks.yml'
 const supabaseLocalScript = await readFile(new URL('../scripts/test-marketing-supabase-local.sh', import.meta.url), 'utf8');
 const supabaseLocalTests = await readFile(new URL('./marketing-preferences-supabase-test.sql', import.meta.url), 'utf8');
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+const lenovoWorkflow = await readFile(new URL('../.github/workflows/lenovo-supabase-local.yml', import.meta.url), 'utf8');
 
 test('retention source matches the already-applied staging migration and remains bounded/private', () => {
   assert.match(migration, /20261030134505\/rawaa_order_retention/);
@@ -70,4 +71,12 @@ test('local Supabase CLI harness is temporary, explicitly local, and never links
   assert.match(supabaseLocalTests, /select \* from finish\(\)/);
   assert.match(supabaseLocalTests, /rollback;/i);
   assert.match(supabaseLocalTests, /redact_expired_marketing_preference_events\(1\)/);
+});
+
+test('Lenovo probe workflow is restricted to the supplied ARM64 device labels and read-only repository access', () => {
+  assert.match(lenovoWorkflow, /branches:\s*\n\s*- arena\/7fa20b3c-raawaa-store/);
+  assert.match(lenovoWorkflow, /runs-on: \[self-hosted, android-api-35, arm64, soc-mediatek-mt6877-mt6877\]/);
+  assert.match(lenovoWorkflow, /permissions:\s*\n\s*contents: read/);
+  assert.doesNotMatch(lenovoWorkflow, /pull_request:|workflow_run:|secrets\./i);
+  assert.match(lenovoWorkflow, /npm run test:marketing:supabase-local/);
 });
