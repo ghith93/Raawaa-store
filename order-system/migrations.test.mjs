@@ -61,6 +61,7 @@ test('candidate migration has a PGlite integration test enrolled in the existing
 test('local Supabase CLI harness is temporary, explicitly local, and never links to a hosted project', () => {
   assert.equal(packageJson.scripts['test:marketing:supabase-local'], 'bash scripts/test-marketing-supabase-local.sh');
   assert.match(supabaseLocalScript, /mktemp -d/);
+  assert.match(supabaseLocalScript, /supabase start -x gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor/);
   assert.match(supabaseLocalScript, /supabase db reset --local/);
   assert.match(supabaseLocalScript, /supabase test db --local/);
   assert.match(supabaseLocalScript, /supabase stop/);
