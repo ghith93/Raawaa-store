@@ -25,7 +25,7 @@ PGLITE_MODULE="$PWD/.cache/rawaa-pgtest/node_modules/@electric-sql/pglite/dist/i
 PGLITE_MODULE="$PWD/.cache/rawaa-pgtest/node_modules/@electric-sql/pglite/dist/index.js" node order-system/marketing-preferences-pg-test.mjs
 ```
 
-These tests emulate roles and a local PostgreSQL database; they do not verify a real Supabase project's settings, network, permissions, concurrency, production credentials, Telegram, or notification delivery. The integration scripts are also configured for CI; CI results are not available until the workflow runs.
+These tests emulate roles and a local PostgreSQL database; they do not verify a real Supabase project's settings, network, permissions, concurrency, production credentials, Telegram, or notification delivery. The candidate migration 005 PGlite check ran successfully in the existing CI workflow on 2026-10-31 ([run 41197731262](https://github.com/ghith93/Raawaa-store/actions/runs/41197731262)); this is not a Supabase E2E result.
 
 The persistence adapter requires a trusted server-side database driver and read-committed transactions. The owner dashboard and owner-only API are deployed for staging; the owner reports successful sign-in. An authenticated real order display has not been tested. Local browser tests used synthetic network responses; no iPhone browser test was performed. The customer order endpoint and outbox scheduler are not deployed.
 
