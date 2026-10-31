@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title>نموذج تصنيع حسب الطلب — رواء (محاكاة محلية)</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">تخطي إلى محتوى لوحة التجربة</a>
+  <header class="topbar">
+    <div class="brand-lockup">
+      <span class="brand-mark" aria-hidden="true">ر</span>
+      <div><strong>رواء · نموذج العمليات</strong><small>من الفكرة إلى فحص الجودة والتسليم</small></div>
+    </div>
+    <label class="persona-control" for="persona-select">استعرض بصلاحية تجريبية
+      <select id="persona-select" aria-describedby="persona-warning"></select>
+    </label>
+  </header>
+
+  <main id="main" class="shell">
+    <section class="demo-banner" role="status" aria-live="polite">
+      <span class="demo-icon" aria-hidden="true">محاكاة</span>
+      <div>
+        <strong>بيانات صناعية · تشغيل محلي · لا تكاملات حقيقية</strong>
+        <p id="persona-warning">مبدّل الأدوار للتجربة فقط وليس تسجيل دخول أو تحقق هوية. لا يوجد AI فعلي أو دفع أو مصنع أو ناقل موصول، ولا تحفظ البيانات بعد إعادة تشغيل الخادم.</p>
+      </div>
+    </section>
+
+    <section class="page-intro">
+      <div>
+        <p class="eyebrow">مسار تشغيلي واحد قابل للفحص</p>
+        <h1>إصدار مواصفة، اعتماد، تصنيع، جودة، ثم تتبع</h1>
+        <p class="intro-copy">نجرب فئة قرطاسية غير منظمة ببيانات مختلقة. لا تُعرض هذه التجربة كمنتج أو عرض سعر أو طلب حقيقي.</p>
+      </div>
+      <div class="current-actor" id="actor-card" aria-live="polite"></div>
+    </section>
+
+    <section class="stats-grid" id="stats" aria-label="ملخص الحالة"></section>
+
+    <div class="main-grid">
+      <section class="panel product-panel" aria-labelledby="product-title">
+        <div class="panel-heading">
+          <div><p class="eyebrow">المنتج النموذجي</p><h2 id="product-title">تفاصيل المنتج</h2></div>
+          <span id="product-status" class="status-pill">جارٍ التحميل</span>
+        </div>
+        <div id="product-content" class="product-content"></div>
+      </section>
+
+      <section class="panel action-panel" aria-labelledby="actions-title">
+        <div class="panel-heading">
+          <div><p class="eyebrow">صلاحية الخادم الحالية</p><h2 id="actions-title">الإجراء التالي</h2></div>
+        </div>
+        <p class="panel-help">تُفحص صلاحية كل إجراء وحالته على الخادم؛ إخفاء الزر وحده ليس حماية. جرّب تبديل الدور ثم أعد تحميل الحالة.</p>
+        <div id="actions" class="action-list"></div>
+        <p id="action-status" class="action-status" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+
+    <section class="panel journey-panel" aria-labelledby="journey-title">
+      <div class="panel-heading">
+        <div><p class="eyebrow">سجل الإصدار الثابت</p><h2 id="journey-title">رحلة المنتج والطلب</h2></div>
+        <span class="subtle-tag">كل حدث تجريبي موسوم</span>
+      </div>
+      <ol id="journey" class="journey-list"></ol>
+    </section>
+
+    <div class="lower-grid">
+      <section class="panel" aria-labelledby="orders-title">
+        <div class="panel-heading"><div><p class="eyebrow">لا تتضمن أسماء أو عناوين</p><h2 id="orders-title">الطلبات</h2></div></div>
+        <div id="orders" class="records"></div>
+      </section>
+      <section class="panel" aria-labelledby="manufacturing-title">
+        <div class="panel-heading"><div><p class="eyebrow">نسخة المواصفة ثابتة في الأمر</p><h2 id="manufacturing-title">أوامر التصنيع والجودة</h2></div></div>
+        <div id="production-orders" class="records"></div>
+      </section>
+      <section class="panel" aria-labelledby="shipping-title">
+        <div class="panel-heading"><div><p class="eyebrow">تتبع يدوي اصطناعي</p><h2 id="shipping-title">الشحن والمطالبات</h2></div></div>
+        <div id="shipping-claims" class="records"></div>
+      </section>
+    </div>
+
+    <section class="panel activity-panel" aria-labelledby="activity-title">
+      <div class="panel-heading"><div><p class="eyebrow">سجل تدقيق محدود للعرض</p><h2 id="activity-title">آخر الأحداث</h2></div></div>
+      <ol id="activity" class="activity-list"></ol>
+    </section>
+
+    <details class="technical-notes">
+      <summary>حدود النموذج قبل أي انتقال للإنتاج الحقيقي</summary>
+      <ul>
+        <li>المخزن في الذاكرة فقط. لا قاعدة بيانات، ولا migrations، ولا مزامنة بين العمليات أو الأجهزة.</li>
+        <li>كل أدوار الدخول قابلة للتبديل من واجهة العرض. فحوص الأدوار في الخادم حقيقية داخل النموذج، لكن إثبات الهوية وإدارة الحسابات غير منفذين.</li>
+        <li>الاقتراح التوليدي ثابت محليًا؛ لا صور مولّدة ولا مزود ذكاء اصطناعي ولا مفاتيح.</li>
+        <li>السعر والتكلفة ومدة التنفيذ والمواد ونتائج الجودة كلها بيانات اصطناعية؛ لا تستخدم لاتخاذ قرار شراء أو إنتاج.</li>
+        <li>الطلب لا يسحب مالًا. أمر التصنيع والتتبع لا يغادران الخادم المحلي. حالة «تسليم للناقل» لا تثبت تسليمًا فعليًا.</li>
+        <li>المواصفة توضيحية وليست رسمًا هندسيًا أو ملف CAD، ولا تصلح للتنفيذ في مصنع.</li>
+      </ul>
+    </details>
+    <footer>معاينة مستقلة في المستودع · لا تغيّر متجر رواء العام · البيانات تعاد عند إعادة تشغيل الخادم</footer>
+  </main>
+</body>
+</html>
