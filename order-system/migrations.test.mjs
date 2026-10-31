@@ -8,6 +8,9 @@ const preferences = await readFile(new URL('./migrations/005_marketing_preferenc
 const preferencesRollback = await readFile(new URL('./migrations/005_marketing_preference_events.down.sql', import.meta.url), 'utf8');
 const pgliteIntegration = await readFile(new URL('./marketing-preferences-pg-test.mjs', import.meta.url), 'utf8');
 const ciWorkflow = await readFile(new URL('../.github/workflows/site-checks.yml', import.meta.url), 'utf8');
+const supabaseLocalScript = await readFile(new URL('../scripts/test-marketing-supabase-local.sh', import.meta.url), 'utf8');
+const supabaseLocalTests = await readFile(new URL('./marketing-preferences-supabase-test.sql', import.meta.url), 'utf8');
+const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 
 test('retention source matches the already-applied staging migration and remains bounded/private', () => {
   assert.match(migration, /20261030134505\/rawaa_order_retention/);
@@ -52,4 +55,19 @@ test('candidate migration has a PGlite integration test enrolled in the existing
   assert.match(ciWorkflow, /order-system\/\*-pg-test\.mjs/);
   assert.match(pgliteIntegration, /marketing_preference_events/);
   assert.doesNotMatch(pgliteIntegration, /fetch\(|https?:\/\//i);
+});
+
+test('local Supabase CLI harness is temporary, explicitly local, and never links to a hosted project', () => {
+  assert.equal(packageJson.scripts['test:marketing:supabase-local'], 'bash scripts/test-marketing-supabase-local.sh');
+  assert.match(supabaseLocalScript, /mktemp -d/);
+  assert.match(supabaseLocalScript, /supabase db reset --local/);
+  assert.match(supabaseLocalScript, /supabase test db --local/);
+  assert.match(supabaseLocalScript, /supabase stop/);
+  assert.match(supabaseLocalScript, /docker info/);
+  assert.doesNotMatch(supabaseLocalScript, /supabase link|supabase (?:db reset|test db) --linked|\.supabase\.co|RAWAA_.*TOKEN/i);
+  assert.match(supabaseLocalScript, /005_marketing_preference_events\.sql/);
+  assert.match(supabaseLocalTests, /select plan\(18\)/);
+  assert.match(supabaseLocalTests, /select \* from finish\(\)/);
+  assert.match(supabaseLocalTests, /rollback;/i);
+  assert.match(supabaseLocalTests, /redact_expired_marketing_preference_events\(1\)/);
 });
