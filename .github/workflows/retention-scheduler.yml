@@ -1,13 +1,10 @@
 name: Customer-data retention (staging)
 
-# Fail closed unless the owner explicitly enables the reviewed schedule with BOTH
-# repository variables below. Keep both unset until policy approval, isolated
+# Manual-only by design: merging this workflow cannot trigger customer-data
+# cleanup on a schedule. Keep both variables unset until policy approval, isolated
 # staging E2E, and migration/endpoint verification are complete. The endpoint
 # calls bounded cleanup for orders and marketing events; it reveals no row counts.
-# This workflow is local-only until intentionally merged and configured; no SLA.
 on:
-  schedule:
-    - cron: '17 2 * * *'
   workflow_dispatch:
     inputs:
       confirm_reviewed_run:
@@ -31,7 +28,7 @@ jobs:
     name: تنظيف بيانات التواصل المنتهية
     # Explicit repository-side opt-in plus a separate review latch. Manual runs
     # require a confirmation choice; the default is disabled.
-    if: ${{ vars.RAWAA_RETENTION_ENABLED == 'true' && vars.RAWAA_RETENTION_REVIEWED == 'true' && (github.event_name == 'schedule' || inputs.confirm_reviewed_run == 'run_after_review') }}
+    if: ${{ github.event_name == 'workflow_dispatch' && vars.RAWAA_RETENTION_ENABLED == 'true' && vars.RAWAA_RETENTION_REVIEWED == 'true' && inputs.confirm_reviewed_run == 'run_after_review' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

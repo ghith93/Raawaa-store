@@ -4,10 +4,12 @@ import { readFile } from 'node:fs/promises';
 
 const workflow = await readFile(new URL('../.github/workflows/retention-scheduler.yml', import.meta.url), 'utf8');
 
-test('retention scheduler is fail-closed behind two explicit review variables', () => {
+test('retention cleanup is manual-only and fail-closed behind two explicit review variables', () => {
+  assert.match(workflow, /workflow_dispatch:/);
+  assert.doesNotMatch(workflow, /^\s+schedule:/m);
+  assert.match(workflow, /github\.event_name\s*==\s*'workflow_dispatch'/);
   assert.match(workflow, /vars\.RAWAA_RETENTION_ENABLED\s*==\s*'true'/);
   assert.match(workflow, /vars\.RAWAA_RETENTION_REVIEWED\s*==\s*'true'/);
-  assert.match(workflow, /github\.event_name\s*==\s*'schedule'/);
   assert.match(workflow, /inputs\.confirm_reviewed_run\s*==\s*'run_after_review'/);
 });
 
