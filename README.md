@@ -2,7 +2,7 @@
 
 متجر عربي ثابت كتطبيق ويب تقدّمي (PWA)، مستضاف على Cloudflare Pages. يتيح اختيار الحجم ومراجعة سلة مرجعية ثم تجهيز استفسار يرسله العميل يدويًا عبر واتساب.
 
-> **الحالة:** الموقع منشور على <https://raawaa-store.pages.dev/>. آخر دمج إلى `main`: PR #99؛ نجح النشر وفحص الموقع الحي في [run 41265655950](https://github.com/ghith93/Raawaa-store/actions/runs/41265655950). تحقق PWA دون اتصال بعد الإصلاح في [run 41263841381](https://github.com/ghith93/Raawaa-store/actions/runs/41263841381).
+> **الحالة:** الموقع منشور على <https://raawaa-store.pages.dev/>. آخر دمج إلى `main`: PR #100 (توثيق فقط؛ آخر تغيير سلوكي PR #99). نجح النشر وفحص الموقع الحي في [run 41266422218](https://github.com/ghith93/Raawaa-store/actions/runs/41266422218). تحقق PWA دون اتصال بعد الإصلاح في [run 41263841381](https://github.com/ghith93/Raawaa-store/actions/runs/41263841381).
 > **الحالة التشغيلية والتوجه:** ابدأ من [`PROJECT-ROADMAP-AR.md`](PROJECT-ROADMAP-AR.md)، لا من ملخصات التاريخ القديمة.
 
 ## ما يفعله الموقع — وما لا يفعله

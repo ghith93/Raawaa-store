@@ -15,7 +15,7 @@
 | فحص الموقع المحلي | `node scripts/check-site.mjs`: **529 ناجحًا، 0 فشل**؛ `node scripts/ref-audit.mjs`: **30/30** | فحوص ساكنة وليست قياس مبيعات أو تكامل طلب |
 | اختبارات مستقلة بلا jsdom | `node --test order-system/*.test.mjs`: **130/130** | mocks لا تثبت Supabase/Telegram الحي |
 
-**ملاحظة فحص البيئة:** محاولة `npm run gates:offline` محليًا لم تكتمل لأن `jsdom` غير متاح في البيئة؛ فشلت 3 suites عند الاستيراد، ونجحت 168/171 حالة بدأت. لا تُحسب تلك المحاولة نجاحًا كاملًا؛ يتطلب إغلاقها فحوص PR التي تثبّت الاعتماديات المقفلة. `npm audit --omit=dev` وجد 0 ثغرات اعتماديات إنتاج؛ تنبيه أدوات التطوير المتوسط ما زال قيد المراجعة.
+**ملاحظة فحص البيئة:** محاولة `npm run gates:offline` محليًا لم تكتمل لأن `jsdom` غير متاح في البيئة؛ فشلت 3 suites عند الاستيراد، ونجحت 168/171 حالة بدأت. لا تُحسب تلك المحاولة نجاحًا كاملًا. في المقابل، اجتاز PR #100 CI الكامل مع تثبيت الاعتماديات المقفلة: Site checks [run 41266246742](https://github.com/ghith93/Raawaa-store/actions/runs/41266246742) وCode quality [run 41266246862](https://github.com/ghith93/Raawaa-store/actions/runs/41266246862)، بما فيه Chromium وWebKit وaxe وlint/HTML. `npm audit --omit=dev` وجد 0 ثغرات اعتماديات إنتاج؛ تنبيه أدوات التطوير المتوسط ما زال قيد المراجعة.
 
 ---
 
