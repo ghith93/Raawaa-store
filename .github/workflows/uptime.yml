@@ -5,6 +5,10 @@ name: المراقبة الدورية للموقع الحيّ
 # بلا تكلفة: GitHub Actions مجاني للمستودعات العامة.
 
 on:
+  # Temporary branch-only post-deploy validation of the offline PWA and order journey.
+  push:
+    branches:
+      - arena/bd614e56-raawaa-store
   schedule:
     - cron: '0 */6 * * *'
   workflow_dispatch:
@@ -85,7 +89,16 @@ jobs:
 
       - name: اختبار وظيفي كامل على الموقع المنشور
         if: ${{ github.event_name != 'workflow_dispatch' || !inputs.pwa_diagnostic_only }}
-        run: python scripts/browser-test.py --base https://raawaa-store.pages.dev
+        run: |
+          set +e
+          python scripts/browser-test.py --base https://raawaa-store.pages.dev 2>&1 | tee /tmp/live-browser.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            summary=$({ grep '^\[FAIL\]' /tmp/live-browser.log || tail -n 20 /tmp/live-browser.log; } | tr '\n' '; ' | cut -c1-3500)
+            echo "::error title=Live browser checks failed::$summary"
+            exit "$status"
+          fi
 
   assets:
     name: كل الأصول تُفتح على الموقع الحيّ
