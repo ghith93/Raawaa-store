@@ -8,6 +8,12 @@ on:
   schedule:
     - cron: '0 */6 * * *'
   workflow_dispatch:
+    inputs:
+      pwa_diagnostic_only:
+        description: Run focused Chromium diagnostics for the offline PWA reload
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -73,7 +79,12 @@ jobs:
           python -m pip install --quiet playwright
           python -m playwright install --with-deps chromium
 
+      - name: تشخيص PWA offline المركّز (تشغيل يدوي فقط)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.pwa_diagnostic_only }}
+        run: python scripts/pwa-offline-diagnostic.py --base https://raawaa-store.pages.dev
+
       - name: اختبار وظيفي كامل على الموقع المنشور
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.pwa_diagnostic_only }}
         run: python scripts/browser-test.py --base https://raawaa-store.pages.dev
 
   assets:
