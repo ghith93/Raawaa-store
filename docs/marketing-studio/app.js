@@ -11,7 +11,7 @@
     size_guide: 'رسم مقارنة الأحجام'
   };
   var sourceMedia = { facebook: 'organic', instagram: 'organic', whatsapp: 'messaging' };
-  // size_guide is added in local campaign source but is not on the deployed public page yet.
+  // Keep size_guide unavailable in generated links until the owner approves the draft copy and artwork.
   var deployedContent = ['benefit', 'order_steps', 'reference_prices'];
   var posts = [
     {

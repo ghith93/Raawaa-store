@@ -27,7 +27,7 @@ test('local marketing desk is clearly a draft tool with no publish or network in
   assert.equal(/<script[^>]+src=["']https?:/.test(html), false);
   assert.equal(/<button[^>]*>[^<]*(?:نشر|جدولة)/.test(html), false);
   assert.match(campaignSource, /size_guide:/);
-  assert.match(organicKit, /يتطلب نشر تعديل `size_guide`/);
+  assert.match(organicKit, /منشئ UTM يبقي الرابط معطّلًا/);
 });
 
 test('UTM builder allowlists source, content, and campaign syntax with correct media', () => {
