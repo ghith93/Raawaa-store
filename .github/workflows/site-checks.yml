@@ -75,9 +75,9 @@ jobs:
         with:
           node-version: '22'
           check-latest: true
-      # يمنع عودة ثغرة Dependabot المتوسطة التي لا يفشل عندها حد npm audit الافتراضي هنا.
-      - name: التحقق من أن جميع نسخ minimatch المقفلة مصححة
-        run: node scripts/check-minimatch-lock.mjs
+      # يمنع عودة ثغرات التطوير المتوسطة التي لا يفشل عندها حد npm audit الافتراضي هنا.
+      - name: التحقق من إصدارات glob وminimatch المصححة
+        run: node scripts/check-dependency-security-lock.mjs
       # نفحص أدوات التطوير أيضًا، ونُفشل الفحص عند الثغرات العالية أو الحرجة.
       - name: فحص التنبيهات الأمنية
         run: npm audit --audit-level=high
