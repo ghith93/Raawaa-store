@@ -1,0 +1,54 @@
+name: Lenovo local Supabase probe
+
+on:
+  push:
+    branches:
+      - arena/7fa20b3c-raawaa-store
+    paths:
+      - '.github/workflows/lenovo-supabase-local.yml'
+      - 'scripts/test-marketing-supabase-local.sh'
+      - 'order-system/marketing-preferences-supabase-test.sql'
+      - 'order-system/migrations/005_marketing_preference_events.sql'
+      - 'package.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lenovo-local-supabase-probe
+  cancel-in-progress: true
+
+jobs:
+  local-supabase:
+    name: Check Lenovo Docker and run isolated local SQL tests
+    # The device labels came from the supplied DroidRunner report. This will not
+    # fall back to a GitHub-hosted runner or another generic self-hosted runner.
+    runs-on: [self-hosted, android-api-35, arm64, soc-mediatek-mt6877-mt6877]
+    timeout-minutes: 30
+    steps:
+      - name: Checkout trusted branch
+        uses: actions/checkout@v5
+
+      - name: Report only non-sensitive device/runtime capabilities
+        shell: bash
+        run: |
+          set +e
+          printf 'Architecture: '; uname -m
+          printf 'Kernel: '; uname -sr
+          printf 'CPU cores: '; nproc
+          printf 'Memory: '; awk '/MemTotal/ {printf "%.1f GiB total\n", $2/1024/1024}' /proc/meminfo
+          printf 'Workspace disk: '; df -h "$GITHUB_WORKSPACE" | tail -n 1
+          if command -v docker >/dev/null 2>&1; then
+            printf 'Docker CLI: '; docker --version
+            printf 'Docker daemon memory: '; docker info --format '{{.MemTotal}}' 2>&1
+          else
+            echo 'Docker CLI: unavailable'
+          fi
+          if command -v supabase >/dev/null 2>&1; then
+            printf 'Supabase CLI: '; supabase --version
+          else
+            echo 'Supabase CLI: unavailable'
+          fi
+
+      - name: Run isolated local Supabase migration and pgTAP tests
+        run: npm run test:marketing:supabase-local

@@ -84,16 +84,19 @@ test('install precaches only the compact offline shell and required small image 
   const imagePaths = paths.filter((path) => /\.(?:avif|webp|jpe?g)$/i.test(path));
   const allPaths = paths.join('\n');
 
-  assert.equal(paths.length, 41, '41 required shell resources are pre-cached');
-  assert.ok(!paths.includes('/'), 'the root is not cached separately from index.html');
+  assert.equal(paths.length, 41, '41 shell resources include the canonical root route');
+  assert.ok(paths.includes('/'), 'canonical root is cached for offline reload after Pages redirects /index.html');
+  assert.ok(!paths.includes('/index.html'), 'the redirected index response is not duplicated in the offline shell');
   assert.equal(imagePaths.length, 15, 'three formats for each of four product images plus the ritual scene');
   assert.ok(!allPaths.includes('/assets/brand/logo-'), 'unused brand SVGs are not pre-cached');
   assert.ok(!imagePaths.some((path) => /-(?:720|900|1080)\./.test(path) && !path.endsWith('/ritual-v5-720.jpg')),
     'large responsive variants are fetched and cached on demand');
 
   const coreBytes = await Promise.all(paths.map(async (path) => {
-    try { return (await stat(new URL(`.${path}`, root))).size; }
-    catch { return 0; } // /serum is a platform route, not a physical source file.
+    try {
+      const sourcePath = path === '/' ? './index.html' : `.${path}`;
+      return (await stat(new URL(sourcePath, root))).size;
+    } catch { return 0; } // Pages routes are not all physical source files.
   }));
   assert.ok(coreBytes.reduce((sum, bytes) => sum + bytes, 0) < 700_000,
     'the full precache stays below the 700 KB source-size budget');
@@ -103,12 +106,14 @@ test('install precaches only the compact offline shell and required small image 
     'pre-cached image payload stays below 250 KB');
 });
 
-test('offline root uses cached index.html while product and privacy routes remain cached', async () => {
+test('offline canonical root and query-bearing root use the root cache entry', async () => {
   await installWorker();
   const home = await offlineRequest('/', 'navigate');
-  assert.equal(await home.text(), 'cached:./index.html', 'root page resolves to the cached index without a duplicate root entry');
+  assert.equal(await home.text(), 'cached:./', 'canonical root is served from its exact pre-cached route');
   const campaignHome = await offlineRequest('/?utm_campaign=offline-probe', 'navigate');
-  assert.equal(await campaignHome.text(), 'cached:./index.html', 'query-bearing root also uses the clean cached index');
+  assert.equal(await campaignHome.text(), 'cached:./', 'query-bearing root resolves to the clean cached root');
+  const index = await offlineRequest('/index.html', 'navigate');
+  assert.equal(await index.text(), 'cached:./', 'direct index path falls back to the canonical offline root');
 
   const product = await offlineRequest('/serum', 'navigate');
   assert.equal(await product.text(), 'cached:./serum');

@@ -69,7 +69,7 @@ jobs:
           node -e "
           const fs=require('fs'),path=require('path');
           let src='';
-          for(const f of ['index.html','serum.html','privacy.html','404.html','sw.js','manifest.webmanifest','_redirects'])
+          for(const f of ['index.html','serum.html','campaign.html','privacy.html','404.html','sw.js','manifest.webmanifest','_redirects','docs/marketing-studio/app.js'])
             if(fs.existsSync(f)) src+=fs.readFileSync(f,'utf8');
           for(const f of fs.readdirSync('js').filter(x=>x.endsWith('.js')))
             src+=fs.readFileSync(path.join('js',f),'utf8');

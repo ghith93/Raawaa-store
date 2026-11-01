@@ -910,6 +910,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
         return_link = page.locator('.purchase-shortcuts a[href="#returns"]')
         return_link.focus(); page.keyboard.press('Enter')
+        page.wait_for_function("location.hash === '#returns' && document.querySelector('#returns')?.open === true", timeout=2500)
         check("اختصار الإرجاع يفتح السؤال بلوحة المفاتيح دون اختلاق سياسة",
               urlparse(page.url).fragment == 'returns' and page.locator('#returns').evaluate('(e) => e.open') and
               'الاستفسار عن الشروط على واتساب' in page.locator('#returns').inner_text())

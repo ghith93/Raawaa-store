@@ -8,7 +8,13 @@ const statusLabels = {pending_review:'بانتظار المراجعة',confirmed
 const notificationLabels = {pending:'بانتظار الإرسال',sending:'جارٍ الإرسال',sent:'أُرسل إلى تيليغرام',failed:'فشل الإرسال',unknown:'حالة الإرسال غير مؤكدة'};
 const scents = {unscented:'بلا عطر',vanilla:'فانيلا دافئة',rose:'ورد',oud:'عود شرقي',lavender:'لافندر',rosemary:'إكليل الجبل',jasmine:'ياسمين',ylang:'إيلانغ إيلانغ',mint:'نعناع'};
 const oils = {argan:'أرجان',castor:'خروع',almond:'لوز حلو',jojoba:'جوجوبا',coconut:'جوز الهند',grapeseed:'بذور العنب'};
-let cursor = null, busy = false, generation = 0, authenticated = false;
+let cursor = null, busy = false, generation = 0, authenticated = false, withdrawalBusy = false, withdrawalRequest = 0;
+const withdrawalConfigured = Boolean(client && settings?.marketingPreferencesEndpoint);
+if (!withdrawalConfigured) {
+  $('marketing-phone').disabled = true;
+  $('marketing-withdraw-button').disabled = true;
+  $('marketing-withdraw-status').textContent = 'مسار الانسحاب غير مهيأ؛ لا تسجّلي بيانات هنا.';
+}
 function element(tag, text, className) { const node=document.createElement(tag); if(text != null) node.textContent=String(text); if(className) node.className=className; return node; }
 function field(dl, name, value, cls='') { dl.append(element('dt',name),element('dd',value || '—',cls)); }
 function card(order) {
@@ -32,6 +38,8 @@ function closeSession(message = '') {
   $('orders').replaceChildren(); $('message').textContent=''; $('more').hidden=true;
   $('dashboard').hidden=true; $('logout').hidden=true; $('entry').hidden=false;
   $('password').value=''; $('login').disabled=!client; $('login-message').textContent=message;
+  $('marketing-phone').value=''; $('marketing-withdraw-button').disabled=true; withdrawalBusy=false; withdrawalRequest++;
+  $('marketing-withdraw-status').textContent=withdrawalConfigured ? '' : 'مسار الانسحاب غير مهيأ؛ لا تسجّلي بيانات هنا.';
   if (client) void client.logout();
 }
 async function load(append=false) {
@@ -61,12 +69,39 @@ $('login-form').addEventListener('submit', async event => {
     await client.login($('email').value, password);
     if(current!==generation) return;
     authenticated=true; busy=false; $('entry').hidden=true; $('dashboard').hidden=false; $('logout').hidden=false;
+    $('marketing-phone').disabled=!withdrawalConfigured;
+    $('marketing-withdraw-button').disabled=!withdrawalConfigured;
+    $('marketing-withdraw-status').textContent=withdrawalConfigured ? 'لا تسجّلي إلا طلب إلغاء مؤكدًا من صاحب الرقم.' : 'مسار الانسحاب غير مهيأ؛ لا تسجّلي بيانات هنا.';
     $('login-message').textContent=''; await load();
   } catch {
     if(current===generation) { busy=false; $('login').disabled=false; $('login-message').textContent='تعذر تسجيل الدخول. تحقق من البيانات أو حاول لاحقًا.'; }
   }
 });
 $('refresh').addEventListener('click',()=>load()); $('more').addEventListener('click',()=>load(true));
+$('marketing-withdraw-form').addEventListener('submit',async event=>{
+  event.preventDefault();
+  if(!authenticated||!withdrawalConfigured||withdrawalBusy) return;
+  const phone=$('marketing-phone').value.trim(), requestId=++withdrawalRequest;
+  withdrawalBusy=true; $('marketing-withdraw-button').disabled=true;
+  $('marketing-withdraw-status').textContent='جارٍ تسجيل طلب الإلغاء…';
+  try {
+    await client.withdrawMarketing(phone);
+    if(requestId!==withdrawalRequest) return;
+    $('marketing-phone').value='';
+    $('marketing-withdraw-status').textContent='سُجّل طلب الإلغاء لدى الخدمة. تحققي من نجاح التحديث قبل أي تواصل تسويقي.';
+  } catch(error) {
+    if(requestId!==withdrawalRequest) return;
+    if(error.message==='SESSION_EXPIRED') { closeSession('انتهت الجلسة، يرجى تسجيل الدخول مجددًا.'); return; }
+    $('marketing-withdraw-status').textContent=error.message==='PREFERENCE_INVALID'
+      ? 'تحققي من صيغة الرقم. لم يُسجّل الإلغاء.'
+      : 'تعذر التحقق من تسجيل الإلغاء. أوقفي أي تواصل تسويقي لهذا الرقم حتى تُحل المشكلة.';
+  } finally {
+    if(requestId===withdrawalRequest) {
+      withdrawalBusy=false;
+      $('marketing-withdraw-button').disabled=!authenticated||!withdrawalConfigured;
+    }
+  }
+});
 $('logout').addEventListener('click',()=>{closeSession(); $('email').focus();});
 // Do not retain a live session or customer data in the browser back/forward cache.
 window.addEventListener('pagehide',()=>closeSession());

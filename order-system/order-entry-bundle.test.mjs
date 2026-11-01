@@ -22,9 +22,12 @@ assert.ok(!/BEGIN [A-Z ]*PRIVATE KEY/.test(bundle), 'private key block');
 assert.ok(!/https?:\/\/[^\s"']*:[^\s"']*@/.test(bundle), 'URL with embedded credentials');
 
 // Secrets are read by name from the environment only.
-for (const name of ['SUPABASE_DB_URL', 'RAWAA_TURNSTILE_SECRET', 'RAWAA_RATE_LIMIT_HMAC_KEY', 'RAWAA_OWNER_ORIGIN']) {
+for (const name of ['SUPABASE_DB_URL', 'RAWAA_TURNSTILE_SECRET', 'RAWAA_RATE_LIMIT_HMAC_KEY', 'RAWAA_OWNER_ORIGIN', 'RAWAA_MARKETING_HMAC_KEY']) {
   assert.ok(bundle.includes(name), `env name ${name}`);
 }
+assert.ok(bundle.includes('marketing_preference_events'), 'optional marketing consent persistence missing from built entry');
+assert.ok(bundle.includes('not_recorded'), 'fail-closed consent status missing from built entry');
+assert.ok(bundle.includes('rawaa-marketing-opt-in-v2'), 'versioned reviewed-consent code missing from built entry');
 
 // Identity adapter is wired: platform header, spoofed chains refused, fail closed.
 assert.ok(bundle.includes('cf-connecting-ip'));
