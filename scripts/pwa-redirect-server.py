@@ -25,6 +25,15 @@ class PagesLikeHandler(SimpleHTTPRequestHandler):
             self.end_headers()
             return
 
+        # Cloudflare Pages redirects physical .html paths to their clean URL.
+        # Keep this in the simulator so an offline revisit exercises the final route too.
+        if request.path.endswith(".html") and request.path[:-5] in CLEAN_ROUTES:
+            self.send_response(301)
+            self.send_header("Location", urlunsplit(("", "", request.path[:-5], request.query, "")))
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+
         target = CLEAN_ROUTES.get(request.path)
         if target:
             self.path = urlunsplit(("", "", target, request.query, ""))
