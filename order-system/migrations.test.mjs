@@ -82,8 +82,10 @@ test('owner setup generates secrets locally and no longer calls the retired iden
   await assert.rejects(readFile(new URL('./edge/owner-setup-page.mjs', import.meta.url)), { code: 'ENOENT' });
 });
 
-test('Lenovo probe workflow is restricted to the supplied ARM64 device labels and read-only repository access', () => {
-  assert.match(lenovoWorkflow, /branches:\s*\n\s*- arena\/7fa20b3c-raawaa-store/);
+test('Lenovo probe workflow runs reviewed main code only with read-only repository access', () => {
+  assert.match(lenovoWorkflow, /branches:\s*\n\s*- main/);
+  assert.match(lenovoWorkflow, /workflow_dispatch:/);
+  assert.match(lenovoWorkflow, /if: github\.ref == 'refs\/heads\/main'/);
   assert.match(lenovoWorkflow, /runs-on: \[self-hosted, android-api-35, arm64, soc-mediatek-mt6877-mt6877\]/);
   assert.match(lenovoWorkflow, /permissions:\s*\n\s*contents: read/);
   assert.doesNotMatch(lenovoWorkflow, /pull_request:|workflow_run:|secrets\./i);
