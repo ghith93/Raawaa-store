@@ -14,7 +14,7 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'v1793495405';
+const CACHE_VERSION = 'v1793498248';
 // استبدال الذاكرة القديمة يمسح مفاتيحها التي ربما احتوت استعلامات روابط.
 const RUNTIME = 'rawaa-runtime-v7';
 
@@ -24,7 +24,8 @@ const CORE = [
   './',
   './serum',
   './campaign',
-  './privacy.html',
+  // Pages canonicalizes .html paths; cache the clean privacy route so offline aliases resolve.
+  './privacy',
   './404.html',
   './manifest.webmanifest',
   './css/styles.css',
@@ -149,10 +150,17 @@ self.addEventListener('fetch', (event) => {
           if (req.mode === 'navigate') {
             // Pages redirects /index.html to /; use the canonical cached root for that route.
             const clean = new URL(url.pathname, url.origin).href;
+            const canonicalPath = url.pathname === '/index.html'
+              ? '/'
+              : url.pathname.replace(/\.html$/, '');
+            const canonical = new URL(canonicalPath, url.origin).href;
             return caches.match(clean).then((page) => {
               if (page) return page;
-              const home = url.pathname === '/index.html' ? './' : './index.html';
-              return caches.match(home).then((fallback) => fallback || caches.match('./'));
+              return caches.match(canonical).then((canonicalPage) => {
+                if (canonicalPage) return canonicalPage;
+                const home = url.pathname === '/index.html' ? './' : './index.html';
+                return caches.match(home).then((fallback) => fallback || caches.match('./'));
+              });
             });
           }
           return Response.error();

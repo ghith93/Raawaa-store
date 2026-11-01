@@ -18,7 +18,8 @@ SNAPSHOT_JS = """async () => {
       entries: keys.length,
       hasIndex: paths.includes('/index.html'),
       hasRoot: paths.includes('/'),
-      pages: paths.filter((path) => ['/index.html', '/serum', '/campaign', '/privacy.html', '/404.html'].includes(path))
+      hasPrivacy: paths.includes('/privacy'),
+      pages: paths.filter((path) => ['/index.html', '/', '/serum', '/campaign', '/privacy', '/privacy.html', '/404.html'].includes(path))
     };
   }));
   const controller = navigator.serviceWorker.controller;

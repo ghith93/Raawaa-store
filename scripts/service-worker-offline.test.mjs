@@ -86,6 +86,8 @@ test('install precaches only the compact offline shell and required small image 
 
   assert.equal(paths.length, 41, '41 shell resources include the canonical root route');
   assert.ok(paths.includes('/'), 'canonical root is cached for offline reload after Pages redirects /index.html');
+  assert.ok(paths.includes('/privacy'), 'canonical clean privacy route is cached for Pages .html redirects');
+  assert.ok(!paths.includes('/privacy.html'), 'the redirected privacy alias is not relied on as a cache key');
   assert.ok(!paths.includes('/index.html'), 'the redirected index response is not duplicated in the offline shell');
   assert.equal(imagePaths.length, 15, 'three formats for each of four product images plus the ritual scene');
   assert.ok(!allPaths.includes('/assets/brand/logo-'), 'unused brand SVGs are not pre-cached');
@@ -127,7 +129,9 @@ test('offline canonical root and query-bearing root use the root cache entry', a
   assert.equal(await queriedCampaign.text(), 'cached:./campaign', 'campaign route ignores tracking query when finding its cached shell');
 
   const privacy = await offlineRequest('/privacy.html', 'navigate');
-  assert.equal(await privacy.text(), 'cached:./privacy.html');
+  assert.equal(await privacy.text(), 'cached:./privacy', 'the .html alias falls back to the canonical clean privacy cache entry');
+  const queriedPrivacy = await offlineRequest('/privacy.html?utm_campaign=offline-probe', 'navigate');
+  assert.equal(await queriedPrivacy.text(), 'cached:./privacy', 'campaign queries do not prevent offline privacy fallback');
 });
 
 test('offline high-density images fall back to the cached small equivalent', async () => {
