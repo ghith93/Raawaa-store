@@ -5,6 +5,10 @@ name: المراقبة الدورية للموقع الحيّ
 # بلا تكلفة: GitHub Actions مجاني للمستودعات العامة.
 
 on:
+  # Temporary branch-only validation of the live customer journey after PR #97.
+  push:
+    branches:
+      - arena/7fa20b3c-raawaa-store
   schedule:
     - cron: '0 */6 * * *'
   workflow_dispatch:
