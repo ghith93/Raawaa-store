@@ -5,10 +5,6 @@ name: المراقبة الدورية للموقع الحيّ
 # بلا تكلفة: GitHub Actions مجاني للمستودعات العامة.
 
 on:
-  # Temporary branch-only trigger to validate the deployed offline reload after PR #97.
-  push:
-    branches:
-      - arena/7fa20b3c-raawaa-store
   schedule:
     - cron: '0 */6 * * *'
   workflow_dispatch:
@@ -83,12 +79,12 @@ jobs:
           python -m pip install --quiet playwright
           python -m playwright install --with-deps chromium
 
-      - name: تشخيص PWA offline المركّز (تشغيل يدوي أو تحقق فرع مؤقت)
-        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.pwa_diagnostic_only) }}
+      - name: تشخيص PWA offline المركّز (تشغيل يدوي فقط)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.pwa_diagnostic_only }}
         run: python scripts/pwa-offline-diagnostic.py --base https://raawaa-store.pages.dev
 
       - name: اختبار وظيفي كامل على الموقع المنشور
-        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.pwa_diagnostic_only) }}
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.pwa_diagnostic_only }}
         run: python scripts/browser-test.py --base https://raawaa-store.pages.dev
 
   assets:
