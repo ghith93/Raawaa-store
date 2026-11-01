@@ -14,13 +14,14 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'v1793459275';
+const CACHE_VERSION = 'v1793495405';
 // استبدال الذاكرة القديمة يمسح مفاتيحها التي ربما احتوت استعلامات روابط.
 const RUNTIME = 'rawaa-runtime-v7';
 
 /** الأصول التي يجب أن تعمل بلا إنترنت */
 const CORE = [
-  './index.html',
+  // Pages redirects /index.html to /; cache the canonical route for offline reload.
+  './',
   './serum',
   './campaign',
   './privacy.html',
@@ -146,9 +147,13 @@ self.addEventListener('fetch', (event) => {
         caches.match(req).then((hit) => {
           if (hit) return hit;
           if (req.mode === 'navigate') {
-            // للرابط ذي الاستعلام نستخدم نسخة المسار النظيفة، لا نسخة صفحة أخرى.
+            // Pages redirects /index.html to /; use the canonical cached root for that route.
             const clean = new URL(url.pathname, url.origin).href;
-            return caches.match(clean).then((page) => page || caches.match('./index.html'));
+            return caches.match(clean).then((page) => {
+              if (page) return page;
+              const home = url.pathname === '/index.html' ? './' : './index.html';
+              return caches.match(home).then((fallback) => fallback || caches.match('./'));
+            });
           }
           return Response.error();
         })

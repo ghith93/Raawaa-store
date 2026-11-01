@@ -139,11 +139,11 @@ jobs:
         run: |
           python -m pip install --quiet playwright
           python -m playwright install --with-deps chromium
-      - name: تشغيل خادم محلي
+      - name: تشغيل محاكي Cloudflare Pages للمسارات النظيفة
         run: |
-          python -m http.server 8080 --bind 127.0.0.1 &
+          python scripts/pwa-redirect-server.py --port 8080 &
           sleep 2
-          curl -sf -o /dev/null http://127.0.0.1:8080/index.html
+          curl -sfL -o /dev/null http://127.0.0.1:8080/index.html
       - name: اختبار السلة وواتساب والتجاوب
         run: python scripts/browser-test.py --base http://127.0.0.1:8080
       - name: اختبار صفحة السيروم ومسار الإعلان
