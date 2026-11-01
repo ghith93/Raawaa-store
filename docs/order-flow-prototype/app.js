@@ -10,9 +10,12 @@
   }
   function formatAmount(valueInCents, storeConfig) {
     var value = Number(valueInCents) / 100;
-    var rounded = Math.round(value);
-    var isWhole = Math.abs(value - rounded) < 0.005;
-    return (isWhole ? '' : '≈ ') + storeConfig.currency.symbol + String(rounded);
+    var isWhole = Math.abs(value - Math.round(value)) < 0.005;
+    var formatted = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: isWhole ? 0 : 2,
+      maximumFractionDigits: 2
+    }).format(value);
+    return storeConfig.currency.symbol + formatted;
   }
   function buildWithdrawalUrl(number) {
     var digits = String(number || '');

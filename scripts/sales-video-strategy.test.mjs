@@ -32,8 +32,14 @@ test('video payment examples recalculate from the store config', () => {
     shamDiscounted + other.fee,
     product.price + hama.fee,
     product.price + other.fee
-  ].map(value => `$${value.toFixed(2)}`);
-  for (const total of totals) assert.ok(doc.includes(total), `missing current reference total ${total}`);
+  ];
+  assert.deepEqual(totals.map(value => Math.round(value * 100) / 100), [23.4, 27.4, 28, 30],
+    'raw calculation still matches the configured price, discount, and delivery fees');
+  const displayedTotals = totals.map(value => {
+    const fixed = value.toFixed(2);
+    return `$${fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed}`;
+  });
+  for (const total of displayedTotals) assert.ok(doc.includes(total), `missing current exact reference total ${total}`);
   assert.ok(doc.includes(`خصم ${shamCash.discountPercent}%`));
   assert.ok(doc.includes(`إضافة العطر $${config.customization.scentPrice}`));
 });
