@@ -1,8 +1,8 @@
 name: Deploy gate
 
 # الحماية الوحيدة الممكنة بلا مفاتيح إضافية:
-# إذا فشل أي فحص على main نُنشئ Issue تلقائيًا يوقف الإصدار ويُنذر.
-# (GitHub Pages ينشر من الفرع مباشرة، ولا يمكن تعليقه من داخل Actions.)
+# إذا فشل الفحص أو انتهى بمهلة/يتطلب إجراءً على main، ننشئ تنبيهًا.
+# لا يُعد الإلغاء أو التخطي دليلًا على فشل، لذلك لا ينشئ تنبيهًا.
 
 on:
   workflow_run:
@@ -24,25 +24,28 @@ jobs:
     name: بوابة النشر
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'success'
+    if: github.event_name == 'workflow_dispatch' || contains(fromJSON('["failure","timed_out","startup_failure","action_required"]'), github.event.workflow_run.conclusion)
     steps:
-      - name: إنشاء تنبيه إصدار عند فشل الفحوصات
+      - name: إنشاء تنبيه عند فشل الفحوصات أو تعذرها
         uses: actions/github-script@v9
         with:
           script: |
             const run = context.payload.workflow_run;
             const head = run ? run.head_sha.slice(0, 7) : 'غير معروف';
             const url = run ? run.html_url : '';
-            const title = `⛔ فشل فحص على main — الإصدار الحالي غير موثوق (${head})`;
+            const conclusion = run?.conclusion || 'تشغيل يدوي';
+            const title = `⛔ فحص main لم يكتمل بنجاح — (${head})`;
             const body = [
-              '## فشل السير العمل «Site checks» على فرع main',
+              '## لم يكتمل فحص «Site checks» على فرع main بنجاح',
+              '',
+              `- **النتيجة:** ${conclusion}`,
               '',
               `- **الالتزام:** \`${head}\``,
               `- **التشغيل:** ${url}`,
               '',
               'الموقع المنشور الآن **قد يحتوي عيبًا**. الخطوات:',
-              '1. افتح رابط التشغيل أعلاه واقرأ الخطوة الفاشلة.',
-              '2. أصلح السبب أو ارجع للالتزام السابق.',
+              '1. افتح رابط التشغيل أعلاه وحدد النتيجة والخطوة الفاشلة أو المتوقفة.',
+              '2. أصلح السبب أو أعد التشغيل بعد معالجة العائق.',
               '3. أغلق هذه المشكلة بعد نجاح الفحوصات.',
               '',
               '_أُنشئت تلقائيًا بواسطة Deploy gate._',
@@ -52,8 +55,7 @@ jobs:
               owner: context.repo.owner, repo: context.repo.repo,
               state: 'open', labels: 'deploy-gate'
             });
-            // عنوان واحد لكل فشل = 28 Issue مفتوحة في يوم واحد. الهدف: تنبيه
-            // واحد مفتوح يعيش حتى تُصلح المشكلة، لا سجلّ لكل التزام فاشل.
+            // تنبيه واحد مفتوح لكل حادثة: لا ننشئ نسخة لكل التزام فاشل.
             if (existing.data.some(i => i.labels.some(l => (l.name || l) === 'deploy-gate'))) {
               core.info('تنبيه مطابق موجود بالفعل — لا تكرار.');
               return;

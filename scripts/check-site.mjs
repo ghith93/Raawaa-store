@@ -867,6 +867,16 @@ async function checkWorkflow() {
   if (/permissions:\s*[\s\S]{0,80}contents:\s*read/.test(wf)) pass('أذونات محدودة (contents: read)');
   else fail('لا تحديد للأذونات');
 
+  const gate = await read('.github/workflows/deploy-gate.yml');
+  const gateCondition = gate.match(/^\s+if:\s+(.+)$/m)?.[1] ?? '';
+  const actionableConclusions = ['failure', 'timed_out', 'startup_failure', 'action_required'];
+  const usesExplicitFailureAllowlist = gateCondition.includes('contains(fromJSON(') &&
+    actionableConclusions.every((conclusion) => gateCondition.includes(`"${conclusion}"`)) &&
+    gateCondition.includes("github.event_name == 'workflow_dispatch'") &&
+    !gateCondition.includes("conclusion != 'success'");
+  if (usesExplicitFailureAllowlist) pass('بوابة النشر تحصر التنبيه بنتائج الفشل/المهلة، لا الإلغاء أو التخطي');
+  else fail('بوابة النشر يجب أن تستخدم قائمة سماح لنتائج الفحص التي تستلزم تنبيهًا');
+
   // وظائف إضافية للجودة
   const extraJobs = [
     ['accessibility', 'وظيفة تدقيق الإتاحة'],
