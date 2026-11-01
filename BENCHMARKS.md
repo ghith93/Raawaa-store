@@ -3,7 +3,7 @@
 > **القاعدة:** لا نعلن تحسينًا بلا رقم. كل صف هنا إمّا **مقيس** (من تشغيل فعلي موثّق)
 > أو **تقديري** (من وثائق المزوّد) — والعمود يوضّح أيّهما.
 >
-> آخر تحديث: 2026-11-01 · المرجع: قياسات النشر الحي والتحقق بعد PR #99.
+> آخر تحديث: 2026-11-01 · المرجع: قياسات النشر الحي حتى تحديثات الاعتماديات PR #103.
 
 ## 0) نتائج تشغيلية موثقة — 1 نوفمبر 2026
 
@@ -12,6 +12,7 @@
 | PWA offline للمسارات النظيفة | PR #97 و#98؛ تحقق حي كامل بعد النشر [run 41263841381](https://github.com/ghith93/Raawaa-store/actions/runs/41263841381) بما فيه `/privacy` | اختبار المتصفح يثبت السلوك في CI، لا تثبيتًا فعليًا على جهاز المالك |
 | Deploy gate | PR #99؛ استثناء النتائج `cancelled` و`skipped` من إنذار الفشل. فحوص ما بعد الدمج: Site checks [41265655896](https://github.com/ghith93/Raawaa-store/actions/runs/41265655896)، الجودة [41265655851](https://github.com/ghith93/Raawaa-store/actions/runs/41265655851)، Graphify [41265655853](https://github.com/ghith93/Raawaa-store/actions/runs/41265655853) | نتيجة التشغيل الأصلي لـ#63 كانت `cancelled`، لا فشل assertion؛ issue #63 أُغلقت بعد الإصلاح |
 | النشر الحي بعد PR #99 | Cloudflare deploy + live verification [run 41265655950](https://github.com/ghith93/Raawaa-store/actions/runs/41265655950) | لا يثبت وصول رسالة أو حفظ طلب عميل |
+| النشر والتحقق بعد إصلاح الاعتماديات PR #103 | Site checks [41268994130](https://github.com/ghith93/Raawaa-store/actions/runs/41268994130)، الجودة [41268994126](https://github.com/ghith93/Raawaa-store/actions/runs/41268994126)، Graphify [41268994133](https://github.com/ghith93/Raawaa-store/actions/runs/41268994133)، Cloudflare/live [41268994172](https://github.com/ghith93/Raawaa-store/actions/runs/41268994172) | تغييرات اعتماديات أدوات التطوير فقط؛ لا تعديل سلوكي للموقع |
 | فحص الموقع المحلي | `node scripts/check-site.mjs`: **529 ناجحًا، 0 فشل**؛ `node scripts/ref-audit.mjs`: **30/30** | فحوص ساكنة وليست قياس مبيعات أو تكامل طلب |
 | اختبارات مستقلة بلا jsdom | `node --test order-system/*.test.mjs`: **130/130** | mocks لا تثبت Supabase/Telegram الحي |
 
