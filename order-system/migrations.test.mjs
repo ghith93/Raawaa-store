@@ -12,6 +12,7 @@ const supabaseLocalScript = await readFile(new URL('../scripts/test-marketing-su
 const supabaseLocalTests = await readFile(new URL('./marketing-preferences-supabase-test.sql', import.meta.url), 'utf8');
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 const lenovoWorkflow = await readFile(new URL('../.github/workflows/lenovo-supabase-local.yml', import.meta.url), 'utf8');
+const ownerSetupHtml = await readFile(new URL('../setup.html', import.meta.url), 'utf8');
 
 test('retention source matches the already-applied staging migration and remains bounded/private', () => {
   assert.match(migration, /20261030134505\/rawaa_order_retention/);
@@ -72,6 +73,13 @@ test('local Supabase CLI harness is temporary, explicitly local, and never links
   assert.match(supabaseLocalTests, /select \* from finish\(\)/);
   assert.match(supabaseLocalTests, /rollback;/i);
   assert.match(supabaseLocalTests, /redact_expired_marketing_preference_events\(1\)/);
+});
+
+test('owner setup generates secrets locally and no longer calls the retired identity probe', async () => {
+  assert.match(ownerSetupHtml, /crypto\.getRandomValues/);
+  assert.doesNotMatch(ownerSetupHtml, /rawaa-header-probe|fetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket/i);
+  await assert.rejects(readFile(new URL('../.github/workflows/identity-header-probe.yml', import.meta.url)), { code: 'ENOENT' });
+  await assert.rejects(readFile(new URL('./edge/owner-setup-page.mjs', import.meta.url)), { code: 'ENOENT' });
 });
 
 test('Lenovo probe workflow is restricted to the supplied ARM64 device labels and read-only repository access', () => {
