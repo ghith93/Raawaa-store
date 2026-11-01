@@ -2,6 +2,7 @@
 """Focused, read-only Chromium diagnosis of the live PWA offline reload path."""
 import argparse
 import json
+import os
 from playwright.sync_api import sync_playwright
 
 
@@ -91,7 +92,17 @@ def run(base: str) -> int:
         context.set_offline(False)
         browser.close()
 
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    rendered = json.dumps(result, ensure_ascii=False, indent=2)
+    print(rendered)
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary_path:
+        with open(summary_path, "a", encoding="utf-8") as summary:
+            summary.write("### PWA offline diagnostic\n\n```json\n")
+            summary.write(rendered)
+            summary.write("\n```\n")
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        compact = json.dumps(result, ensure_ascii=True, separators=(",", ":"))
+        print(f"::error title=PWA offline diagnostic::{compact}")
     return 0 if result.get("reload", {}).get("ok") and result["reload"].get("productHeroCount") == 1 else 1
 
 
