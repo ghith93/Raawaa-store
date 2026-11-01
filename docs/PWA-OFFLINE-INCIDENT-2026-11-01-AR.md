@@ -21,4 +21,5 @@
 - `node --test scripts/service-worker-offline.test.mjs`: 3/3.
 - `npm run gates:offline`: 198/198، مع ESLint وHTML validation وفحوص الموقع والمراجع.
 - محاكي المسارات أعاد `/index.html` إلى `/` بنجاح، ومسار `/serum` إلى صفحة المنتج.
-- لم يُنشر الإصلاح إلى الموقع العام؛ يجب أن ينجح اختبار Chromium في `Site checks` قبل مراجعة دمج أي تغيير. لا يزال الإنذار #96 مفتوحًا حتى التحقق من نسخة منشورة لاحقًا.
+- نجح `Site checks` على الفرع في [run 41259943998](https://github.com/ghith93/Raawaa-store/actions/runs/41259943998): Chromium على محاكي التحويلات، WebKit، axe، أمان التبعيات وفحوص الملفات.
+- هذا يثبت الإصلاح في Chromium مع محاكاة التحويل، لا على Cloudflare بعد. لم يُنشر الإصلاح إلى الموقع العام؛ يبقى الإنذار #96 مفتوحًا حتى التحقق من نسخة منشورة لاحقًا.

@@ -7,10 +7,6 @@ name: المراقبة الدورية للموقع الحيّ
 on:
   schedule:
     - cron: '0 */6 * * *'
-  # Temporary self-trigger for the live diagnostic, gated by an explicit commit-message marker.
-  push:
-    branches:
-      - arena/7fa20b3c-raawaa-store
   workflow_dispatch:
     inputs:
       pwa_diagnostic_only:
@@ -24,7 +20,6 @@ permissions:
 
 jobs:
   uptime:
-    if: ${{ github.event_name != 'push' || contains(github.event.head_commit.message, '[pwa-diagnostic]') }}
     name: فحص الموقع المنشور
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -85,15 +80,14 @@ jobs:
           python -m playwright install --with-deps chromium
 
       - name: تشخيص PWA offline المركّز (تشغيل يدوي فقط)
-        if: ${{ (github.event_name == 'workflow_dispatch' && inputs.pwa_diagnostic_only) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[pwa-diagnostic]')) }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.pwa_diagnostic_only }}
         run: python scripts/pwa-offline-diagnostic.py --base https://raawaa-store.pages.dev
 
       - name: اختبار وظيفي كامل على الموقع المنشور
-        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.pwa_diagnostic_only) && !(github.event_name == 'push' && contains(github.event.head_commit.message, '[pwa-diagnostic]')) }}
+        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.pwa_diagnostic_only }}
         run: python scripts/browser-test.py --base https://raawaa-store.pages.dev
 
   assets:
-    if: ${{ github.event_name != 'push' }}
     name: كل الأصول تُفتح على الموقع الحيّ
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -106,7 +100,6 @@ jobs:
         run: node scripts/asset-audit.mjs
 
   content-check:
-    if: ${{ github.event_name != 'push' }}
     name: تحقق من المحتوى الحيّ (أسعار + خط)
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -136,7 +129,6 @@ jobs:
           done
 
   quality:
-    if: ${{ github.event_name != 'push' }}
     name: أبواب الجودة (axe + Lighthouse)
     runs-on: ubuntu-24.04
     timeout-minutes: 25
