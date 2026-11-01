@@ -3,7 +3,7 @@ const CONSENT_VERSION = 'rawaa-marketing-opt-in-v2';
 const PHONE_DOMAIN = 'rawaa:marketing-phone:v1\0';
 const PHONE_FORMAT = /^\+[1-9]\d{7,14}$/;
 // Conservative local proposal: consent is eligible for manual outreach for 90 days.
-// This is not a legal determination or live policy; obtain owner/legal review first.
+// This is not a legal determination or live policy; owner approval is still required before activation.
 const CONSENT_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 const SAFE_TIME = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value) && Number.isFinite(Date.parse(value));
 
