@@ -24,7 +24,7 @@
 
 ## 6) تنبيه اعتماديات التطوير
 
-قدّم المالك تفاصيل Dependabot #15: ثغرة globparts amplification في `minimatch`، والإصدار المصحح 11.0.1 أو أحدث ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)). أُضيف override مقفل عبر `package-lock.json` إلى 11.0.3، وفحص lockfile مستقل في CI يمنع عودة إصدار أقدم؛ وأظهر `npm ls minimatch --all` أن ESLint وLighthouse/Glob وRepomix تستخدم النسخة المصححة. اجتازت بوابة `npm run gates:offline` محليًا 197/197. ينتظر التغيير مراجعة CI والدمج، فلا تعتبر تنبيه GitHub مغلقًا قبل إعادة فحصه بعد الدمج. لا يلزم إرسال بيانات حساب أو أسرار. يظل `npm audit` الكامل يعرض 4 نتائج متوسطة منفصلة في سلسلة Glob/Lighthouse لأدوات التطوير؛ أما `npm audit --omit=dev` فيجد صفر ثغرات إنتاج.
+قدّم المالك تفاصيل Dependabot #15: ثغرة globparts amplification في `minimatch` والإصدار المصحح 11.0.1 أو أحدث ([GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249)). دُمج إصلاحها في PR #102 عبر override إلى 11.0.3 وفحص lockfile في CI. بعد ظهور 4 نتائج متوسطة منفصلة لأداة glob التابعة لـLighthouse، أضيف في تحديث التطوير الحالي override إلى glob 14.0.3؛ صار `npm audit` الكامل يعرض صفر ثغرات، واجتاز `globFiles` المستخدم من Sentry اختبار توافق محليًا. لا حاجة لإجراء منك أو مشاركة بيانات حساب/أسرار؛ شمل التحقق تشغيل CI الكامل قبل دمج التغيير.
 
 ## ما لا أطلبه
 
