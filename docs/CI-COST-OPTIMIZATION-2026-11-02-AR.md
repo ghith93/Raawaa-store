@@ -15,5 +15,5 @@
 ## التحقق والحدود
 
 - محليًا: `node scripts/check-site.mjs` نجح **530/530** بعد إضافة الحارس؛ `node --check scripts/check-site.mjs` واختبارات `scripts/perf-budget.test.mjs` ‏**5/5** نجحت، و`git diff --check` نظيف.
-- CI على commit `9445a8d` سبق هذا التغيير ونجح؛ **لم يُشغّل CI بعد على تعديل trigger الجديد**. لا نعتبر التحسين مكتملًا قبل نجاح فحوص PR على SHA الذي يحتوي التغيير.
+- نجح CI على commit المحتوي التغيير `f74effe1291ff0d05e0523c4ed2a171b12e88831`: Site checks [41457412396](https://github.com/ghith93/Raawaa-store/actions/runs/41457412396) وجودة الكود [41457412220](https://github.com/ghith93/Raawaa-store/actions/runs/41457412220)، بما فيها `check-site` وChromium وWebKit والإتاحة وتدقيق التبعيات. أحدث SHA أظهر تشغيل Site checks واحدًا فقط عبر `pull_request`؛ لا يوجد تشغيل `push` له، بخلاف الزوج السابق على `9445a8d`.
 - لا تتأثر فحوص `code-quality` التي كانت مسبقًا تعمل على PR و`main` فقط. لا تعمل فحوص site-checks تلقائيًا على push لفرع بلا PR بعد هذا التغيير؛ يمكن تشغيلها يدويًا أو فتح PR، وفق سير العمل المعتمد في المستودع.
