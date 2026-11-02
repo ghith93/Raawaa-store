@@ -1,0 +1,12 @@
+import {test} from 'node:test'; import assert from 'node:assert/strict'; import {parseCSV, simulate, demoRows} from './engine.mjs';
+const csv='timestamp,price,funding_rate\n2026-01-01T00:00:00Z,100,0.0002\n2026-01-01T01:00:00Z,100,0.0002\n2026-01-01T02:00:00Z,100,0.0002\n2026-01-01T03:00:00Z,100,0.0002';
+test('valid hourly UTC CSV',()=>assert.equal(parseCSV(csv).length,4));
+test('reject gaps and out of order',()=>assert.throws(()=>parseCSV(csv.replace('01:00:00','04:00:00'))));
+test('reject invalid price and rate',()=>{assert.throws(()=>parseCSV(csv.replace(',100,',',0,')));assert.throws(()=>parseCSV(csv.replace('0.0002','0.5')))});
+test('reject timestamps without UTC',()=>assert.throws(()=>parseCSV(csv.replace('00:00:00Z','00:00:00'))));
+test('short funding only after entry and pays both fees',()=>{const r=simulate(parseCSV(csv),{slippage:0,fee:0.00045}); assert.ok(Math.abs(r.funding-0.006)<1e-9);assert.ok(Math.abs(r.fees-0.027)<1e-9);assert.ok(Math.abs(r.net+0.021)<1e-9);assert.equal(r.trades,2)});
+test('no future funding used to enter',()=>{const rows=parseCSV(csv);rows[0].funding=0;assert.equal(simulate(rows).trades,0)});
+test('no entry when funding too low',()=>{const rows=parseCSV(csv);rows.forEach(r=>r.funding=0);assert.equal(simulate(rows).net,0)});
+test('stop closes at observed price not target',()=>{const rows=parseCSV(csv);rows[3].price=110;const r=simulate(rows,{fee:0,slippage:0});assert.equal(r.stops,1);assert.ok(r.net < -2.9)});
+test('demo deterministic',()=>assert.deepEqual(simulate(demoRows()),simulate(demoRows())));
+test('reject exposure exceeding capital',()=>assert.throws(()=>simulate(demoRows(),{capital:20,notional:30})));
