@@ -13,8 +13,8 @@ function render() {
   $('attribution').replaceChildren(...breakdown.map(([label,value])=>{const el=document.createElement('div');const title=document.createElement('span');const val=document.createElement('b');title.textContent=label;val.textContent=money(value);el.append(title,val);return el}));
   $('window-results').replaceChildren();
   try { const w=compareWindows(rows); $('window-summary').textContent=`الأولى ${date(w.firstStart)} إلى ${date(w.firstEnd)} ؛ الثانية ${date(w.secondStart)} إلى ${date(w.secondEnd)} UTC. كل فترة اختبار مستقل من حيث إعادة الرصيد، وليست ضمانًا لاستقلال البحث.`;
-    for(const x of w.results){const tr=document.createElement('tr');for(const v of [x.name,money(x.first.net),money(x.second.net),money(x.stress.net),String(x.second.trades)]){const td=document.createElement('td');td.textContent=v;tr.append(td)}$('window-results').append(tr)}
-    const tr=document.createElement('tr'); for(const v of ['دون تداول','$0.00','$0.00','$0.00','0']){const td=document.createElement('td');td.textContent=v;tr.append(td)} $('window-results').append(tr);
+    for(const x of w.results){const tr=document.createElement('tr');for(const v of [x.name,money(x.first.net),money(x.second.net),money(x.stress.net),String(x.second.trades),`${(x.second.maxDD*100).toFixed(2)}%`]){const td=document.createElement('td');td.textContent=v;tr.append(td)}$('window-results').append(tr)}
+    const tr=document.createElement('tr'); for(const v of ['دون تداول','$0.00','$0.00','$0.00','0','0.00%']){const td=document.createElement('td');td.textContent=v;tr.append(td)} $('window-results').append(tr);
   } catch(e) {$('window-summary').textContent=e.message}
   $('net').textContent = money(r.net); $('ending').textContent = money(r.ending); $('drawdown').textContent = `${(r.maxDD*100).toFixed(2)}%`; $('funding').textContent = money(r.funding); $('chart-total').textContent = money(r.ending);
   $('start-date').textContent=date(rows[0].time); $('end-date').textContent=date(rows.at(-1).time);

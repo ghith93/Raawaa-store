@@ -23,10 +23,11 @@ export function demoRows() {
   });
 }
 export function simulate(rows, options = {}) {
-  const {capital = 300, notional = 30, entry = 0.0001, exit = 0.00005, stop = 0.02, fee = 0.00045, slippage = 0.0005, closeAtEnd = true} = options;
-  if (![capital, notional, entry, exit, stop, fee, slippage].every(Number.isFinite) || capital <= 0 || notional <= 0 || notional > capital || entry <= exit || exit < 0 || stop <= 0 || stop >= 1 || fee < 0 || fee > 0.05 || slippage < 0 || slippage > 0.05 || rows.length < 2) throw new Error('إعدادات المحاكاة غير صالحة.');
+  const {capital = 300, notional = 30, entry = 0.0001, exit = 0.00005, stop = 0.02, fee = 0.00045, slippage = 0.0005, closeAtEnd = true, trendFilter = false, cooldownHours = 0} = options;
+  if (![capital, notional, entry, exit, stop, fee, slippage].every(Number.isFinite) || capital <= 0 || notional <= 0 || notional > capital || entry <= exit || exit < 0 || stop <= 0 || stop >= 1 || fee < 0 || fee > 0.05 || slippage < 0 || slippage > 0.05 || !Number.isInteger(cooldownHours) || cooldownHours < 0 || cooldownHours > 168 || typeof trendFilter !== "boolean" || rows.length < 2) throw new Error('إعدادات المحاكاة غير صالحة.');
   let cash = capital, position = null, fundingTotal = 0, fees = 0, grossPrice = 0, slippageCost = 0, trades = 0, peak = capital, maxDD = 0, stops = 0;
   const curve = [], events = [];
+  let nextEntryIndex = 0;
   const close = (r, reason) => {
     const fill = r.price * (1 + slippage), pnl = position.qty * (position.entry - fill), cost = position.qty * fill * fee;
     grossPrice += position.qty * (position.reference - r.price); slippageCost += position.qty * (fill - r.price);
@@ -36,9 +37,10 @@ export function simulate(rows, options = {}) {
     const r = rows[i];
     // Row's funding was earned for the preceding hour, only by an already open position.
     if (position && i > 0) { const payment = position.qty * r.price * r.funding; cash += payment; fundingTotal += payment; }
-    if (position && r.price >= position.entry * (1 + stop)) { close(r, 'وقف افتراضي'); stops++; }
-    else if (position && i >= 2 && rows[i-1].funding < exit && rows[i-2].funding < exit) close(r, 'خروج بالإشارة');
-    if (!position && i >= 2 && (i < rows.length - 1 || !closeAtEnd) && rows[i-1].funding > entry && rows[i-2].funding > entry && cash >= notional) {
+    if (position && r.price >= position.entry * (1 + stop)) { close(r, 'وقف افتراضي'); stops++; nextEntryIndex = i + cooldownHours; }
+    else if (position && i >= 2 && rows[i-1].funding < exit && rows[i-2].funding < exit) { close(r, 'خروج بالإشارة'); nextEntryIndex = i + cooldownHours; }
+    const trendOK = !trendFilter || (i >= 25 && rows[i-1].price < rows[i-25].price);
+    if (!position && i >= nextEntryIndex && trendOK && i >= 2 && (i < rows.length - 1 || !closeAtEnd) && rows[i-1].funding > entry && rows[i-2].funding > entry && cash >= notional) {
       const fill = r.price * (1 - slippage), qty = notional / fill, cost = notional * fee;
       cash -= cost; fees += cost; slippageCost += qty * (r.price-fill); position = {entry:fill, reference:r.price, qty}; trades++; events.push({time:r.time, type:'دخول افتراضي', price:fill, amount:-cost});
     }
