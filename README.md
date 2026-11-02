@@ -2,7 +2,7 @@
 
 متجر عربي ثابت كتطبيق ويب تقدّمي (PWA)، مستضاف على Cloudflare Pages. يتيح اختيار الحجم ومراجعة سلة مرجعية ثم تجهيز استفسار يرسله العميل يدويًا عبر واتساب.
 
-> **الحالة:** الموقع منشور على <https://raawaa-store.pages.dev/>؛ آخر تغيير سلوكي للموقع PR #99، والتحقق الحي لـPWA موثق في [run 41263841381](https://github.com/ghith93/Raawaa-store/actions/runs/41263841381). للحالة التشغيلية الحالية ونتائج التحقق الأحدث، راجع [`PROJECT-ROADMAP-AR.md`](PROJECT-ROADMAP-AR.md).
+> **الحالة:** الموقع منشور على <https://raawaa-store.pages.dev/>؛ آخر تغيير سلوكي للموقع PR #99. دُمج PR #119 في [commit f1329f3](https://github.com/ghith93/Raawaa-store/commit/f1329f3463bc4caae2bd5a2f37a6e2a3a63c8aed) لتحسين تأكيد ميزانية Lighthouse وإزالة اعتماد runner Android القديم؛ لا يغيّر أسعار الموقع أو مسار الطلب. نجح Site checks في [run 41525811574](https://github.com/ghith93/Raawaa-store/actions/runs/41525811574)، وتخطّى Deploy gate [run 41526412325](https://github.com/ghith93/Raawaa-store/actions/runs/41526412325) بعد نجاح الفحوص. آخر uptime مجدول ناجح [41459232952](https://github.com/ghith93/Raawaa-store/actions/runs/41459232952) كان قبل دمج PR #119؛ issue #111 تبقى مفتوحة حتى أول فحص مجدول بعد الدمج. للحالة التشغيلية الحالية راجع [`PROJECT-ROADMAP-AR.md`](PROJECT-ROADMAP-AR.md).
 > **الحالة التشغيلية والتوجه:** ابدأ من [`PROJECT-ROADMAP-AR.md`](PROJECT-ROADMAP-AR.md)، لا من ملخصات التاريخ القديمة.
 
 ## ما يفعله الموقع — وما لا يفعله
