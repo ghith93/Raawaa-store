@@ -3,9 +3,11 @@ name: Site checks
 # لا ينشر هذا السير العمل الموقع ولا يدمج شيئًا؛ يفحص الملفات والوصولية فقط.
 
 on:
+  # PR branches are validated by pull_request below; limiting push here to main
+  # avoids running the full browser/database matrix twice for every PR commit.
   push:
     branches:
-      - '**'
+      - main
   pull_request:
     branches:
       - '**'
@@ -50,6 +52,9 @@ jobs:
 
       - name: اختبار مراقب إعدادات الطلب
         run: node --test scripts/order-config-monitor.test.mjs
+
+      - name: اختبار تجميع ميزانية Lighthouse المتسامح مع الضجيج
+        run: node --test scripts/perf-budget.test.mjs
 
       - name: اختبار محرك الطلبات قيد التطوير
         run: node --test order-system/*.test.mjs

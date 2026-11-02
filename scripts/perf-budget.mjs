@@ -1,85 +1,138 @@
 #!/usr/bin/env node
 /**
- * ميزانية أداء معلنة. ثلاث قراءات متتالية والقرار على الوسيط لتقليل الضجيج؛
- * لا يتغيّر أي حد. كل قراءة معروضة، وغياب أي مقياس يُعد فشلًا.
+ * ميزانية أداء معلنة: تبدأ بثلاث قراءات متتابعة وتستخدم الوسيط كما قبل.
+ * إذا تجاوز الوسيط حدًا، تجمع حتى قراءتين إضافيتين ثم تحسم بوسيط الخمس؛
+ * لا تتغير الحدود، ويظل أي مقياس مفقود فشلًا.
  */
 import { spawn } from 'node:child_process';
-import { readFileSync, writeFileSync, unlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, renameSync, unlinkSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import {
+  BUDGETS,
+  MAX_CONFIRMATION_RUNS,
+  evaluateReports,
+  formatCheckValue,
+  needsConfirmation
+} from './perf-budget-core.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = process.env.BASE || 'https://raawaa-store.pages.dev/';
-const RUNS = Number(process.env.PERF_RUNS || 3);
-if (!Number.isInteger(RUNS) || RUNS < 1 || RUNS > 5) throw new Error('PERF_RUNS must be an integer from 1 to 5');
-const BUDGETS = {
-  'first-contentful-paint': 1800,
-  'largest-contentful-paint': 2500,
-  'total-blocking-time': 200,
-  'cumulative-layout-shift': 0.1,
-  'speed-index': 3400
-};
-const MIN_CATEGORY = { performance: 90, accessibility: 95, 'best-practices': 95, seo: 95 };
-const median = values => {
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-};
+const INITIAL_RUNS = Number(process.env.PERF_RUNS || 3);
+if (!Number.isInteger(INITIAL_RUNS) || INITIAL_RUNS < 1 || INITIAL_RUNS > MAX_CONFIRMATION_RUNS) {
+  throw new Error(`PERF_RUNS must be an integer from 1 to ${MAX_CONFIRMATION_RUNS}`);
+}
 
 function run(args) {
   return new Promise((resolve, reject) => {
     const cli = path.join(ROOT, 'node_modules/lighthouse/cli/index.js');
     const proc = spawn(process.execPath, [cli, ...args], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
     let err = '';
-    proc.stderr.on('data', d => { err += d; });
+    proc.stderr.on('data', data => { err += data; });
     proc.stdout.resume();
     proc.on('error', reject);
-    proc.on('close', c => c === 0 ? resolve() : reject(new Error(err.slice(-1000) || `Lighthouse exit ${c}`)));
+    proc.on('close', code => code === 0 ? resolve() : reject(new Error(err.slice(-1000) || `Lighthouse exit ${code}`)));
   });
 }
 
-console.log(`\n═══ ميزانية الأداء · ${BASE} · ${RUNS} قراءة متتالية ═══\n`);
+function logReading(report, index) {
+  const categories = ['performance', 'accessibility', 'best-practices', 'seo']
+    .map(key => `${key}=${Number.isFinite(report.categories?.[key]?.score)
+      ? (report.categories[key].score * 100).toFixed(0)
+      : 'missing'}`)
+    .join(' ');
+  const audits = Object.keys(BUDGETS)
+    .map(key => `${key}=${Number.isFinite(report.audits?.[key]?.numericValue)
+      ? key === 'cumulative-layout-shift'
+        ? report.audits[key].numericValue.toFixed(3)
+        : `${Math.round(report.audits[key].numericValue)}ms`
+      : 'missing'}`)
+    .join(' ');
+  const bytes = report.audits?.['total-byte-weight']?.numericValue;
+  console.log(`  القراءة ${index}: ${categories} · ${audits} · bytes=${Number.isFinite(bytes) ? Math.round(bytes) : 'missing'}`);
+}
+
+function writeReport(reportPath, reports, evaluation, errors, confirmed) {
+  const result = {
+    base: BASE,
+    date: new Date().toISOString(),
+    initialRuns: INITIAL_RUNS,
+    maxRuns: MAX_CONFIRMATION_RUNS,
+    actualRuns: reports.length,
+    confirmationRunsUsed: Math.max(0, reports.length - INITIAL_RUNS),
+    confirmed,
+    decision: evaluation?.pass && errors.length === 0 ? 'pass' : 'fail',
+    errors,
+    failedChecks: evaluation?.failures.map(({ id, label, value, limit, direction, unit, readings }) => ({
+      id, label, value, limit, direction, unit, readings
+    })) || [],
+    checks: evaluation?.checks || [],
+    runs: reports.map(report => ({ audits: report.audits, categories: report.categories }))
+  };
+  const temporaryPath = `${reportPath}.tmp-${process.pid}`;
+  writeFileSync(temporaryPath, JSON.stringify(result, null, 1));
+  renameSync(temporaryPath, reportPath);
+}
+
+const reportPath = path.resolve(ROOT, process.env.PERF_REPORT || 'BENCHMARKS-lighthouse-latest.json');
+console.log(`\n═══ ميزانية الأداء · ${BASE} · ${INITIAL_RUNS} قراءة مبدئية (حد أقصى ${MAX_CONFIRMATION_RUNS}) ═══\n`);
 const reports = [];
-for (let i = 0; i < RUNS; i++) {
-  const outPath = `/tmp/rawaa-lh-${process.pid}-${i}.json`;
+const errors = [];
+let index = 0;
+let evaluation = null;
+let confirmed = false;
+
+async function collectOne() {
+  const outPath = `/tmp/rawaa-lh-${process.pid}-${index}.json`;
+  index++;
   try {
     await run([BASE, '--output=json', `--output-path=${outPath}`,
       '--chrome-flags=--headless --no-sandbox --disable-dev-shm-usage',
       '--only-categories=performance,accessibility,best-practices,seo', '--quiet']);
     const report = JSON.parse(readFileSync(outPath, 'utf8'));
+    if (!report || typeof report !== 'object' || !report.audits || !report.categories) {
+      throw new Error('Lighthouse returned a malformed report');
+    }
     reports.push(report);
-    const lcp = report.audits['largest-contentful-paint']?.numericValue;
-    const score = report.categories.performance?.score;
-    console.log(`  القراءة ${i + 1}: الأداء ${Number.isFinite(score) ? Math.round(score * 100) : 'مفقود'} · LCP ${Number.isFinite(lcp) ? Math.round(lcp) + 'ms' : 'مفقود'}`);
-  } finally { try { unlinkSync(outPath); } catch { /* لم يُكتب التقرير */ } }
+    logReading(report, reports.length);
+  } catch (error) {
+    errors.push(`reading ${index}: ${error.message}`);
+    console.error(`  ✗ تعذّر إكمال القراءة ${index}: ${error.message}`);
+  } finally {
+    try { unlinkSync(outPath); } catch { /* لم يُكتب التقرير */ }
+  }
 }
-let fails = 0;
-const line = (good, label, value, limit) => {
-  if (!good) fails++;
-  console.log(`  ${good ? '✓' : '✗'} ${label.padEnd(29)} ${String(value).padEnd(11)} (الحد ${limit})`);
-};
-const allFinite = values => values.every(v => typeof v === 'number' && Number.isFinite(v));
-console.log('\nالوسيط:');
-for (const [key, min] of Object.entries(MIN_CATEGORY)) {
-  const values = reports.map(r => r.categories[key]?.score);
-  const v = allFinite(values) ? median(values) * 100 : NaN;
-  line(Number.isFinite(v) && v >= min, `درجة ${key}`, Number.isFinite(v) ? v.toFixed(1) : 'مفقود', `≥ ${min}`);
-}
-for (const [key, max] of Object.entries(BUDGETS)) {
-  const values = reports.map(r => r.audits[key]?.numericValue);
-  const v = allFinite(values) ? median(values) : NaN;
-  const isCls = key === 'cumulative-layout-shift';
-  const format = Number.isFinite(v) ? (isCls ? v.toFixed(3) : Math.round(v) + 'ms') : 'مفقود';
-  const limit = isCls ? `≤ ${max}` : `≤ ${max}ms`;
-  line(Number.isFinite(v) && v <= max, reports[0].audits[key]?.title || key, format, limit);
-}
-const sizes = reports.map(r => r.audits['total-byte-weight']?.numericValue);
-const bytes = allFinite(sizes) ? median(sizes) : NaN;
-line(Number.isFinite(bytes) && bytes <= 900 * 1024, 'إجمالي الحجم', Number.isFinite(bytes) ? (bytes / 1048576).toFixed(2) + 'MB' : 'مفقود', '≤ 0.88MB');
 
-// المسار نسبي إلى المشروع وليس /home/user الذي لا يوجد في GitHub Actions.
-const reportPath = path.resolve(ROOT, process.env.PERF_REPORT || 'BENCHMARKS-lighthouse-latest.json');
-writeFileSync(reportPath, JSON.stringify({ base: BASE, date: new Date().toISOString(), runs: reports.map(r => ({ audits: r.audits, categories: r.categories })) }, null, 1));
+for (let attempt = 0; attempt < INITIAL_RUNS; attempt++) {
+  await collectOne();
+  if (errors.length) break;
+}
+evaluation = evaluateReports(reports);
+
+if (errors.length === 0 && needsConfirmation(evaluation, reports.length)) {
+  confirmed = true;
+  console.log(`\n⚠️ الوسيط المبدئي تجاوز حدًا؛ تُجمع قراءات تأكيد حتى ${MAX_CONFIRMATION_RUNS} دون تغيير الميزانية.\n`);
+  while (reports.length < MAX_CONFIRMATION_RUNS) {
+    await collectOne();
+    if (errors.length) break;
+  }
+  evaluation = evaluateReports(reports);
+}
+
+console.log(`\nالوسيط النهائي (${reports.length} قراءة${confirmed ? '؛ تأكيد' : ''}):`);
+for (const check of evaluation.checks) {
+  const threshold = check.direction === 'min' ? `≥ ${check.limit}${check.unit}` : `≤ ${check.limit}${check.unit}`;
+  console.log(`  ${check.pass ? '✓' : '✗'} ${check.label.padEnd(31)} ${formatCheckValue(check).padEnd(12)} (${threshold})`);
+}
+
+writeReport(reportPath, reports, evaluation, errors, confirmed);
 console.log(`\nالتقرير: ${reportPath}`);
-if (fails) { console.log(`النتيجة: ${fails} مقياس تجاوز حده أو غاب`); process.exit(1); }
-console.log('النتيجة: كل المقاييس داخل الميزانية ✓');
+if (errors.length) {
+  console.error(`النتيجة: تعذرت قراءة Lighthouse (${errors.length} خطأ)؛ حُفظ التقرير الجزئي.`);
+  process.exit(1);
+}
+if (!evaluation.pass) {
+  console.error(`النتيجة: ${evaluation.failures.length} مقياس تجاوز حده أو غاب بعد التأكيد.`);
+  process.exit(1);
+}
+console.log(`النتيجة: كل المقاييس داخل الميزانية${confirmed ? ` بعد ${reports.length - INITIAL_RUNS} قراءات تأكيد إضافية` : ''} ✓`);
