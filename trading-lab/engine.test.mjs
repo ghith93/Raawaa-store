@@ -10,3 +10,4 @@ test('no entry when funding too low',()=>{const rows=parseCSV(csv);rows.forEach(
 test('stop closes at observed price not target',()=>{const rows=parseCSV(csv);rows[3].price=110;const r=simulate(rows,{fee:0,slippage:0});assert.equal(r.stops,1);assert.ok(r.net < -2.9)});
 test('demo deterministic',()=>assert.deepEqual(simulate(demoRows()),simulate(demoRows())));
 test('reject exposure exceeding capital',()=>assert.throws(()=>simulate(demoRows(),{capital:20,notional:30})));
+test('paper simulation leaves open positions marked to market',()=>{const r=simulate(parseCSV(csv),{slippage:0,fee:0,closeAtEnd:false});assert.equal(r.open,true);assert.equal(r.trades,1);assert.ok(Math.abs(r.net-0.006)<1e-9)});
