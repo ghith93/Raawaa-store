@@ -11,7 +11,7 @@ const ciWorkflow = await readFile(new URL('../.github/workflows/site-checks.yml'
 const supabaseLocalScript = await readFile(new URL('../scripts/test-marketing-supabase-local.sh', import.meta.url), 'utf8');
 const supabaseLocalTests = await readFile(new URL('./marketing-preferences-supabase-test.sql', import.meta.url), 'utf8');
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-const lenovoWorkflow = await readFile(new URL('../.github/workflows/lenovo-supabase-local.yml', import.meta.url), 'utf8');
+const localSupabaseWorkflow = await readFile(new URL('../.github/workflows/local-supabase.yml', import.meta.url), 'utf8');
 const ownerSetupHtml = await readFile(new URL('../setup.html', import.meta.url), 'utf8');
 
 test('retention source matches the already-applied staging migration and remains bounded/private', () => {
@@ -82,12 +82,14 @@ test('owner setup generates secrets locally and no longer calls the retired iden
   await assert.rejects(readFile(new URL('./edge/owner-setup-page.mjs', import.meta.url)), { code: 'ENOENT' });
 });
 
-test('Lenovo probe workflow runs reviewed main code only with read-only repository access', () => {
-  assert.match(lenovoWorkflow, /branches:\s*\n\s*- main/);
-  assert.match(lenovoWorkflow, /workflow_dispatch:/);
-  assert.match(lenovoWorkflow, /if: github\.ref == 'refs\/heads\/main'/);
-  assert.match(lenovoWorkflow, /runs-on: \[self-hosted, android-api-35, arm64, soc-mediatek-mt6877-mt6877\]/);
-  assert.match(lenovoWorkflow, /permissions:\s*\n\s*contents: read/);
-  assert.doesNotMatch(lenovoWorkflow, /pull_request:|workflow_run:|secrets\./i);
-  assert.match(lenovoWorkflow, /npm run test:marketing:supabase-local/);
+test('hosted Supabase probe runs reviewed main code only with read-only access and pinned CLI', () => {
+  assert.match(localSupabaseWorkflow, /branches:\s*\n\s*- main/);
+  assert.match(localSupabaseWorkflow, /workflow_dispatch:/);
+  assert.match(localSupabaseWorkflow, /if: github\.ref == 'refs\/heads\/main'/);
+  assert.match(localSupabaseWorkflow, /runs-on: ubuntu-24\.04/);
+  assert.match(localSupabaseWorkflow, /uses: supabase\/setup-cli@v3/);
+  assert.match(localSupabaseWorkflow, /version: 2\.122\.0/);
+  assert.match(localSupabaseWorkflow, /permissions:\s*\n\s*contents: read/);
+  assert.doesNotMatch(localSupabaseWorkflow, /runs-on: \[?self-hosted|pull_request:|workflow_run:|secrets\./i);
+  assert.match(localSupabaseWorkflow, /npm run test:marketing:supabase-local/);
 });

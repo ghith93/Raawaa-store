@@ -59,7 +59,7 @@ cp "$ROOT_DIR/order-system/marketing-preferences-supabase-test.sql" \
 cd "$TEST_DIR"
 echo "Starting only the local database container; no remote project is linked."
 STARTED=1
-# The Lenovo has 8 GB total RAM. Exclude non-DB services to minimize pressure;
+# Exclude non-database services to keep the ephemeral hosted stack lightweight;
 # pgTAP only needs the local Postgres container and its CLI test runner.
 supabase start -x gotrue,realtime,storage-api,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
 # Both commands explicitly target the local database. Never change these to --linked.
