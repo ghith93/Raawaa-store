@@ -18,6 +18,8 @@
 | **IBM Plex Sans Arabic** | IBM/plex | — | SIL OFL 1.1 | ✅ | الخط | استبدال `@font-face` |
 | **Cormorant Garamond** | google/fonts | — | SIL OFL 1.1 | ✅ | اللاتينية الفاخرة | — |
 | **Wrangler** | cloudflare/workers-sdk | 25k | Apache-2.0 | ✅ | النشر | `npm uninstall wrangler` |
+| **Supabase setup-cli action** | [supabase/setup-cli](https://github.com/supabase/setup-cli) | — | MIT | ✅ | تثبيت CLI بإصدار مثبت لاختبار Supabase محليًا على GitHub Actions فقط؛ لا يدخل التطبيق أو الإنتاج | حذف خطوة `supabase/setup-cli` من `.github/workflows/local-supabase.yml` |
+| **Supabase CLI** | [supabase/cli](https://github.com/supabase/cli) | — | MIT | ✅ | `2.122.0` لتشغيل stack مؤقت واختبارات migration/pgTAP محليًا في CI فقط | حذف خطوة CLI والاختبار من workflow وسكربت الاختبار |
 
 ## مدروسة ولم تُدمج (بسبب)
 
