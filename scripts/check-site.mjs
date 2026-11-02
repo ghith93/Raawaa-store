@@ -849,6 +849,9 @@ async function checkResponsiveImages() {
 async function checkWorkflow() {
   group('سير عمل GitHub Actions');
   const wf = await read('.github/workflows/site-checks.yml');
+  if (!(await exists('.github/workflows/droid-runner-smoke.yml'))) pass('تكامل runner الذاتي القديم أُزيل من المشروع');
+  else fail('لا ينبغي تشغيل runner Android الذاتي القديم من هذا المستودع');
+
   const needed = [
     ['actions/checkout', 'التحقق من المستودع'],
     ['actions/setup-node', 'تهيئة Node'],
