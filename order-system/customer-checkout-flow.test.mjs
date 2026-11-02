@@ -13,7 +13,7 @@ test('requires consent and challenge; a lost response retries safely with a new 
  const f=fixture();f.flow.begin({name:'Synthetic'});
  assert.deepEqual(await f.flow.submit(false),{status:'consent_required'});assert.deepEqual(await f.flow.submit(true),{status:'challenge_required'});assert.equal(f.sends(),0);
  f.challenge('first');assert.deepEqual(await f.flow.submit(true),{status:'uncertain'});assert.equal(f.resets(),1);assert.throws(()=>f.flow.reset(),/SAVE_UNCERTAIN/);
- assert.deepEqual(await f.flow.submit(true),{status:'challenge_required'});f.challenge('second');assert.deepEqual(await f.flow.submit(true),{status:'saved',reference:'RAWAA-TEST123'});assert.equal(f.resets(),2);assert.equal(f.sends(),2);assert.ok(!f.stored().includes('Synthetic'));
+ assert.deepEqual(await f.flow.submit(true),{status:'challenge_required'});f.challenge('second');assert.deepEqual(await f.flow.submit(true),{status:'saved',reference:'RAWAA-TEST123'});assert.equal(f.resets(),2);assert.equal(f.sends(),2);assert.equal(f.stored(),null);
 });
 test('an expired challenge does not issue a request',async()=>{
  const f=fixture();f.flow.begin({name:'Synthetic'});f.challenge('expired');f.expire();assert.equal((await f.flow.submit(true)).status,'challenge_required');assert.equal(f.sends(),0);
