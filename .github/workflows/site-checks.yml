@@ -3,9 +3,11 @@ name: Site checks
 # لا ينشر هذا السير العمل الموقع ولا يدمج شيئًا؛ يفحص الملفات والوصولية فقط.
 
 on:
+  # PR branches are validated by pull_request below; limiting push here to main
+  # avoids running the full browser/database matrix twice for every PR commit.
   push:
     branches:
-      - '**'
+      - main
   pull_request:
     branches:
       - '**'

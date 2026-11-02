@@ -861,8 +861,19 @@ async function checkWorkflow() {
     else fail(`سير العمل يفتقد: ${label}`);
   }
 
-  if (/on:\s*[\s\S]{0,120}push:/.test(wf) && /pull_request:/.test(wf)) pass('يعمل على push و pull_request');
+  if (/^on:\s*$/m.test(wf) && /^  push:\s*$/m.test(wf) && /^  pull_request:\s*$/m.test(wf)) pass('يعمل على push و pull_request');
   else fail('سير العمل لا يعمل على push و pull_request');
+
+  const pushEvent = wf.match(/^  push:\r?\n([\s\S]*?)(?=^  pull_request:)/m)?.[1] ?? '';
+  const pullRequestEvent = wf.match(/^  pull_request:\r?\n([\s\S]*?)(?=^  workflow_dispatch:)/m)?.[1] ?? '';
+  const branchFilters = event => [...event.matchAll(/^\s{6}-\s*(.+?)\s*$/gm)].map(([, branch]) => branch.replace(/["']/g, ''));
+  const pushBranches = branchFilters(pushEvent);
+  const pullRequestBranches = branchFilters(pullRequestEvent);
+  if (pushBranches.length === 1 && pushBranches[0] === 'main' && pullRequestBranches.length === 1 && pullRequestBranches[0] === '**') {
+    pass('فحوص push محصورة بـmain لتجنب تكرار مصفوفة CI؛ كل فروع PR ما زالت مفحوصة');
+  } else {
+    fail(`نطاق التشغيل يجب أن يكون push على main وpull_request على كل الفروع (push=${pushBranches.join(',') || 'مفقود'}؛ PR=${pullRequestBranches.join(',') || 'مفقود'})`);
+  }
 
   if (/permissions:\s*[\s\S]{0,80}contents:\s*read/.test(wf)) pass('أذونات محدودة (contents: read)');
   else fail('لا تحديد للأذونات');
