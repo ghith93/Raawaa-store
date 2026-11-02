@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createCustomerOrderClient} from './customer-order-client.mjs';
-const memoryStorage=()=>{let value=null;return {getItem:()=>value,setItem:(_k,v)=>{value=v;},removeItem:()=>{value=null;}};};
+const memoryStorage=()=>{const values=new Map();return {getItem:(key='rawaa-order-intent-v1')=>values.get(key)??null,setItem:(key,value)=>{values.set(key,value);},removeItem:(key='rawaa-order-intent-v1')=>{values.delete(key);},entries:()=>[...values.entries()]};};
 const base={storage:memoryStorage(),endpoint:'https://store.example/api/orders',allowedOrigin:'https://store.example',makeId:()=> '11111111-1111-4111-8111-111111111111'};
 test('ambiguous acknowledgement keeps same key and locked snapshot with a fresh challenge',async()=>{
   const calls=[];let fail=true;
@@ -15,10 +15,10 @@ test('ambiguous acknowledgement keeps same key and locked snapshot with a fresh 
   client.reset();assert.equal(client.state(),'idle');
 });
 test('malformed success is uncertain; rejection is not saved and consent is mandatory',async()=>{
-  let status=400;const client=createCustomerOrderClient({...base,storage:memoryStorage(),fetchImpl:async()=>({status,json:async()=>({})})});client.begin({name:'test'});
+  let status=400;const storage=memoryStorage();const client=createCustomerOrderClient({...base,storage,fetchImpl:async()=>({status,json:async()=>({})})});client.begin({name:'test'});
   await assert.rejects(client.submit({challengeToken:'x',consent:false}),/INVALID_CHALLENGE/);
-  assert.deepEqual(await client.submit({challengeToken:'x',consent:true}),{status:'rejected',reason:'check_details'});assert.equal(client.state(),'ready');
-  status=200;assert.deepEqual(await client.submit({challengeToken:'y',consent:true}),{status:'uncertain'});assert.throws(()=>client.reset(),/SAVE_UNCERTAIN/);
+  assert.deepEqual(await client.submit({challengeToken:'x',consent:true}),{status:'rejected',reason:'check_details'});assert.equal(client.state(),'ready');assert.equal(storage.getItem(),null);
+  status=200;assert.deepEqual(await client.submit({challengeToken:'y',consent:true}),{status:'uncertain'});assert.notEqual(storage.getItem(),null);assert.throws(()=>client.reset(),/SAVE_UNCERTAIN/);
 });
 test('cannot run parallel submissions or leak to foreign origins',async()=>{
   assert.throws(()=>createCustomerOrderClient({...base,storage:memoryStorage(),endpoint:'https://evil.example/api'}),/INVALID_CONFIGURATION/);
@@ -34,7 +34,8 @@ test('reload preserves only an opaque key; restored retry cannot create a second
   assert.ok(!storage.getItem().includes('private'));assert.ok(!storage.getItem().includes('0990000000'));
   const b=factory();assert.equal(b.state(),'uncertain');assert.throws(()=>b.reset(),/SAVE_UNCERTAIN/);b.begin({name:'private synthetic',phone:'0990000000'});
   assert.equal((await b.submit({challengeToken:'two',consent:true})).status,'saved');assert.equal(calls[0].idempotencyKey,calls[1].idempotencyKey);
-  const c=factory();assert.equal(c.state(),'complete');assert.equal(c.restoredReference(),'RAWAA-TEST123');c.reset();assert.equal(c.state(),'idle');
+  assert.equal(storage.getItem(),null);assert.ok(storage.entries().length===0);
+  const c=factory();assert.equal(c.state(),'idle');assert.equal(c.restoredReference(),null);c.reset();assert.equal(c.state(),'idle');
 });
 test('storage failure prevents submission; corrupted storage fails closed',async()=>{
  let sent=false;const storage={getItem:()=>null,setItem:()=>{throw Error('disabled');},removeItem:()=>{}};
@@ -94,7 +95,7 @@ test('mismatched retry allows correction with the same key, never discarding unc
   assert.equal((await b.submit({challengeToken:'c',consent:true})).status,'saved');
   assert.deepEqual(calls.map(c=>c.order.name),['original','different','original']);
   assert.equal(new Set(calls.map(c=>c.idempotencyKey)).size,1);
-  assert.ok(!storage.getItem().includes('original'));
+  assert.equal(storage.getItem(),null);
 });
 
 test('unrecognized or malformed conflict responses stay uncertain without enabling revision',async()=>{
@@ -103,4 +104,61 @@ test('unrecognized or malformed conflict responses stay uncertain without enabli
     assert.deepEqual(await c.submit({challengeToken:'x',consent:true}),{status:'uncertain'});
     assert.throws(()=>c.revise({name:'y'}),/REVISION_NOT_ALLOWED/);assert.throws(()=>c.reset(),/SAVE_UNCERTAIN/);
   }
+});
+
+test('browser default persists only an unresolved key across client instances and clears it after confirmation',async()=>{
+  const storage=memoryStorage(),previous=Object.getOwnPropertyDescriptor(globalThis,'localStorage');
+  Object.defineProperty(globalThis,'localStorage',{configurable:true,value:storage});
+  let loseFirst=true;const calls=[];
+  const options={...base,storage:undefined,fetchImpl:async(_url,init)=>{
+    calls.push(JSON.parse(init.body));
+    if(loseFirst){loseFirst=false;throw Error('tab closed after server save');}
+    return {status:200,json:async()=>({reference:'RAWAA-TEST123',status:'pending_review'})};
+  }};
+  try {
+    const first=createCustomerOrderClient(options);first.begin({name:'synthetic',phone:'0990000000'});
+    assert.deepEqual(await first.submit({challengeToken:'first',consent:true}),{status:'uncertain'});
+    const saved=JSON.parse(storage.getItem());
+    assert.deepEqual(Object.keys(saved).sort(),['createdAt','key','phase']);
+    assert.ok(!storage.getItem().includes('synthetic')&&!storage.getItem().includes('0990000000'));
+    const afterTabClose=createCustomerOrderClient(options);assert.equal(afterTabClose.state(),'uncertain');
+    afterTabClose.begin({name:'synthetic',phone:'0990000000'});
+    assert.deepEqual(await afterTabClose.submit({challengeToken:'fresh',consent:true}),{status:'saved',reference:'RAWAA-TEST123'});
+    assert.equal(calls[0].idempotencyKey,calls[1].idempotencyKey);
+    assert.equal(afterTabClose.restoredReference(),'RAWAA-TEST123');
+    assert.equal(storage.getItem(),null);
+    const afterConfirmedReload=createCustomerOrderClient(options);
+    assert.equal(afterConfirmedReload.state(),'idle');assert.equal(afterConfirmedReload.restoredReference(),null);
+  } finally {
+    if(previous)Object.defineProperty(globalThis,'localStorage',previous);else delete globalThis.localStorage;
+  }
+});
+
+test('legacy completed records are removed and legacy unresolved keys require manual reconciliation',async()=>{
+  const completed=memoryStorage();completed.setItem('rawaa-order-intent-v1',JSON.stringify({key:'11111111-1111-4111-8111-111111111111',phase:'complete',reference:'RAWAA-TEST123'}));
+  const confirmed=createCustomerOrderClient({...base,storage:completed});
+  assert.equal(confirmed.state(),'idle');assert.equal(confirmed.restoredReference(),null);assert.equal(completed.getItem(),null);
+
+  const pending=memoryStorage();pending.setItem('rawaa-order-intent-v1',JSON.stringify({key:'11111111-1111-4111-8111-111111111111',phase:'pending'}));
+  const legacy=createCustomerOrderClient({...base,storage:pending,now:()=>Date.now()});
+  assert.equal(legacy.state(),'reconciliation_required');legacy.begin({name:'synthetic'});
+  assert.deepEqual(await legacy.submit({challengeToken:'fresh',consent:true}),{status:'reconciliation_required'});
+  assert.throws(()=>legacy.reset(),/SAVE_UNCERTAIN/);
+});
+
+test('aged uncertain keys stop retrying before server retention can release the key',async()=>{
+  const now=2_000_000_000_000,storage=memoryStorage();let sent=false,generated=0;
+  storage.setItem('rawaa-order-intent-v1',JSON.stringify({key:'11111111-1111-4111-8111-111111111111',phase:'pending',createdAt:now-181*24*60*60*1000}));
+  const client=createCustomerOrderClient({...base,storage,now:()=>now,makeId:()=>{generated++;return '22222222-2222-4222-8222-222222222222';},fetchImpl:async()=>{sent=true;}});
+  assert.equal(client.state(),'reconciliation_required');client.begin({name:'synthetic'});
+  assert.deepEqual(await client.submit({challengeToken:'fresh',consent:true}),{status:'reconciliation_required'});
+  assert.equal(sent,false);assert.equal(generated,0);assert.throws(()=>client.reset(),/SAVE_UNCERTAIN/);
+  assert.equal(JSON.parse(storage.getItem()).key,'11111111-1111-4111-8111-111111111111');
+});
+
+test('missing browser storage is explicit and fails closed',()=>{
+  const previous=Object.getOwnPropertyDescriptor(globalThis,'localStorage');
+  Object.defineProperty(globalThis,'localStorage',{configurable:true,get(){throw new Error('blocked');}});
+  try {assert.throws(()=>createCustomerOrderClient({...base,storage:undefined}),/STORAGE_UNAVAILABLE/);}
+  finally {if(previous)Object.defineProperty(globalThis,'localStorage',previous);else delete globalThis.localStorage;}
 });
