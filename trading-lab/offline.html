@@ -65,7 +65,7 @@ function normalizeMarket(candles, fundings, start, end) {
   if (!Array.isArray(candles) || !Array.isArray(fundings)) throw new Error('رد غير متوقع من مصدر البيانات.');
   const cm=new Map(), fm=new Map();
   for (const c of candles) { const t=Number(c.t)+HOUR, p=Number(c.c); if (Number.isFinite(t) && Number.isFinite(p) && p>0) cm.set(t,p); }
-  for (const f of fundings) { const t=Number(f.time), rate=Number(f.fundingRate); if (Number.isFinite(t) && Number.isFinite(rate) && Math.abs(rate)<=0.04) fm.set(t,rate); }
+  for (const f of fundings) { const raw=Number(f.time), t=Math.floor(raw/HOUR)*HOUR, rate=Number(f.fundingRate); if (Number.isFinite(raw) && raw-t<=60000 && Number.isFinite(rate) && Math.abs(rate)<=0.04) { if(fm.has(t)) throw new Error(`أكثر من سجل تمويل للساعة ${new Date(t).toISOString()}.`); fm.set(t,rate); } }
   const rows=[];
   for(let t=start; t<=end; t+=HOUR) {
     if(!cm.has(t) || !fm.has(t)) throw new Error(`بيانات ناقصة أو غير متطابقة عند ${new Date(t).toISOString()}. لم يُشغّل الاختبار لتجنب اختلاق القيم.`);
@@ -82,14 +82,14 @@ async function fetchHistory(post,start,end,onProgress=()=>{}) {
     onProgress(from,to);
     const [c,f]=await Promise.all([
       post({type:'candleSnapshot',req:{coin:'HYPE',interval:'1h',startTime:from-HOUR,endTime:to-HOUR}}),
-      post({type:'fundingHistory',coin:'HYPE',startTime:from,endTime:to})
+      post({type:'fundingHistory',coin:'HYPE',startTime:from,endTime:to+60000})
     ]);
     if(!Array.isArray(c)||!Array.isArray(f)) throw new Error('استجابة تاريخية غير صالحة من Hyperliquid.');
     candles.push(...c); fundings.push(...f);
   }
   return normalizeMarket(candles,fundings,start,end);
 }
-async function connectInfo() {
+async function connectWebSocket() {
   const ws=new WebSocket('wss://api.hyperliquid.xyz/ws');
   await new Promise((resolve,reject)=>{const timer=setTimeout(()=>{ws.close();reject(new Error('انتهت مهلة الاتصال بـ Hyperliquid.'))},12000);ws.onopen=()=>{clearTimeout(timer);resolve()};ws.onerror=()=>{clearTimeout(timer);reject(new Error('تعذر الاتصال بـ Hyperliquid من شبكتك أو متصفحك.'))}});
   let id=0; const pending=new Map();
@@ -98,6 +98,25 @@ async function connectInfo() {
   return {post:payload=>new Promise((resolve,reject)=>{if(ws.readyState!==WebSocket.OPEN)return reject(new Error('الاتصال مغلق.'));const n=++id;const timer=setTimeout(()=>{pending.delete(n);reject(new Error('انتهت مهلة طلب البيانات.'))},20000);pending.set(n,{resolve,reject,timer});ws.send(JSON.stringify({method:'post',id:n,request:{type:'info',payload}}));}),close:()=>ws.close()};
 }
 const hour=HOUR;
+
+async function connectInfo() {
+  let ws;
+  try { ws=await connectWebSocket(); } catch { ws=null; }
+  return {
+    post: async payload => {
+      let wsError;
+      if(ws) { try { return await ws.post(payload); } catch(e) { wsError=e; } }
+      const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),15000);
+      try {
+        const response=await fetch('https://api.hyperliquid.xyz/info',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal,credentials:'omit'});
+        if(!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.json();
+      } catch(e) { throw new Error(`فشل الاتصال عبر WebSocket وHTTPS (${wsError?.message || 'تعذر فتح WebSocket'}؛ ${e.message}). قد تمنعه الشبكة أو المتصفح.`); }
+      finally {clearTimeout(timer)}
+    },
+    close:()=>ws?.close()
+  };
+}
 
 const $ = id => document.getElementById(id);
 let rows = demoRows();
@@ -130,7 +149,7 @@ paperStatus();
 async function runMarket(task){let conn;const buttons=['quote','backtest','start-paper','refresh-paper'].map($);buttons.forEach(b=>b.disabled=true);try{ $('market-message').textContent='جارٍ الاتصال ببيانات Hyperliquid العامة…'; conn=await connectInfo();await task(conn.post); }catch(e){$('market-message').textContent=`تعذر جلب البيانات: ${e.message} لا توجد نتائج حقيقية جديدة؛ تحقق من الإنترنت وأعد المحاولة.`}finally{if(conn)conn.close();buttons.forEach(b=>b.disabled=false)}}
 $('quote').addEventListener('click',()=>runMarket(async post=>{const mids=await post({type:'allMids'});const p=Number(mids?.HYPE);if(!Number.isFinite(p)||p<=0)throw new Error('لم يصل سعر HYPE صالح.');$('live-price').textContent=money(p);$('live-time').textContent=`تم الاستلام ${new Date().toISOString().slice(0,19).replace('T',' ')} UTC`; $('market-message').textContent='السعر منتصف السوق وقت الطلب، وقد يصبح قديمًا. اضغط تحديث لإعادة طلبه.';}));
 async function loadReal(post,start,end,paper){if(end-start<2*hour)throw new Error('لا توجد ثلاث ساعات مكتملة بعد؛ عُد لاحقًا.');const data=await fetchHistory(post,start,end,(from,to)=>{$('market-message').textContent=`جلب البيانات التاريخية: ${new Date(from).toISOString().slice(0,10)} — ${new Date(to).toISOString().slice(0,10)}…`});rows=data;mode=paper?'paper':'backtest';$('source-title').textContent=paper?'تجربة ورقية على بيانات Hyperliquid':'باك تست على بيانات Hyperliquid';$('source-detail').textContent=`${rows.length} ساعة مكتملة · ${date(start)} — ${date(end)} UTC`;$('source-badge').textContent='بيانات حقيقية';$('market-message').textContent='الأسعار والتمويل تاريخيان؛ التنفيذ والوقف والرسوم والانزلاق محاكاة تقريبية، وليست صفقات حقيقية.';render()}
-$('backtest').addEventListener('click',()=>runMarket(async post=>{const end=Math.floor(Date.now()/hour)*hour;await loadReal(post,end-(30*24-1)*hour,end,false)}));
+$('backtest').addEventListener('click',()=>runMarket(async post=>{const end=(Math.floor(Date.now()/hour)-1)*hour;await loadReal(post,end-(30*24-1)*hour,end,false)}));
 $('start-paper').addEventListener('click',()=>{try{const current=getPaper();if(current && Date.now()<current.start+30*24*hour && !confirm('توجد تجربة جارية. هل تريد حذف بدايتها والبدء من جديد؟'))return; const start=(Math.floor(Date.now()/hour)+1)*hour;localStorage.setItem(PAPER_KEY,JSON.stringify({start}));paperStatus();$('market-message').textContent='بدأت التجربة اعتبارًا من الساعة UTC القادمة. اضغط تحديث التجربة بعد ثلاث ساعات مكتملة على الأقل.'}catch{$('market-message').textContent='تعذر حفظ التجربة في المتصفح. تحقق من إعدادات التخزين وعدم استخدام التصفح الخاص.'}});
-$('refresh-paper').addEventListener('click',()=>{const p=getPaper();if(!p){$('market-message').textContent='ابدأ تجربة شهر أولًا.';return}runMarket(async post=>{const end=Math.min(Math.floor(Date.now()/hour)*hour,p.start+30*24*hour-hour);await loadReal(post,p.start,end,true)})});
+$('refresh-paper').addEventListener('click',()=>{const p=getPaper();if(!p){$('market-message').textContent='ابدأ تجربة شهر أولًا.';return}runMarket(async post=>{const end=Math.min((Math.floor(Date.now()/hour)-1)*hour,p.start+30*24*hour-hour);await loadReal(post,p.start,end,true)})});
 </script></body></html>

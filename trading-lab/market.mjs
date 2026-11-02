@@ -4,7 +4,7 @@ export function normalizeMarket(candles, fundings, start, end) {
   if (!Array.isArray(candles) || !Array.isArray(fundings)) throw new Error('رد غير متوقع من مصدر البيانات.');
   const cm=new Map(), fm=new Map();
   for (const c of candles) { const t=Number(c.t)+HOUR, p=Number(c.c); if (Number.isFinite(t) && Number.isFinite(p) && p>0) cm.set(t,p); }
-  for (const f of fundings) { const t=Number(f.time), rate=Number(f.fundingRate); if (Number.isFinite(t) && Number.isFinite(rate) && Math.abs(rate)<=0.04) fm.set(t,rate); }
+  for (const f of fundings) { const raw=Number(f.time), t=Math.floor(raw/HOUR)*HOUR, rate=Number(f.fundingRate); if (Number.isFinite(raw) && raw-t<=60000 && Number.isFinite(rate) && Math.abs(rate)<=0.04) { if(fm.has(t)) throw new Error(`أكثر من سجل تمويل للساعة ${new Date(t).toISOString()}.`); fm.set(t,rate); } }
   const rows=[];
   for(let t=start; t<=end; t+=HOUR) {
     if(!cm.has(t) || !fm.has(t)) throw new Error(`بيانات ناقصة أو غير متطابقة عند ${new Date(t).toISOString()}. لم يُشغّل الاختبار لتجنب اختلاق القيم.`);
@@ -21,14 +21,14 @@ export async function fetchHistory(post,start,end,onProgress=()=>{}) {
     onProgress(from,to);
     const [c,f]=await Promise.all([
       post({type:'candleSnapshot',req:{coin:'HYPE',interval:'1h',startTime:from-HOUR,endTime:to-HOUR}}),
-      post({type:'fundingHistory',coin:'HYPE',startTime:from,endTime:to})
+      post({type:'fundingHistory',coin:'HYPE',startTime:from,endTime:to+60000})
     ]);
     if(!Array.isArray(c)||!Array.isArray(f)) throw new Error('استجابة تاريخية غير صالحة من Hyperliquid.');
     candles.push(...c); fundings.push(...f);
   }
   return normalizeMarket(candles,fundings,start,end);
 }
-export async function connectInfo() {
+async function connectWebSocket() {
   const ws=new WebSocket('wss://api.hyperliquid.xyz/ws');
   await new Promise((resolve,reject)=>{const timer=setTimeout(()=>{ws.close();reject(new Error('انتهت مهلة الاتصال بـ Hyperliquid.'))},12000);ws.onopen=()=>{clearTimeout(timer);resolve()};ws.onerror=()=>{clearTimeout(timer);reject(new Error('تعذر الاتصال بـ Hyperliquid من شبكتك أو متصفحك.'))}});
   let id=0; const pending=new Map();
@@ -37,3 +37,22 @@ export async function connectInfo() {
   return {post:payload=>new Promise((resolve,reject)=>{if(ws.readyState!==WebSocket.OPEN)return reject(new Error('الاتصال مغلق.'));const n=++id;const timer=setTimeout(()=>{pending.delete(n);reject(new Error('انتهت مهلة طلب البيانات.'))},20000);pending.set(n,{resolve,reject,timer});ws.send(JSON.stringify({method:'post',id:n,request:{type:'info',payload}}));}),close:()=>ws.close()};
 }
 export const hour=HOUR;
+
+export async function connectInfo() {
+  let ws;
+  try { ws=await connectWebSocket(); } catch { ws=null; }
+  return {
+    post: async payload => {
+      let wsError;
+      if(ws) { try { return await ws.post(payload); } catch(e) { wsError=e; } }
+      const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),15000);
+      try {
+        const response=await fetch('https://api.hyperliquid.xyz/info',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:controller.signal,credentials:'omit'});
+        if(!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.json();
+      } catch(e) { throw new Error(`فشل الاتصال عبر WebSocket وHTTPS (${wsError?.message || 'تعذر فتح WebSocket'}؛ ${e.message}). قد تمنعه الشبكة أو المتصفح.`); }
+      finally {clearTimeout(timer)}
+    },
+    close:()=>ws?.close()
+  };
+}
