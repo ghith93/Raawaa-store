@@ -9,7 +9,7 @@
  * كود الخروج 1 عند وجود أي فشل.
  */
 
-import { readFile, access, stat } from 'node:fs/promises';
+import { readFile, access, stat, readdir } from 'node:fs/promises';
 import { constants, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -849,8 +849,14 @@ async function checkResponsiveImages() {
 async function checkWorkflow() {
   group('سير عمل GitHub Actions');
   const wf = await read('.github/workflows/site-checks.yml');
-  if (!(await exists('.github/workflows/droid-runner-smoke.yml'))) pass('تكامل runner الذاتي القديم أُزيل من المشروع');
-  else fail('لا ينبغي تشغيل runner Android الذاتي القديم من هذا المستودع');
+  const workflowNames = await readdir(path.join(ROOT, '.github/workflows'));
+  const selfHostedWorkflows = [];
+  for (const name of workflowNames.filter((file) => /\.ya?ml$/i.test(file))) {
+    const source = await read(`.github/workflows/${name}`);
+    if (/^\s*runs-on\s*:[^\n]*\bself-hosted\b|^\s*-\s*self-hosted\b/im.test(source)) selfHostedWorkflows.push(name);
+  }
+  if (selfHostedWorkflows.length === 0) pass('لا توجد وظائف تستخدم GitHub Actions self-hosted runners');
+  else fail(`أزل/راجع وظائف self-hosted قبل دمج التغييرات: ${selfHostedWorkflows.join(', ')}`);
 
   const needed = [
     ['actions/checkout', 'التحقق من المستودع'],
