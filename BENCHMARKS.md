@@ -3,9 +3,9 @@
 > **القاعدة:** لا نعلن تحسينًا بلا رقم. كل صف هنا إمّا **مقيس** (من تشغيل فعلي موثّق)
 > أو **تقديري** (من وثائق المزوّد) — والعمود يوضّح أيّهما.
 >
-> آخر تحديث: 2026-11-01 · المرجع: قياسات النشر الحي حتى تحديثات الاعتماديات PR #103.
+> آخر تحديث: 2026-11-04 · المرجع: قياسات الموقع حتى main `33ed0dd`؛ حراس CI الإضافيون موثقة كقياسات موثوقية، لا كتحسينات أداء.
 
-## 0) نتائج تشغيلية موثقة — 1 نوفمبر 2026
+## 0) نتائج موثقة — 4 نوفمبر 2026 (الأحدث أولًا، والقياسات الأقدم مؤرخة)
 
 | البند | القياس/الدليل | الحد |
 |---|---|---|
@@ -13,6 +13,9 @@
 | Deploy gate | PR #99؛ استثناء النتائج `cancelled` و`skipped` من إنذار الفشل. فحوص ما بعد الدمج: Site checks [41265655896](https://github.com/ghith93/Raawaa-store/actions/runs/41265655896)، الجودة [41265655851](https://github.com/ghith93/Raawaa-store/actions/runs/41265655851)، Graphify [41265655853](https://github.com/ghith93/Raawaa-store/actions/runs/41265655853) | نتيجة التشغيل الأصلي لـ#63 كانت `cancelled`، لا فشل assertion؛ issue #63 أُغلقت بعد الإصلاح |
 | النشر الحي بعد PR #99 | Cloudflare deploy + live verification [run 41265655950](https://github.com/ghith93/Raawaa-store/actions/runs/41265655950) | لا يثبت وصول رسالة أو حفظ طلب عميل |
 | النشر والتحقق بعد إصلاح الاعتماديات PR #103 | Site checks [41268994130](https://github.com/ghith93/Raawaa-store/actions/runs/41268994130)، الجودة [41268994126](https://github.com/ghith93/Raawaa-store/actions/runs/41268994126)، Graphify [41268994133](https://github.com/ghith93/Raawaa-store/actions/runs/41268994133)، Cloudflare/live [41268994172](https://github.com/ghith93/Raawaa-store/actions/runs/41268994172) | تغييرات اعتماديات أدوات التطوير فقط؛ لا تعديل سلوكي للموقع |
+| سياسة runners | حارس YAML بنيوي في PR #122؛ `runs-on` المقبول `ubuntu-24.04` ثابتًا، وSite checks + Code quality على main [41713087420](https://github.com/ghith93/Raawaa-store/actions/runs/41713087420) و[41713087285](https://github.com/ghith93/Raawaa-store/actions/runs/41713087285) ناجحان | لا يثبت تسجيل/صلاحيات runners على مستوى GitHub؛ API الإدارة رفض 403 |
+| تثبيت parser قبل `check-site` في Graphify | PR #123؛ Graphify على main [41713087442](https://github.com/ghith93/Raawaa-store/actions/runs/41713087442) ناجح | لم تتغير ملفات المتجر أو مساراته |
+| فحوص مستقلة على HEAD `33ed0dd` (4 نوفمبر) | `node --test order-system/*.test.mjs`: **135/135**؛ `ref-audit`: **30/0**؛ `perf-static`: **139.9 KB/175 KB**؛ اختبارات اعتماديات workflows على فرع الجلسة: **2/2** | محلي فقط؛ لا `npm ci` ولا اختبار E2E مستضاف؛ حارس workflows ينتظر CI في PR.
 | فحص الموقع المحلي | `node scripts/check-site.mjs`: **529 ناجحًا، 0 فشل**؛ `node scripts/ref-audit.mjs`: **30/30** | فحوص ساكنة وليست قياس مبيعات أو تكامل طلب |
 | اختبارات مستقلة بلا jsdom | `node --test order-system/*.test.mjs`: **130/130** | mocks لا تثبت Supabase/Telegram الحي |
 
