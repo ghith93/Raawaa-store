@@ -161,7 +161,7 @@ def run(base: str) -> int:
         check("نص الزر يتغيّر مؤقتًا بعد الإضافة",
               "أُضيف" in page.locator("#products [data-add-current]").inner_text())
 
-        # شريط السلة اللاصق (يُختبر في سياق الهاتف لاحقًا) وسعر الملليلتر
+        # سعر الملليلتر على سطح المكتب؛ اختبار شريط الهاتف بالتفاعل الفعلي في القسم 10ب.
         # الحساب من CONFIG فقط (price ÷ sizeMl) — لا رقم مكتوب يدويًا
         # سعر الملليلتر يُقاس لكل حجم كما يراه الزائر عند تبديل الحجم
         per_ml = []
@@ -532,11 +532,31 @@ def run(base: str) -> int:
         m.wait_for_timeout(400)
         check("القائمة تُغلق بعد اختيار رابط", m.locator("#mobile-nav").is_hidden())
 
-        # 10ب) شريط السلة اللاصق على الهاتف
-        m.locator('#products').scroll_into_view_if_needed()
+        # 10ب) شريط السلة اللاصق على الهاتف: تمرير إدخال مستخدم، لا scroll_into_view آلي
+        scroll_before = m.evaluate("window.scrollY")
+        m.mouse.move(200, 400)
+        m.mouse.wheel(0, 420)
+        m.wait_for_timeout(250)
+        scroll_after = m.evaluate("window.scrollY")
+        check("عجلة الماوس تحرّك الصفحة فعلًا في سياق الهاتف", scroll_after > scroll_before,
+              f"قبل={scroll_before}px، بعد={scroll_after}px")
         add_size(m, "serum-30")
         m.wait_for_timeout(400)
         check("شريط السلة اللاصق يظهر على الهاتف بعد الإضافة", m.locator("[data-sticky-bar]").is_visible())
+        m.mouse.move(200, 400)
+        m.mouse.wheel(0, 360)
+        m.wait_for_timeout(250)
+        sticky_geometry = m.locator("[data-sticky-bar]").evaluate("""el => {
+            const rect = el.getBoundingClientRect();
+            return {
+                position: getComputedStyle(el).position,
+                bottomGap: window.innerHeight - rect.bottom,
+                scrollY: window.scrollY
+            };
+        }""")
+        check("شريط السلة يبقى مثبتًا أسفل الشاشة بعد تمرير المستخدم",
+              sticky_geometry["position"] == "fixed" and -1 <= sticky_geometry["bottomGap"] <= 2,
+              str(sticky_geometry))
         check("شريط السلة يوضح أن المبلغ تقديري", "تقديري" in m.locator("[data-sticky-bar]").inner_text())
         check("الشريط يعرض عدد القطع", m.locator("[data-sticky-count]").inner_text() == "1",
               m.locator("[data-sticky-count]").inner_text())
