@@ -1,54 +1,75 @@
-function withoutYamlComment(line) {
-  let quote = '';
-  let escaped = false;
+import { isMap, isScalar, isSeq, parseDocument } from 'yaml';
 
-  for (let index = 0; index < line.length; index += 1) {
-    const character = line[index];
-    if (quote) {
-      if (escaped) escaped = false;
-      else if (quote === '"' && character === '\\') escaped = true;
-      else if (character === quote) quote = '';
-      continue;
-    }
+const APPROVED_RUNNER = 'ubuntu-24.04';
 
-    if (character === '"' || character === "'") quote = character;
-    else if (character === '#' && (index === 0 || /\s/.test(line[index - 1]))) return line.slice(0, index);
-  }
+function sourceLine(source, offset) {
+  return source.slice(0, offset).split(/\r?\n/).length;
+}
 
-  return line;
+function pairFor(map, key) {
+  if (!isMap(map)) return undefined;
+  return map.items.find((pair) => isScalar(pair.key) && pair.key.value === key);
+}
+
+function unsafe(line, reason) {
+  return { line, reason };
 }
 
 /**
- * Find a GitHub Actions `runs-on` target that could route a job away from the
- * repository's approved GitHub-hosted runner policy. Runner groups, self-hosted
- * labels, and expressions are rejected; only the approved `ubuntu-24.04` scalar is allowed.
+ * Fail closed unless every executable job declares the one approved GitHub-hosted
+ * runner. Parsing YAML structurally covers block and flow mappings, quoted keys,
+ * aliases, runner groups, arrays, and expressions without relying on line patterns.
  */
 export function findUnsafeRunnerTarget(workflowText) {
   if (typeof workflowText !== 'string') throw new TypeError('workflowText must be a string');
 
-  const lines = workflowText.split(/\r?\n/);
-  for (let index = 0; index < lines.length; index += 1) {
-    const sourceLine = withoutYamlComment(lines[index]);
-    const match = sourceLine.match(/^([ \t]*)runs-on[ \t]*:[ \t]*(.*)$/i);
-    if (!match) continue;
+  const document = parseDocument(workflowText, { uniqueKeys: true, version: '1.2' });
+  if (document.errors.length > 0) {
+    const error = document.errors[0];
+    const offset = error.pos?.[0] ?? 0;
+    return unsafe(sourceLine(workflowText, offset), 'invalid YAML');
+  }
 
-    const indentation = match[1].length;
-    const runnerSpec = [match[2].trim()];
-    for (let next = index + 1; next < lines.length; next += 1) {
-      const line = withoutYamlComment(lines[next]);
-      if (!line.trim()) continue;
-      const nextIndentation = line.match(/^[ \t]*/)[0].length;
-      if (nextIndentation <= indentation) break;
-      runnerSpec.push(line.trim());
+  const jobsPair = pairFor(document.contents, 'jobs');
+  if (!jobsPair || !isMap(jobsPair.value) || jobsPair.value.items.length === 0) {
+    const offset = jobsPair?.key?.range?.[0] ?? 0;
+    return unsafe(sourceLine(workflowText, offset), 'missing or invalid jobs mapping');
+  }
+
+  for (const jobPair of jobsPair.value.items) {
+    const jobName = isScalar(jobPair.key) ? String(jobPair.key.value) : '<unknown>';
+    if (!isMap(jobPair.value)) {
+      const offset = jobPair.value?.range?.[0] ?? jobPair.key?.range?.[0] ?? 0;
+      return unsafe(sourceLine(workflowText, offset), `job ${jobName} is not a mapping`);
     }
 
-    const value = runnerSpec.join('\n');
-    if (/\bself-hosted\b/i.test(value)) return { line: index + 1, reason: 'self-hosted label' };
-    if (/\bgroup\s*:/i.test(value)) return { line: index + 1, reason: 'runner group' };
-    if (/\$\{\{/i.test(value)) return { line: index + 1, reason: 'dynamic runner expression' };
-    if (value !== 'ubuntu-24.04' && value !== '"ubuntu-24.04"' && value !== "'ubuntu-24.04'") {
-      return { line: index + 1, reason: 'unapproved runner target' };
+    const runnerPair = pairFor(jobPair.value, 'runs-on');
+    if (!runnerPair) {
+      const offset = jobPair.value.range?.[0] ?? jobPair.key?.range?.[0] ?? 0;
+      const hasReusableWorkflow = Boolean(pairFor(jobPair.value, 'uses'));
+      const reason = hasReusableWorkflow
+        ? `job ${jobName} delegates to an unaudited reusable workflow`
+        : `job ${jobName} has no explicit runner target`;
+      return unsafe(sourceLine(workflowText, offset), reason);
     }
+
+    const line = sourceLine(workflowText, runnerPair.key.range?.[0] ?? 0);
+    const target = runnerPair.value;
+    if (!isScalar(target) || typeof target.value !== 'string') {
+      const hasSelfHostedLabel = isSeq(target) && target.items.some(
+        (item) => isScalar(item) && typeof item.value === 'string' && /\bself-hosted\b/iu.test(item.value)
+      );
+      const reason = isMap(target) && pairFor(target, 'group')
+        ? 'runner group'
+        : hasSelfHostedLabel
+          ? 'self-hosted label'
+          : 'runner target is not a fixed scalar';
+      return unsafe(line, reason);
+    }
+
+    if (/\$\{\{/u.test(target.value)) return unsafe(line, 'dynamic runner expression');
+    if (/\bself-hosted\b/iu.test(target.value)) return unsafe(line, 'self-hosted label');
+    if (target.value !== APPROVED_RUNNER) return unsafe(line, 'unapproved runner target');
   }
 
   return null;
