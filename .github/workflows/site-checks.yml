@@ -38,6 +38,9 @@ jobs:
       - name: تثبيت parser YAML من الإصدارات المقفلة
         run: npm ci --ignore-scripts --no-audit --no-fund
 
+      - name: حارس اعتماديات فحص الموقع
+        run: node --test scripts/workflow-dependency-policy.test.mjs
+
       - name: فحص بناء JavaScript
         run: |
           node --check js/config.js
