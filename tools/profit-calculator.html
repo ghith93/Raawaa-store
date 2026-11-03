@@ -175,7 +175,7 @@
   <div class="wrap" style="padding:0">
     <div class="brandline"><span>RAWAA</span><span class="dot" aria-hidden="true"></span><span>رواء</span><span class="dot" aria-hidden="true"></span><span>أداة قرار</span></div>
     <h1>حاسبة الربح الحقيقي</h1>
-    <p class="lede">قبل أن تدفع دولارًا واحدًا في أي صفقة، احسب الربح بعد كل الرسوم، والاسترجاع، والوقت. الأداة تعمل على الآيفون والتابلت، وتحفظ أرقامك على جهازك فقط.</p>
+    <p class="lede">قبل أن تدفع دولارًا واحدًا في أي صفقة، احسب الربح بعد كل الرسوم، والاسترجاع، والوقت. الأداة تعمل على الآيفون والتابلت، وتحفظ أرقامك على جهازك فقط. تشمل الآن محاكاة 4000 عملية، وبيع الجملة للصالونات، وخدمة المحتوى، ونموذج الانتباه (4000 مشاهدة).</p>
     <div class="notice">
       <span class="icon" aria-hidden="true">⚠️</span>
       <span><b>ليست نصيحة مالية.</b> الأرقام تقديرية وتحتاج التحقق من صفحة الرسوم الرسمية لكل منصة. لا توجد طريقة تضمن ربحًا يوميًا ثابتًا.</span>
@@ -196,6 +196,7 @@
       <button class="chip" type="button" data-preset="shopify" aria-pressed="false">Shopify + Stripe</button>
       <button class="chip" type="button" data-preset="tiktok" aria-pressed="false">TikTok Shop</button>
       <button class="chip" type="button" data-preset="cod" aria-pressed="false">كاش/واتساب</button>
+      <button class="chip" type="button" data-preset="serum" aria-pressed="false">سيروم رواء</button>
     </div>
 
     <div class="card">
@@ -324,18 +325,22 @@
 
   <div class="section">
     <div class="section-head">
-      <h2>٣. محاكاة ١٠٠٠ عملية في اليوم</h2>
-      <p>هل فكرة «١٠٠٠ عملية × ربح بسيط» ممكنة فعلًا؟ هذه هي الحقيقة.</p>
+      <h2>٣. محاكاة التكرار العالي</h2>
+      <p>هل فكرة «1000 أو 4000 عملية × ربح بسيط» ممكنة فعلًا؟ هذه هي الحقيقة.</p>
     </div>
     <div class="card">
+      <div class="actions" style="margin-top:0;margin-bottom:12px">
+        <button class="chip" type="button" data-volume="1000" aria-pressed="true">1000 عملية</button>
+        <button class="chip" type="button" data-volume="4000" aria-pressed="false">4000 عملية</button>
+      </div>
       <div class="results" style="margin-top:0">
         <div class="result">
-          <div class="k">ربح ١٠٠٠ عملية</div>
+          <div class="k" id="kProfitLabel">ربح 1000 عملية</div>
           <div class="v" id="kProfit">$0.00</div>
           <div class="s">قبل الضرائب</div>
         </div>
         <div class="result">
-          <div class="k">رسوم ١٠٠٠ عملية</div>
+          <div class="k" id="kFeesLabel">رسوم 1000 عملية</div>
           <div class="v" id="kFees">$0.00</div>
           <div class="s">منصة + دفع</div>
         </div>
@@ -359,7 +364,7 @@
         <b>لماذا لا تنجح غالبًا؟</b>
         <ul>
           <li>الرسوم الثابتة (مثل 0.30 $ لكل عملية) تبتلع ربح السنتات. مثال: عملية بـ 1 $ ورسوم 2.9٪ + 0.30 $ = 0.329 $ رسوم (33٪ من السعر)؛ إن كانت تكلفة المنتج 0.80 $ تصبح النتيجة خسارة 0.13 $ قبل الشحن.</li>
-          <li>١٠٠٠ عملية = عملية كل 86 ثانية، 24 ساعة يوميًا. لا يمكن لشخص واحد أن يجهز ويشحن ويرد ويتابع هذا الحجم.</li>
+          <li>1000 عملية = عملية كل 86 ثانية، و4000 عملية = عملية كل 21.6 ثانية، 24 ساعة يوميًا. لا يمكن لشخص واحد أن يجهز ويشحن ويرد ويتابع هذا الحجم.</li>
           <li>المنصات تضع حدودًا للحسابات الجديدة، وتحتفظ بالمبالغ، وتفرض KYC وسياسات إرجاع.</li>
           <li>الربح الحقيقي يأتي من <b>قيمة الطلب</b> و<b>تكرار الشراء</b>، لا من عدد العمليات الصغيرة.</li>
         </ul>
@@ -369,14 +374,14 @@
 
   <div class="section">
     <div class="section-head">
-      <h2>٤. اقلب المعادلة: ١٠٠٠ مشاهدة</h2>
-      <p>لا تطارد ١٠٠٠ عملية. طارد ١٠٠٠ مشاهدة، ثم ٢٠ نقرة، ثم عملية واحدة.</p>
+      <h2>٤. اقلب المعادلة: 4000 مشاهدة</h2>
+      <p>لا تطارد 4000 عملية. طارد 4000 مشاهدة، ثم 40 نقرة، ثم عملية واحدة.</p>
     </div>
     <div class="card">
       <div class="grid">
         <div class="field">
           <label for="views">المشاهدات يوميًا</label>
-          <div class="input-shell"><input id="views" type="number" inputmode="numeric" min="0" step="100" value="1000"><span class="unit">مشاهدة</span></div>
+          <div class="input-shell"><input id="views" type="number" inputmode="numeric" min="0" step="100" value="4000"><span class="unit">مشاهدة</span></div>
           <span class="hint">من فيديو/منشور/إعلان.</span>
         </div>
         <div class="field">
@@ -396,10 +401,10 @@
         </div>
       </div>
       <div class="funnel" aria-live="polite">
-        <div class="step"><span class="n" id="fViews">1,000</span><span class="l">مشاهدة</span></div>
-        <div class="step"><span class="n" id="fClicks">20</span><span class="l">نقرة</span></div>
-        <div class="step"><span class="n" id="fSales">1</span><span class="l">عملية</span></div>
-        <div class="step"><span class="n" id="fProfit">$10.00</span><span class="l">ربح</span></div>
+        <div class="step"><span class="n" id="fViews">4,000</span><span class="l">مشاهدة</span></div>
+        <div class="step"><span class="n" id="fClicks">80</span><span class="l">نقرة</span></div>
+        <div class="step"><span class="n" id="fSales">4</span><span class="l">عملية</span></div>
+        <div class="step"><span class="n" id="fProfit">$40.00</span><span class="l">ربح</span></div>
       </div>
       <div class="note" id="funnelNote">
         بهذه الأرقام تحتاج <b id="viewsNeeded">—</b> مشاهدة يوميًا لتحقيق هدف الربح اليومي. هذا هو الرقم الذي يجب أن تطارده، لا عدد العمليات.
@@ -443,7 +448,216 @@
 
   <div class="section">
     <div class="section-head">
-      <h2>٦. مقارنة واقعية</h2>
+      <h2>٦. بيع الجملة للصالونات (B2B)</h2>
+      <p>مبيعات أقل، مبالغ أكبر، وتكرار شهري. هذا هو المسار الأقل مخاطرة.</p>
+    </div>
+    <div class="card">
+      <div class="grid">
+        <div class="field">
+          <label for="b2bPrice">سعر الجملة للوحدة</label>
+          <div class="input-shell"><input id="b2bPrice" type="number" inputmode="decimal" min="0" step="0.01" value="14"><span class="unit">$</span></div>
+          <span class="hint">عادة 50٪ من سعر التجزئة.</span>
+        </div>
+        <div class="field">
+          <label for="b2bUnits">وحدات لكل صالون</label>
+          <div class="input-shell"><input id="b2bUnits" type="number" inputmode="numeric" min="0" step="1" value="15"><span class="unit">وحدة</span></div>
+          <span class="hint">10–20 وحدة للصالون.</span>
+        </div>
+        <div class="field">
+          <label for="b2bSalons">عدد الصالونات</label>
+          <div class="input-shell"><input id="b2bSalons" type="number" inputmode="numeric" min="0" step="1" value="3"><span class="unit">صالون</span></div>
+          <span class="hint">ابدأ بـ 3–5 صالونات.</span>
+        </div>
+        <div class="field">
+          <label for="b2bCost">تكلفة الوحدة</label>
+          <div class="input-shell"><input id="b2bCost" type="number" inputmode="decimal" min="0" step="0.01" value="8"><span class="unit">$</span></div>
+          <span class="hint">تكلفة الشراء/التصنيع.</span>
+        </div>
+        <div class="field">
+          <label for="b2bDelivery">تكلفة التوصيل لكل صالون</label>
+          <div class="input-shell"><input id="b2bDelivery" type="number" inputmode="decimal" min="0" step="0.01" value="5"><span class="unit">$</span></div>
+          <span class="hint">شحن/توصيل مرة واحدة.</span>
+        </div>
+        <div class="field">
+          <label for="b2bMonths">أشهر التكرار</label>
+          <div class="input-shell"><input id="b2bMonths" type="number" inputmode="numeric" min="0" step="1" value="6"><span class="unit">شهر</span></div>
+          <span class="hint">كم شهرًا يستمر الطلب؟</span>
+        </div>
+      </div>
+      <div class="results">
+        <div class="result">
+          <div class="k">إيراد الشهر الأول</div>
+          <div class="v" id="b2bRevenue">$0.00</div>
+          <div class="s" id="b2bUnitsTotal">0 وحدة</div>
+        </div>
+        <div class="result">
+          <div class="k">الربح الإجمالي للشهر</div>
+          <div class="v" id="b2bGross">$0.00</div>
+          <div class="s">قبل الضرائب</div>
+        </div>
+        <div class="result">
+          <div class="k">هامش الربح</div>
+          <div class="v" id="b2bMargin">0٪</div>
+          <div class="s">من الإيراد</div>
+        </div>
+        <div class="result">
+          <div class="k">الربح على مدى الأشهر</div>
+          <div class="v" id="b2bAnnual">$0.00</div>
+          <div class="s" id="b2bMonthsLabel">6 أشهر</div>
+        </div>
+      </div>
+      <div class="note">
+        <b>لماذا B2B؟</b> الصالون يشتري 10–20 وحدة مرة واحدة، ويدفع أكثر من عميل التجزئة في بعض الحالات، ويتكرر الطلب. ابدأ بـ 3–5 صالونات، واعرض عينة/تجربة، واكتب اتفاقًا بسيطًا.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>٧. خدمة المحتوى للصالونات</h2>
+      <p>أسرع نقد، أعلى هامش، بدون مخزون. هذه هي الطريقة العملية.</p>
+    </div>
+    <div class="card">
+      <div class="grid">
+        <div class="field">
+          <label for="svcPrice">السعر الشهري للعميل</label>
+          <div class="input-shell"><input id="svcPrice" type="number" inputmode="decimal" min="0" step="10" value="300"><span class="unit">$</span></div>
+          <span class="hint">250–500 دولار/شهر للصالون.</span>
+        </div>
+        <div class="field">
+          <label for="svcClients">عدد العملاء</label>
+          <div class="input-shell"><input id="svcClients" type="number" inputmode="numeric" min="0" step="1" value="3"><span class="unit">عميل</span></div>
+          <span class="hint">2–5 عملاء في البداية.</span>
+        </div>
+        <div class="field">
+          <label for="svcHours">ساعات لكل عميل أسبوعيًا</label>
+          <div class="input-shell"><input id="svcHours" type="number" inputmode="decimal" min="0" step="0.5" value="3"><span class="unit">ساعة</span></div>
+          <span class="hint">2–4 ساعات/أسبوع.</span>
+        </div>
+        <div class="field">
+          <label for="svcTools">تكلفة الأدوات لكل عميل شهريًا</label>
+          <div class="input-shell"><input id="svcTools" type="number" inputmode="decimal" min="0" step="1" value="10"><span class="unit">$</span></div>
+          <span class="hint">CapCut/Canva/ChatGPT/جدولة.</span>
+        </div>
+        <div class="field">
+          <label for="svcTargetMargin">هامش مستهدف</label>
+          <div class="input-shell"><input id="svcTargetMargin" type="number" inputmode="decimal" min="0" max="100" step="1" value="70"><span class="unit">%</span></div>
+          <span class="hint">70–90٪ للخدمة.</span>
+        </div>
+      </div>
+      <div class="results">
+        <div class="result">
+          <div class="k">الإيراد الشهري</div>
+          <div class="v" id="svcRevenue">$0.00</div>
+          <div class="s" id="svcClientsLabel">0 عميل</div>
+        </div>
+        <div class="result">
+          <div class="k">الربح الإجمالي</div>
+          <div class="v" id="svcGross">$0.00</div>
+          <div class="s">بعد الأدوات</div>
+        </div>
+        <div class="result">
+          <div class="k">هامش الربح</div>
+          <div class="v" id="svcMargin">0٪</div>
+          <div class="s">من الإيراد</div>
+        </div>
+        <div class="result">
+          <div class="k">الربح/الساعة</div>
+          <div class="v" id="svcHourly">$0.00</div>
+          <div class="s">مقابل وقتك</div>
+        </div>
+        <div class="result">
+          <div class="k">أقصى تكلفة أدوات/عميل</div>
+          <div class="v" id="svcMaxTools">$0.00</div>
+          <div class="s">للحفاظ على الهامش المستهدف</div>
+        </div>
+      </div>
+      <div class="note">
+        <b>لماذا الخدمة؟</b>
+        <ul>
+          <li>لا مخزون، لا شحن، لا استرجاع.</li>
+          <li>هامش 70–90٪، ودفع شهري مقدم.</li>
+          <li>تستخدمها كدراسة حالة لبيع رواء.</li>
+          <li>تبدأ بـ 3 عينات مجانية، ثم عميل تجريبي 30 يومًا.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>٨. 4000 مشاهدة = نموذج الانتباه</h2>
+      <p>المعاملات 4000 مستحيلة، لكن المشاهدات 4000 ممكنة. هذا هو النموذج شبه الآمن.</p>
+    </div>
+    <div class="card">
+      <div class="grid">
+        <div class="field">
+          <label for="attViews">المشاهدات يوميًا</label>
+          <div class="input-shell"><input id="attViews" type="number" inputmode="numeric" min="0" step="100" value="4000"><span class="unit">مشاهدة</span></div>
+          <span class="hint">TikTok/Instagram/YouTube.</span>
+        </div>
+        <div class="field">
+          <label for="attRpm">RPM لكل 1000 مشاهدة</label>
+          <div class="input-shell"><input id="attRpm" type="number" inputmode="decimal" min="0" step="0.01" value="0.40"><span class="unit">$</span></div>
+          <span class="hint">TikTok 0.40–1.00؛ YouTube 2–12.</span>
+        </div>
+        <div class="field">
+          <label for="attCtr">نسبة النقر</label>
+          <div class="input-shell"><input id="attCtr" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="1"><span class="unit">%</span></div>
+          <span class="hint">من المشاهدة إلى نقرة.</span>
+        </div>
+        <div class="field">
+          <label for="attConv">نسبة الشراء</label>
+          <div class="input-shell"><input id="attConv" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="2"><span class="unit">%</span></div>
+          <span class="hint">من النقرة إلى عملية.</span>
+        </div>
+        <div class="field">
+          <label for="attPayout">عمولة العملية</label>
+          <div class="input-shell"><input id="attPayout" type="number" inputmode="decimal" min="0" step="0.01" value="14"><span class="unit">$</span></div>
+          <span class="hint">متوسط العمولة 14.10 دولار.</span>
+        </div>
+        <div class="field">
+          <label for="attDigitalPrice">سعر المنتج الرقمي</label>
+          <div class="input-shell"><input id="attDigitalPrice" type="number" inputmode="decimal" min="0" step="1" value="9"><span class="unit">$</span></div>
+          <span class="hint">دليل/قالب/حزمة.</span>
+        </div>
+        <div class="field">
+          <label for="attDigitalConv">نسبة شراء المنتج الرقمي</label>
+          <div class="input-shell"><input id="attDigitalConv" type="number" inputmode="decimal" min="0" max="100" step="0.01" value="0.05"><span class="unit">%</span></div>
+          <span class="hint">من المشاهدة إلى عملية (0.01–0.1٪).</span>
+        </div>
+      </div>
+      <div class="results">
+        <div class="result">
+          <div class="k">إعلانات/يوم</div>
+          <div class="v" id="attAd">$0.00</div>
+          <div class="s">RPM × المشاهدات</div>
+        </div>
+        <div class="result">
+          <div class="k">عمولة/يوم</div>
+          <div class="v" id="attAffiliate">$0.00</div>
+          <div class="s">نقر × شراء × عمولة</div>
+        </div>
+        <div class="result">
+          <div class="k">منتج رقمي/يوم</div>
+          <div class="v" id="attDigital">$0.00</div>
+          <div class="s">مشاهدة × شراء × سعر</div>
+        </div>
+        <div class="result">
+          <div class="k">الإجمالي/يوم</div>
+          <div class="v" id="attTotal">$0.00</div>
+          <div class="s" id="attMonthly">$0.00 شهريًا</div>
+        </div>
+      </div>
+      <div class="note">
+        <b>لماذا هذا النموذج؟</b> 4000 مشاهدة/يوم = 120,000 مشاهدة/شهر. TikTok RPM 0.40–1.00 = 48–120 دولار/شهر. Affiliate 0.8–2.5٪ تحويل من النقرات (1٪ من 4000 = 40 نقرة) = 0.3–1 عملية/يوم × 14.10 = 4.23–14.10 دولار/يوم. المنتج الرقمي 0.01–0.1٪ من المشاهدة = 0.4–4 عمليات/يوم × 9 = 3.6–36 دولار/يوم. الإجمالي 8–50 دولار/يوم = 240–1,500 دولار/شهر. هذا هو «التكرار العالي» الحقيقي: <b>انتباه، لا معاملات</b>.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>٩. مقارنة واقعية</h2>
       <p>أرقام تقديرية من مصادر 2026 — ليست وعودًا.</p>
     </div>
     <div class="card table-scroll">
@@ -452,9 +666,12 @@
           <tr><th>النموذج</th><th>رأس المال</th><th>الربح الشهري الواقعي</th><th>ملاحظة</th></tr>
         </thead>
         <tbody>
-          <tr><td>متجر/منتجك</td><td>200–500 $</td><td>100–1,000 $</td><td>الأفضل إن كان لديك منتج أو جمهور</td></tr>
+          <tr><td>خدمة محتوى للصالونات</td><td>0–100 $</td><td>600–2,500 $</td><td>هامش 70–90٪، بدون مخزون — الأسرع نقدًا</td></tr>
+          <tr><td>متجر/منتجك (رواء)</td><td>200–500 $</td><td>100–1,500 $</td><td>الأفضل إن كان لديك منتج أو جمهور</td></tr>
+          <tr><td>بيع جملة للصالونات</td><td>200–500 $</td><td>150–1,000 $</td><td>تكرار شهري، مبيعات أقل</td></tr>
           <tr><td>منتجات رقمية</td><td>0–200 $</td><td>50–800 $</td><td>هامش 85–95٪ لكن اكتشاف صعب</td></tr>
           <tr><td>تسويق بالعمولة</td><td>0–200 $</td><td>0–800 $</td><td>يحتاج محتوى يوميًا 60–90 يومًا</td></tr>
+          <tr><td>نموذج الانتباه (4000 مشاهدة)</td><td>0–100 $</td><td>175–543 $</td><td>إعلانات + عمولة + منتج رقمي</td></tr>
           <tr><td>طباعة عند الطلب</td><td>0–200 $</td><td>50–500 $</td><td>هامش 15–25٪، منافسة عالية</td></tr>
           <tr><td>بيع بالتجزئة (Arbitrage)</td><td>200–500 $</td><td>100–400 $</td><td>يحتاج مشاوير وتخزين وشحن</td></tr>
           <tr><td>عمل حر</td><td>0–100 $</td><td>200–1,500 $</td><td>الأسرع نقدًا إن كانت لديك مهارة</td></tr>
@@ -463,14 +680,14 @@
         </tbody>
       </table>
       <div class="note" style="margin-top:12px">
-        <b>الخلاصة:</b> مع 200 $، لا تبدأ بمشروع يتطلب 3,000 $ أو 1,000 عملية يوميًا. ابدأ بمنتج/خدمة واحدة، بهامش 5–15 $ للعملية، وبهدف 1–3 عمليات يوميًا. ثم أعد استثمار 70٪ من الربح في المحتوى أو المخزون.
+        <b>الخلاصة:</b> مع 500 $، لا تبدأ بمشروع يتطلب 3,000 $ أو 4000 عملية يوميًا. ابدأ بخدمة/منتج واحد، بهامش 5–15 $ للعملية، وبهدف 2–5 عملاء/عمليات يوميًا. ثم أعد استثمار 70٪ من الربح في المحتوى أو المخزون.
       </div>
     </div>
   </div>
 
   <div class="section">
     <div class="section-head">
-      <h2>٧. تحذيرات قبل أن تدفع</h2>
+      <h2>١٠. تحذيرات قبل أن تدفع</h2>
       <p>إن وعدك أحد بربح مضمون، فالأرجح أنه يريد مالك أنت.</p>
     </div>
       <div class="card">
@@ -491,7 +708,8 @@
 
   <footer>
     <p><b>رواء | RAWAA</b> — أداة داخلية لتقييم الصفقات. لا تُعد نصيحة مالية أو ضريبية أو قانونية. تحقق من الرسوم والسياسات الرسمية، ومن إمكانية استلام المدفوعات في بلدك/حسابك قبل البدء.</p>
-    <p>مصادر الأرقام: <a href="https://ecomprofitcalculator.site/guides/ebay-vs-amazon-fees/" target="_blank" rel="noopener">رسوم eBay وAmazon 2026</a>، <a href="https://profitcalcu.com/blog/ebay-seller-fees-2026/" target="_blank" rel="noopener">تفصيل رسوم eBay</a>، <a href="https://quickbooks.intuit.com/r/payments/small-business-payment-methods/" target="_blank" rel="noopener">رسوم الدفع</a>، <a href="https://www.underpriced.app/blog/amazon-fba-retail-arbitrage-complete-guide-2026" target="_blank" rel="noopener">بيع التجزئة</a>، <a href="https://merchtitans.com/blog/how-to-make-money-print-on-demand" target="_blank" rel="noopener">الطباعة عند الطلب</a>، <a href="https://theeliteengines.com/answers/how-much-can-you-earn-etsy-digital-downloads.html" target="_blank" rel="noopener">منتجات Etsy الرقمية</a>، <a href="https://www.doppelgainger.com/blog/is-tiktok-shop-affiliate-worth-it-2026/" target="_blank" rel="noopener">التسويق بالعمولة</a>، <a href="https://opportuna.io/blog/is-arbitrage-profitable" target="_blank" rel="noopener">التحكيم الرقمي</a>.</p>
+    <p>التقرير الكامل: <code>docs/PLAYBOOK-2026-AR.md</code> — كيف تفعل الشركات الكبيرة والمتداولون الصغار ذلك، وطريقة عملية بـ 500 دولار.</p>
+    <p>مصادر الأرقام: <a href="https://ecomprofitcalculator.site/guides/ebay-vs-amazon-fees/" target="_blank" rel="noopener">رسوم eBay وAmazon 2026</a>، <a href="https://profitcalcu.com/blog/ebay-seller-fees-2026/" target="_blank" rel="noopener">تفصيل رسوم eBay</a>، <a href="https://quickbooks.intuit.com/r/payments/small-business-payment-methods/" target="_blank" rel="noopener">رسوم الدفع</a>، <a href="https://www.underpriced.app/blog/amazon-fba-retail-arbitrage-complete-guide-2026" target="_blank" rel="noopener">بيع التجزئة</a>، <a href="https://merchtitans.com/blog/how-to-make-money-print-on-demand" target="_blank" rel="noopener">الطباعة عند الطلب</a>، <a href="https://theeliteengines.com/answers/how-much-can-you-earn-etsy-digital-downloads.html" target="_blank" rel="noopener">منتجات Etsy الرقمية</a>، <a href="https://www.doppelgainger.com/blog/is-tiktok-shop-affiliate-worth-it-2026/" target="_blank" rel="noopener">التسويق بالعمولة</a>، <a href="https://opportuna.io/blog/is-arbitrage-profitable" target="_blank" rel="noopener">التحكيم الرقمي</a>، <a href="https://yoursolobusiness.com/examples-of-solo-businesses-that-actually-scale-in-2026/" target="_blank" rel="noopener">الخدمات المنتجة</a>، <a href="https://marketingltb.com/blog/agency/best-digital-marketing-agencies-for-salons/" target="_blank" rel="noopener">تسويق الصالونات</a>، <a href="https://influenceflow.io/resources/creator-earnings-breakdown-calculator-complete-2026-guide-to-multi-platform-income/" target="_blank" rel="noopener">إعلانات المحتوى</a>.</p>
   </footer>
 </main>
 
@@ -509,8 +727,12 @@
   var inputs = [
     'price','cost','shipping','platformPct','platformFixed','paymentPct','paymentFixed',
     'ads','returnRate','targetMargin','ordersPerDay','timePerOrder','targetDaily',
-    'views','ctr','conv','funnelProfit'
+    'views','ctr','conv','funnelProfit',
+    'b2bPrice','b2bUnits','b2bSalons','b2bCost','b2bDelivery','b2bMonths',
+    'svcPrice','svcClients','svcHours','svcTools','svcTargetMargin',
+    'attViews','attRpm','attCtr','attConv','attPayout','attDigitalPrice','attDigitalConv'
   ];
+  var simVolume = 1000;
 
   function val(id) {
     var v = parseFloat($(id).value);
@@ -553,6 +775,10 @@
     out.returnRate = clampPct(out.returnRate);
     out.ctr = clampPct(out.ctr);
     out.conv = clampPct(out.conv);
+    out.attCtr = clampPct(out.attCtr);
+    out.attConv = clampPct(out.attConv);
+    out.attDigitalConv = clampPct(out.attDigitalConv);
+    out.svcTargetMargin = clampPct(out.svcTargetMargin);
     return out;
   }
 
@@ -604,27 +830,29 @@
       setVerdict('good', 'جيد', 'هامش 20٪ أو أكثر. هذا هو النوع الذي يستحق الاختبار — لكن تحقق من الطلب أولًا.');
     }
 
-    var kProfit = net * 1000;
-    var kFees = totalFees * 1000;
-    var kTime = v.timePerOrder * 1000 / 60;
+    var kProfit = net * simVolume;
+    var kFees = totalFees * simVolume;
+    var kTime = v.timePerOrder * simVolume / 60;
     var kHourly = kTime > 0 ? kProfit / kTime : 0;
+    text('kProfitLabel', 'ربح ' + num.format(simVolume) + ' عملية');
+    text('kFeesLabel', 'رسوم ' + num.format(simVolume) + ' عملية');
     text('kProfit', usd.format(kProfit));
     text('kFees', usd.format(kFees));
     text('kTime', duration(kTime));
     text('kHourly', usd.format(kHourly));
     var kKind, kBadge, kMsg, kSub;
     if (net <= 0) {
-      kKind = 'bad'; kBadge = 'غير ممكن'; kMsg = 'أنت تخسر في كل عملية، فمضاعفة 1000× لا تصنع ربحًا.'; kSub = 'أصلح معادلة الربح أولًا.';
+      kKind = 'bad'; kBadge = 'غير ممكن'; kMsg = 'أنت تخسر في كل عملية، فمضاعفة ' + num.format(simVolume) + '× لا تصنع ربحًا.'; kSub = 'أصلح معادلة الربح أولًا.';
     } else if (v.timePerOrder <= 0) {
-      kKind = 'warn'; kBadge = 'أدخل وقتًا'; kMsg = 'لم تُدخل وقتًا لكل عملية، لذا لا يمكن الحكم على جدوى 1000 عملية.'; kSub = 'اكتب وقتًا واقعيًا للتجهيز والشحن والرد.';
+      kKind = 'warn'; kBadge = 'أدخل وقتًا'; kMsg = 'لم تُدخل وقتًا لكل عملية، لذا لا يمكن الحكم على جدوى ' + num.format(simVolume) + ' عملية.'; kSub = 'اكتب وقتًا واقعيًا للتجهيز والشحن والرد.';
     } else if (kTime > 16) {
-      kKind = 'bad'; kBadge = 'غير ممكن'; kMsg = 'تحتاج ' + duration(kTime) + ' يوميًا لشخص واحد.'; kSub = 'لا يمكن لإنسان واحد تنفيذ 1000 عملية يدويًا.';
+      kKind = 'bad'; kBadge = 'غير ممكن'; kMsg = 'تحتاج ' + duration(kTime) + ' يوميًا لشخص واحد.'; kSub = 'لا يمكن لإنسان واحد تنفيذ ' + num.format(simVolume) + ' عملية يدويًا.';
     } else if (net < 1) {
       kKind = 'warn'; kBadge = 'هش'; kMsg = 'الربح ' + usd.format(net) + ' للعملية، والرسوم ' + usd.format(totalFees) + '؛ أي خطأ يلغي اليوم.'; kSub = 'ارفع قيمة الطلب أو اهدف لعدد أقل من العمليات.';
     } else if (kHourly < 5) {
       kKind = 'warn'; kBadge = 'غير مجدٍ'; kMsg = 'الربح ' + usd.format(kHourly) + ' للساعة أقل من قيمة وقتك.'; kSub = 'الأفضل التركيز على قيمة أعلى لكل عملية.';
     } else {
-      kKind = 'good'; kBadge = 'ممكن نظريًا'; kMsg = 'الرياضيات ممكنة، لكنها تحتاج أتمتة/فريقًا، لا شخصًا واحدًا.'; kSub = 'اختبر 10 عمليات أولًا قبل التفكير في 1000.';
+      kKind = 'good'; kBadge = 'ممكن نظريًا'; kMsg = 'الرياضيات ممكنة، لكنها تحتاج أتمتة/فريقًا، لا شخصًا واحدًا.'; kSub = 'اختبر 10 عمليات أولًا قبل التفكير في ' + num.format(simVolume) + '.';
     }
     var kb = $('verdictBox');
     kb.classList.remove('good', 'warn', 'bad');
@@ -659,14 +887,54 @@
     text('ordersNeeded', Number.isFinite(ordersNeeded) ? num.format(Math.ceil(ordersNeeded)) + ' عملية' : '—');
     text('hoursNeeded', duration(hoursNeeded));
 
+    var b2bUnitsTotal = v.b2bUnits * v.b2bSalons;
+    var b2bRevenue = b2bUnitsTotal * v.b2bPrice;
+    var b2bGross = b2bRevenue - b2bUnitsTotal * v.b2bCost - v.b2bSalons * v.b2bDelivery;
+    var b2bMargin = b2bRevenue > 0 ? b2bGross / b2bRevenue * 100 : 0;
+    var b2bAnnual = b2bGross * v.b2bMonths;
+    text('b2bRevenue', usd.format(b2bRevenue));
+    text('b2bUnitsTotal', num.format(b2bUnitsTotal) + ' وحدة');
+    text('b2bGross', usd.format(b2bGross));
+    text('b2bMargin', pct.format(b2bMargin) + '٪');
+    text('b2bAnnual', usd.format(b2bAnnual));
+    text('b2bMonthsLabel', num.format(v.b2bMonths) + ' أشهر');
+
+    var svcRevenue = v.svcPrice * v.svcClients;
+    var svcToolsTotal = v.svcTools * v.svcClients;
+    var svcGross = svcRevenue - svcToolsTotal;
+    var svcMargin = svcRevenue > 0 ? svcGross / svcRevenue * 100 : 0;
+    var svcHoursTotal = v.svcHours * v.svcClients * 4.33;
+    var svcHourly = svcHoursTotal > 0 ? svcGross / svcHoursTotal : 0;
+    var svcMaxTools = v.svcPrice * (1 - v.svcTargetMargin / 100);
+    text('svcRevenue', usd.format(svcRevenue));
+    text('svcClientsLabel', num.format(v.svcClients) + ' عميل');
+    text('svcGross', usd.format(svcGross));
+    text('svcMargin', pct.format(svcMargin) + '٪');
+    text('svcHourly', usd.format(svcHourly));
+    text('svcMaxTools', usd.format(Math.max(svcMaxTools, 0)));
+
+    var attAd = v.attViews / 1000 * v.attRpm;
+    var attClicks = v.attViews * v.attCtr / 100;
+    var attSales = attClicks * v.attConv / 100;
+    var attAffiliate = attSales * v.attPayout;
+    var attDigitalSales = v.attViews * v.attDigitalConv / 100;
+    var attDigital = attDigitalSales * v.attDigitalPrice;
+    var attTotal = attAd + attAffiliate + attDigital;
+    text('attAd', usd.format(attAd));
+    text('attAffiliate', usd.format(attAffiliate));
+    text('attDigital', usd.format(attDigital));
+    text('attTotal', usd.format(attTotal));
+    text('attMonthly', usd.format(attTotal * 30) + ' شهريًا');
+
     text('calcStatus', 'تم الحساب: صافي الربح ' + usd.format(net) + ' لكل عملية، والربح اليومي ' + usd.format(daily) + '.');
-    return { v: v, net: net, daily: daily, monthly: monthly, totalFees: totalFees, margin: margin, breakEven: breakEven, maxAd: maxAd, ordersNeeded: ordersNeeded, hoursNeeded: hoursNeeded, kTime: kTime, kHourly: kHourly };
+    return { v: v, net: net, daily: daily, monthly: monthly, totalFees: totalFees, margin: margin, breakEven: breakEven, maxAd: maxAd, ordersNeeded: ordersNeeded, hoursNeeded: hoursNeeded, kTime: kTime, kHourly: kHourly, b2bRevenue: b2bRevenue, b2bGross: b2bGross, b2bMargin: b2bMargin, b2bAnnual: b2bAnnual, svcRevenue: svcRevenue, svcGross: svcGross, svcMargin: svcMargin, svcHourly: svcHourly, svcMaxTools: svcMaxTools, attAd: attAd, attAffiliate: attAffiliate, attDigital: attDigital, attTotal: attTotal };
   }
 
   function saveState() {
     try {
       var data = {};
       inputs.forEach(function (id) { data[id] = $(id).value; });
+      data.simVolume = simVolume;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (e) { /* التخزين قد يكون معطلًا في وضع التصفح الخاص */ }
   }
@@ -680,6 +948,12 @@
           $(id).value = data[id];
         }
       });
+      if (data.simVolume === 4000 || data.simVolume === 1000) {
+        simVolume = data.simVolume;
+        Array.prototype.forEach.call(document.querySelectorAll('[data-volume]'), function (btn) {
+          btn.setAttribute('aria-pressed', btn.getAttribute('data-volume') === String(simVolume) ? 'true' : 'false');
+        });
+      }
     } catch (e) { /* تجاهل */ }
   }
 
@@ -689,14 +963,15 @@
     etsy: { price: 12, cost: 0, shipping: 0, platformPct: 6.5, platformFixed: 0.20, paymentPct: 3, paymentFixed: 0.25, ads: 0, returnRate: 1, targetMargin: 70, ordersPerDay: 10, timePerOrder: 3, targetDaily: 10 },
     shopify: { price: 40, cost: 10, shipping: 5, platformPct: 0, platformFixed: 0, paymentPct: 2.9, paymentFixed: 0.30, ads: 8, returnRate: 3, targetMargin: 20, ordersPerDay: 3, timePerOrder: 12, targetDaily: 10 },
     tiktok: { price: 30, cost: 10, shipping: 5, platformPct: 5, platformFixed: 0, paymentPct: 0, paymentFixed: 0, ads: 0, returnRate: 8, targetMargin: 20, ordersPerDay: 5, timePerOrder: 8, targetDaily: 10 },
-    cod: { price: 25, cost: 10, shipping: 2, platformPct: 0, platformFixed: 0, paymentPct: 0, paymentFixed: 0, ads: 0, returnRate: 10, targetMargin: 20, ordersPerDay: 4, timePerOrder: 15, targetDaily: 10 }
+    cod: { price: 25, cost: 10, shipping: 2, platformPct: 0, platformFixed: 0, paymentPct: 0, paymentFixed: 0, ads: 0, returnRate: 10, targetMargin: 20, ordersPerDay: 4, timePerOrder: 15, targetDaily: 10 },
+    serum: { price: 29, cost: 8, shipping: 2, platformPct: 0, platformFixed: 0, paymentPct: 0, paymentFixed: 0, ads: 0, returnRate: 10, targetMargin: 40, ordersPerDay: 4, timePerOrder: 15, targetDaily: 10 }
   };
 
   function applyPreset(name) {
     var p = PRESETS[name];
     if (!p) return;
     Object.keys(p).forEach(function (id) { if ($(id)) $(id).value = p[id]; });
-    Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (chip) {
+    Array.prototype.forEach.call(document.querySelectorAll('.chip[data-preset]'), function (chip) {
       chip.setAttribute('aria-pressed', chip.getAttribute('data-preset') === name ? 'true' : 'false');
     });
     calculate();
@@ -704,14 +979,26 @@
     showToast('تم تطبيق إعداد ' + (chipLabel(name)) + '. عدّل الأرقام كما يناسبك.');
   }
   function chipLabel(name) {
-    var labels = { ebay: 'eBay', amazon: 'Amazon FBA', etsy: 'Etsy رقمي', shopify: 'Shopify + Stripe', tiktok: 'TikTok Shop', cod: 'كاش/واتساب' };
+    var labels = { ebay: 'eBay', amazon: 'Amazon FBA', etsy: 'Etsy رقمي', shopify: 'Shopify + Stripe', tiktok: 'TikTok Shop', cod: 'كاش/واتساب', serum: 'سيروم رواء' };
     return labels[name] || name;
+  }
+  function setVolume(volume) {
+    simVolume = volume === 4000 ? 4000 : 1000;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-volume]'), function (btn) {
+      btn.setAttribute('aria-pressed', btn.getAttribute('data-volume') === String(simVolume) ? 'true' : 'false');
+    });
+    calculate();
+    saveState();
   }
 
   function resetAll() {
-    var defaults = { price: 30, cost: 10, shipping: 5, platformPct: 13.6, platformFixed: 0.40, paymentPct: 0, paymentFixed: 0, ads: 0, returnRate: 5, targetMargin: 20, ordersPerDay: 5, timePerOrder: 10, targetDaily: 10, views: 1000, ctr: 2, conv: 5, funnelProfit: 10 };
+    var defaults = { price: 30, cost: 10, shipping: 5, platformPct: 13.6, platformFixed: 0.40, paymentPct: 0, paymentFixed: 0, ads: 0, returnRate: 5, targetMargin: 20, ordersPerDay: 5, timePerOrder: 10, targetDaily: 10, views: 4000, ctr: 2, conv: 5, funnelProfit: 10, b2bPrice: 14, b2bUnits: 15, b2bSalons: 3, b2bCost: 8, b2bDelivery: 5, b2bMonths: 6, svcPrice: 300, svcClients: 3, svcHours: 3, svcTools: 10, svcTargetMargin: 70, attViews: 4000, attRpm: 0.40, attCtr: 1, attConv: 2, attPayout: 14, attDigitalPrice: 9, attDigitalConv: 0.05 };
     Object.keys(defaults).forEach(function (id) { if ($(id)) $(id).value = defaults[id]; });
-    Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (chip) { chip.setAttribute('aria-pressed', 'false'); });
+    Array.prototype.forEach.call(document.querySelectorAll('.chip[data-preset]'), function (chip) { chip.setAttribute('aria-pressed', 'false'); });
+    simVolume = 1000;
+    Array.prototype.forEach.call(document.querySelectorAll('[data-volume]'), function (btn) {
+      btn.setAttribute('aria-pressed', btn.getAttribute('data-volume') === '1000' ? 'true' : 'false');
+    });
     calculate();
     saveState();
     showToast('تم مسح الأرقام والعودة للقيم الافتراضية.');
@@ -732,7 +1019,10 @@
       'أقصى إنفاق إعلاني: ' + usd.format(Math.max(r.maxAd, 0)),
       'عمليات لتحقيق هدف ' + usd.format(r.v.targetDaily) + ': ' + (Number.isFinite(r.ordersNeeded) ? Math.ceil(r.ordersNeeded) : '—'),
       'الوقت المطلوب: ' + duration(r.hoursNeeded),
-      'محاكاة 1000 عملية: ربح ' + usd.format(r.net * 1000) + '، وقت ' + duration(r.kTime) + '، ربح/ساعة ' + usd.format(r.kHourly) + '.'
+      'محاكاة ' + num.format(simVolume) + ' عملية: ربح ' + usd.format(r.net * simVolume) + '، وقت ' + duration(r.kTime) + '، ربح/ساعة ' + usd.format(r.kHourly) + '.',
+      'B2B: إيراد ' + usd.format(r.b2bRevenue) + '، ربح ' + usd.format(r.b2bGross) + '، هامش ' + pct.format(r.b2bMargin) + '٪.',
+      'خدمة المحتوى: إيراد ' + usd.format(r.svcRevenue) + '، ربح ' + usd.format(r.svcGross) + '، ربح/ساعة ' + usd.format(r.svcHourly) + '، أقصى أدوات/عميل ' + usd.format(Math.max(r.svcMaxTools, 0)) + '.',
+      'الانتباه: إعلانات ' + usd.format(r.attAd) + '، عمولة ' + usd.format(r.attAffiliate) + '، رقمي ' + usd.format(r.attDigital) + '، الإجمالي/يوم ' + usd.format(r.attTotal) + '.'
     ].join('\n');
   }
 
@@ -760,8 +1050,11 @@
   document.addEventListener('DOMContentLoaded', function () {
     loadState();
     calculate();
-    Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (chip) {
+    Array.prototype.forEach.call(document.querySelectorAll('.chip[data-preset]'), function (chip) {
       chip.addEventListener('click', function () { applyPreset(chip.getAttribute('data-preset')); });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-volume]'), function (btn) {
+      btn.addEventListener('click', function () { setVolume(parseInt(btn.getAttribute('data-volume'), 10)); });
     });
     inputs.forEach(function (id) {
       var el = $(id);
