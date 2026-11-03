@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="robots" content="noindex, nofollow">
+<title>حاسبة الربح الحقيقي — رواء | RAWAA</title>
+<style>
+  :root{
+    --ink:#1c1a17;
+    --muted:#6b655c;
+    --line:#e7e0d5;
+    --paper:#fbf8f3;
+    --card:#ffffff;
+    --brand:#7a4b2a;
+    --brand-soft:#f3e7da;
+    --green:#1f6f4a;
+    --green-soft:#e7f4ec;
+    --amber:#8a5a00;
+    --amber-soft:#fdf3d8;
+    --red:#a3271f;
+    --red-soft:#fbe9e7;
+    --radius:18px;
+    --shadow:0 1px 2px rgba(28,26,23,.04),0 10px 30px rgba(28,26,23,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;
+    line-height:1.6;
+    font-size:16px;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:0 16px calc(40px + env(safe-area-inset-bottom))}
+  header{
+    background:linear-gradient(135deg,#2a211a 0%,#4a3424 55%,#7a4b2a 100%);
+    color:#fff;
+    padding:26px 16px 30px;
+    border-radius:0 0 26px 26px;
+    box-shadow:var(--shadow);
+  }
+  .brandline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
+  .brandline .dot{width:7px;height:7px;border-radius:50%;background:#e9c9a8}
+  h1{font-size:clamp(24px,6vw,34px);line-height:1.25;margin:12px 0 8px;font-weight:800}
+  .lede{margin:0;max-width:680px;font-size:15px;line-height:1.75;color:#f4e9dd}
+  .notice{
+    margin-top:16px;display:flex;gap:10px;align-items:flex-start;
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+    border-radius:14px;padding:11px 13px;font-size:13px;line-height:1.65;color:#fff6ec;
+  }
+  .notice b{font-weight:700}
+  .notice .icon{flex:0 0 auto;font-size:16px;line-height:1.4}
+
+  main{padding-top:22px}
+  .section{margin-top:22px}
+  .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px}
+  h2{font-size:19px;margin:0;font-weight:800;letter-spacing:-.01em}
+  .section-head p{margin:0;font-size:13px;color:var(--muted);max-width:520px}
+
+  .presets{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+  .chip{
+    flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--ink);
+    border-radius:999px;padding:8px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+    box-shadow:0 1px 0 rgba(28,26,23,.03);
+  }
+  .chip:hover{border-color:#c9b9a6;background:#fffdf9}
+  .chip[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+  .chip:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #b98a5f;outline-offset:2px}
+  .linkbtn{border:0;background:none;padding:0;margin:0;color:var(--brand);font:inherit;font-size:11.5px;font-weight:700;text-decoration:underline;cursor:pointer}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .field{display:flex;flex-direction:column;gap:5px;min-width:0}
+  .field label{font-size:13px;font-weight:700;color:#3d372f}
+  .field .hint{font-size:11.5px;color:var(--muted);font-weight:400;line-height:1.5}
+  .input-shell{display:flex;align-items:center;background:#fff;border:1.5px solid #ddd3c6;border-radius:12px;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+  .input-shell:focus-within{border-color:#a9784f;box-shadow:0 0 0 3px rgba(169,120,79,.14)}
+  .input-shell .unit{padding:0 10px;font-size:12px;color:var(--muted);background:#faf7f2;align-self:stretch;display:flex;align-items:center;border-inline-start:1px solid #eee7dd;white-space:nowrap}
+  input{
+    width:100%;border:0;background:transparent;padding:11px 12px;font:inherit;font-size:16px;color:var(--ink);
+    min-width:0;direction:ltr;text-align:right;
+  }
+  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield;appearance:textfield}
+  .span2{grid-column:1 / -1}
+
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .btn{
+    border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;
+    padding:10px 14px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;
+  }
+  .btn:hover{background:#fffdf9;border-color:#c9b9a6}
+  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn.primary:hover{background:#653d22}
+  .btn.ghost{background:transparent}
+
+  .results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+  .result{background:#fbf8f3;border:1px solid #eee6da;border-radius:14px;padding:12px 13px;min-width:0}
+  .result .k{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:2px}
+  .result .v{font-size:clamp(19px,4.6vw,24px);font-weight:800;letter-spacing:-.02em;direction:ltr;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .result .s{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.5}
+  .result.wide{grid-column:1 / -1}
+  .result.good{background:var(--green-soft);border-color:#cfe6d8}
+  .result.bad{background:var(--red-soft);border-color:#f2d2ce}
+  .result.warn{background:var(--amber-soft);border-color:#f0e0b4}
+
+  .verdict{
+    display:flex;gap:10px;align-items:flex-start;border-radius:14px;padding:12px 14px;margin-top:12px;
+    font-size:13.5px;line-height:1.65;border:1px solid transparent;
+  }
+  .verdict .badge{flex:0 0 auto;font-size:11px;font-weight:800;border-radius:999px;padding:3px 9px;margin-top:1px}
+  .verdict.good{background:var(--green-soft);border-color:#cfe6d8;color:#174d34}
+  .verdict.good .badge{background:#1f6f4a;color:#fff}
+  .verdict.warn{background:var(--amber-soft);border-color:#f0e0b4;color:#5f3f00}
+  .verdict.warn .badge{background:#8a5a00;color:#fff}
+  .verdict.bad{background:var(--red-soft);border-color:#f2d2ce;color:#6d1a14}
+  .verdict.bad .badge{background:#a3271f;color:#fff}
+
+  .funnel{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+  .step{background:#fbf8f3;border:1px solid #eee6da;border-radius:12px;padding:9px 10px;text-align:center;min-width:0}
+  .step .n{font-size:18px;font-weight:800;direction:ltr;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .step .l{font-size:11px;color:var(--muted);margin-top:1px}
+  .arrow{display:none}
+
+  .note{background:#fffdf8;border:1px dashed #d9cbb9;border-radius:14px;padding:12px 14px;font-size:12.5px;line-height:1.75;color:#5b5348;margin-top:12px}
+  .note b{color:var(--ink)}
+  .note ul{margin:6px 0 0;padding-inline-start:18px}
+  .note li{margin:3px 0}
+
+  .compare{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+  .compare th,.compare td{text-align:right;padding:8px 7px;border-bottom:1px solid #eee7dd;vertical-align:top}
+  .compare th{font-size:11.5px;color:var(--muted);font-weight:700;background:#fbf8f3}
+  .compare td:first-child{font-weight:700}
+  .compare .muted{color:var(--muted)}
+  .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.8}
+  footer a{color:var(--brand);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .toast{
+    position:fixed;inset-inline:0;bottom:calc(16px + env(safe-area-inset-bottom));margin:0 auto;width:max-content;max-width:90%;
+    background:#1c1a17;color:#fff;border-radius:999px;padding:10px 16px;font-size:13px;font-weight:600;
+    box-shadow:0 8px 30px rgba(0,0,0,.2);opacity:0;transform:translateY(10px);transition:opacity .2s,transform .2s;pointer-events:none;z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateY(0)}
+
+  @media (min-width:720px){
+    .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .results{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .funnel{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .arrow{display:block;text-align:center;color:#b9a58e;font-size:16px;line-height:1}
+  }
+  @media (max-width:420px){
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .results{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .card{padding:13px}
+    .funnel{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  @media print{
+    header{background:#fff;color:#000;box-shadow:none;border-bottom:2px solid #000;border-radius:0}
+    .lede,.notice{color:#000}
+    .presets,.actions,.toast,footer a{display:none}
+    .card,.result,.verdict,.note{box-shadow:none;break-inside:avoid}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap" style="padding:0">
+    <div class="brandline"><span>RAWAA</span><span class="dot" aria-hidden="true"></span><span>رواء</span><span class="dot" aria-hidden="true"></span><span>أداة قرار</span></div>
+    <h1>حاسبة الربح الحقيقي</h1>
+    <p class="lede">قبل أن تدفع دولارًا واحدًا في أي صفقة، احسب الربح بعد كل الرسوم، والاسترجاع، والوقت. الأداة تعمل على الآيفون والتابلت، وتحفظ أرقامك على جهازك فقط.</p>
+    <div class="notice">
+      <span class="icon" aria-hidden="true">⚠️</span>
+      <span><b>ليست نصيحة مالية.</b> الأرقام تقديرية وتحتاج التحقق من صفحة الرسوم الرسمية لكل منصة. لا توجد طريقة تضمن ربحًا يوميًا ثابتًا.</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="section">
+    <div class="section-head">
+      <h2>١. صفقتك</h2>
+      <p>ابدأ من سعر البيع، ثم أدخل كل تكلفة. لا تُدخل الربح المتمنى — احسبه.</p>
+    </div>
+    <div class="presets" role="group" aria-label="إعدادات جاهزة">
+      <button class="chip" type="button" data-preset="ebay" aria-pressed="false">eBay</button>
+      <button class="chip" type="button" data-preset="amazon" aria-pressed="false">Amazon FBA</button>
+      <button class="chip" type="button" data-preset="etsy" aria-pressed="false">Etsy رقمي</button>
+      <button class="chip" type="button" data-preset="shopify" aria-pressed="false">Shopify + Stripe</button>
+      <button class="chip" type="button" data-preset="tiktok" aria-pressed="false">TikTok Shop</button>
+      <button class="chip" type="button" data-preset="cod" aria-pressed="false">كاش/واتساب</button>
+    </div>
+
+    <div class="card">
+      <div class="grid">
+        <div class="field">
+          <label for="price">سعر البيع للعميل</label>
+          <div class="input-shell"><input id="price" type="number" inputmode="decimal" min="0" step="0.01" value="30" aria-describedby="price-hint"><span class="unit">$</span></div>
+          <span class="hint" id="price-hint">المبلغ الذي يدفعه العميل، شامل الشحن إن كان مجانيًا.</span>
+        </div>
+        <div class="field">
+          <label for="cost">تكلفة المنتج/الشراء</label>
+          <div class="input-shell"><input id="cost" type="number" inputmode="decimal" min="0" step="0.01" value="10"><span class="unit">$</span></div>
+          <span class="hint">تكلفة الوحدة من المورد أو المتجر.</span>
+        </div>
+        <div class="field">
+          <label for="shipping">الشحن والتغليف</label>
+          <div class="input-shell"><input id="shipping" type="number" inputmode="decimal" min="0" step="0.01" value="5"><span class="unit">$</span></div>
+          <span class="hint">الشحن + الكرتون + الملصق + أي رسوم توصيل.</span>
+        </div>
+        <div class="field">
+          <label for="platformPct">عمولة المنصة</label>
+          <div class="input-shell"><input id="platformPct" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="13.6"><span class="unit">%</span></div>
+          <span class="hint">eBay ≈ 13.6٪، Amazon ≈ 15٪، Etsy ≈ 6.5٪.</span>
+        </div>
+        <div class="field">
+          <label for="platformFixed">رسم ثابت للمنصة</label>
+          <div class="input-shell"><input id="platformFixed" type="number" inputmode="decimal" min="0" step="0.01" value="0.40"><span class="unit">$</span></div>
+          <span class="hint">مثال: eBay 0.30–0.40 $ لكل عملية.</span>
+        </div>
+        <div class="field">
+          <label for="paymentPct">عمولة الدفع</label>
+          <div class="input-shell"><input id="paymentPct" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="0"><span class="unit">%</span></div>
+          <span class="hint">Stripe ≈ 2.9٪، PayPal ≈ 2.99٪. إن كانت داخل عمولة المنصة فضع 0.</span>
+        </div>
+        <div class="field">
+          <label for="paymentFixed">رسم ثابت للدفع</label>
+          <div class="input-shell"><input id="paymentFixed" type="number" inputmode="decimal" min="0" step="0.01" value="0"><span class="unit">$</span></div>
+          <span class="hint">Stripe 0.30 $، PayPal 0.49 $ (تقريبيًا).</span>
+        </div>
+        <div class="field">
+          <label for="ads">تكلفة الإعلان لكل عملية</label>
+          <div class="input-shell"><input id="ads" type="number" inputmode="decimal" min="0" step="0.01" value="0"><span class="unit">$</span></div>
+          <span class="hint">إن لم تُعلن بعد، اكتب 0. لا تقدّر الإعلانات بأقل من تكلفتها الحقيقية.</span>
+        </div>
+        <div class="field">
+          <label for="returnRate">نسبة الاسترجاع/الإلغاء</label>
+          <div class="input-shell"><input id="returnRate" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="5"><span class="unit">%</span></div>
+          <span class="hint">5–15٪ للمنتجات الفيزيائية، 1–3٪ للرقمية.</span>
+        </div>
+        <div class="field">
+          <label for="targetMargin">هامش الربح المستهدف</label>
+          <div class="input-shell"><input id="targetMargin" type="number" inputmode="decimal" min="0" max="100" step="1" value="20"><span class="unit">%</span></div>
+          <span class="hint">نسبة من سعر البيع. تُستخدم لحساب أقصى إنفاق إعلاني.</span>
+        </div>
+        <div class="field">
+          <label for="ordersPerDay">عدد العمليات يوميًا</label>
+          <div class="input-shell"><input id="ordersPerDay" type="number" inputmode="numeric" min="0" step="1" value="5"><span class="unit">طلب</span></div>
+          <span class="hint">تقدير واقعي، لا أمنية.</span>
+        </div>
+        <div class="field">
+          <label for="timePerOrder">وقت كل عملية</label>
+          <div class="input-shell"><input id="timePerOrder" type="number" inputmode="decimal" min="0" step="1" value="10"><span class="unit">دقيقة</span></div>
+          <span class="hint">تجهيز + تغليف + شحن + رد + متابعة.</span>
+        </div>
+        <div class="field">
+          <label for="targetDaily">هدف الربح اليومي</label>
+          <div class="input-shell"><input id="targetDaily" type="number" inputmode="decimal" min="0" step="1" value="10"><span class="unit">$</span></div>
+          <span class="hint">مثال: 10 $ يوميًا = 300 $ شهريًا قبل الضرائب.</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" type="button" id="calcBtn">احسب الآن</button>
+        <button class="btn" type="button" id="copyBtn">نسخ الملخص</button>
+        <button class="btn ghost" type="button" id="printBtn">طباعة / PDF</button>
+        <button class="btn ghost" type="button" id="resetBtn">مسح الأرقام</button>
+      </div>
+      <p class="sr-only" id="calcStatus" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>٢. النتيجة بعد كل شيء</h2>
+      <p>الربح الصافي لكل عملية، واليومي، والشهري — بعد الرسوم والاسترجاع.</p>
+    </div>
+    <div class="results" aria-live="polite">
+      <div class="result" id="cardNet">
+        <div class="k">صافي الربح لكل عملية</div>
+        <div class="v" id="netValue">$0.00</div>
+        <div class="s" id="netSub">بعد كل الرسوم والاسترجاع</div>
+      </div>
+      <div class="result">
+        <div class="k">هامش الربح</div>
+        <div class="v" id="marginValue">0٪</div>
+        <div class="s" id="marginSub">من سعر البيع</div>
+      </div>
+      <div class="result">
+        <div class="k">إجمالي الرسوم لكل عملية</div>
+        <div class="v" id="feeValue">$0.00</div>
+        <div class="s" id="feeSub">منصة + دفع</div>
+      </div>
+      <div class="result">
+        <div class="k">الربح اليومي</div>
+        <div class="v" id="dailyValue">$0.00</div>
+        <div class="s" id="dailySub">حسب عدد العمليات</div>
+      </div>
+      <div class="result">
+        <div class="k">الربح الشهري (٣٠ يومًا)</div>
+        <div class="v" id="monthlyValue">$0.00</div>
+        <div class="s">قبل الضرائب والالتزامات</div>
+      </div>
+      <div class="result">
+        <div class="k">سعر التعادل</div>
+        <div class="v" id="breakEvenValue">$0.00</div>
+        <div class="s" id="breakEvenSub">أقل سعر لا تخسر فيه (بدون استرجاع)</div>
+      </div>
+      <div class="result wide" id="verdictBox">
+        <div class="verdict" id="verdict">
+          <span class="badge" id="verdictBadge">الحالة</span>
+          <span id="verdictText">أدخل أرقامك لعرض التقييم.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>٣. محاكاة ١٠٠٠ عملية في اليوم</h2>
+      <p>هل فكرة «١٠٠٠ عملية × ربح بسيط» ممكنة فعلًا؟ هذه هي الحقيقة.</p>
+    </div>
+    <div class="card">
+      <div class="results" style="margin-top:0">
+        <div class="result">
+          <div class="k">ربح ١٠٠٠ عملية</div>
+          <div class="v" id="kProfit">$0.00</div>
+          <div class="s">قبل الضرائب</div>
+        </div>
+        <div class="result">
+          <div class="k">رسوم ١٠٠٠ عملية</div>
+          <div class="v" id="kFees">$0.00</div>
+          <div class="s">منصة + دفع</div>
+        </div>
+        <div class="result">
+          <div class="k">الوقت المطلوب</div>
+          <div class="v" id="kTime">0 ساعة</div>
+          <div class="s">بوقت كل عملية الحالي</div>
+        </div>
+        <div class="result">
+          <div class="k">الربح لكل ساعة</div>
+          <div class="v" id="kHourly">$0.00</div>
+          <div class="s">مقابل وقتك</div>
+        </div>
+        <div class="result wide">
+          <div class="k">الحكم</div>
+          <div class="v" id="kVerdict" style="font-size:16px;white-space:normal">—</div>
+          <div class="s" id="kVerdictSub">—</div>
+        </div>
+      </div>
+      <div class="note">
+        <b>لماذا لا تنجح غالبًا؟</b>
+        <ul>
+          <li>الرسوم الثابتة (مثل 0.30 $ لكل عملية) تبتلع ربح السنتات. مثال: عملية بـ 1 $ ورسوم 2.9٪ + 0.30 $ = 0.329 $ رسوم (33٪ من السعر)؛ إن كانت تكلفة المنتج 0.80 $ تصبح النتيجة خسارة 0.13 $ قبل الشحن.</li>
+          <li>١٠٠٠ عملية = عملية كل 86 ثانية، 24 ساعة يوميًا. لا يمكن لشخص واحد أن يجهز ويشحن ويرد ويتابع هذا الحجم.</li>
+          <li>المنصات تضع حدودًا للحسابات الجديدة، وتحتفظ بالمبالغ، وتفرض KYC وسياسات إرجاع.</li>
+          <li>الربح الحقيقي يأتي من <b>قيمة الطلب</b> و<b>تكرار الشراء</b>، لا من عدد العمليات الصغيرة.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>٤. اقلب المعادلة: ١٠٠٠ مشاهدة</h2>
+      <p>لا تطارد ١٠٠٠ عملية. طارد ١٠٠٠ مشاهدة، ثم ٢٠ نقرة، ثم عملية واحدة.</p>
+    </div>
+    <div class="card">
+      <div class="grid">
+        <div class="field">
+          <label for="views">المشاهدات يوميًا</label>
+          <div class="input-shell"><input id="views" type="number" inputmode="numeric" min="0" step="100" value="1000"><span class="unit">مشاهدة</span></div>
+          <span class="hint">من فيديو/منشور/إعلان.</span>
+        </div>
+        <div class="field">
+          <label for="ctr">نسبة النقر</label>
+          <div class="input-shell"><input id="ctr" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="2"><span class="unit">%</span></div>
+          <span class="hint">من يشاهد وينقر على الرابط.</span>
+        </div>
+        <div class="field">
+          <label for="conv">نسبة الشراء</label>
+          <div class="input-shell"><input id="conv" type="number" inputmode="decimal" min="0" max="100" step="0.1" value="5"><span class="unit">%</span></div>
+          <span class="hint">من ينقر ويشتري.</span>
+        </div>
+        <div class="field">
+          <label for="funnelProfit">ربح العملية</label>
+          <div class="input-shell"><input id="funnelProfit" type="number" inputmode="decimal" min="0" step="0.01" value="10"><span class="unit">$</span></div>
+          <span class="hint">من الحاسبة أعلاه. <button type="button" class="linkbtn" id="useNetBtn">استخدم الربح أعلاه</button></span>
+        </div>
+      </div>
+      <div class="funnel" aria-live="polite">
+        <div class="step"><span class="n" id="fViews">1,000</span><span class="l">مشاهدة</span></div>
+        <div class="step"><span class="n" id="fClicks">20</span><span class="l">نقرة</span></div>
+        <div class="step"><span class="n" id="fSales">1</span><span class="l">عملية</span></div>
+        <div class="step"><span class="n" id="fProfit">$10.00</span><span class="l">ربح</span></div>
+      </div>
+      <div class="note" id="funnelNote">
+        بهذه الأرقام تحتاج <b id="viewsNeeded">—</b> مشاهدة يوميًا لتحقيق هدف الربح اليومي. هذا هو الرقم الذي يجب أن تطارده، لا عدد العمليات.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>٥. قواعد سريعة قبل أي صفقة</h2>
+      <p>ثلاثة فحوص تمنعك من خسارة 200 $ في أسبوع.</p>
+    </div>
+    <div class="card">
+      <div class="results" style="margin-top:0">
+        <div class="result">
+          <div class="k">قاعدة ٣×</div>
+          <div class="v" id="ratioValue">—</div>
+          <div class="s" id="ratioSub">سعر البيع ÷ التكلفة</div>
+        </div>
+        <div class="result">
+          <div class="k">أقصى إنفاق إعلاني</div>
+          <div class="v" id="maxAdValue">$0.00</div>
+          <div class="s">للحفاظ على الهامش المستهدف</div>
+        </div>
+        <div class="result">
+          <div class="k">عمليات لتحقيق الهدف</div>
+          <div class="v" id="ordersNeeded">—</div>
+          <div class="s">بالربح الحالي لكل عملية</div>
+        </div>
+        <div class="result">
+          <div class="k">الوقت لتحقيق الهدف</div>
+          <div class="v" id="hoursNeeded">—</div>
+          <div class="s">بالوقت الحالي لكل عملية</div>
+        </div>
+      </div>
+      <div class="note">
+        <b>قاعدة ٣×:</b> للمنتجات الفيزيائية، اجعل سعر البيع ٣ أضعاف تكلفة الشراء على الأقل. أقل من ٢.٥× يعني أن الرسوم والشحن والاسترجاع ستأكل ربحك. المنتجات الرقمية لا تنطبق عليها هذه القاعدة لأن تكلفتها تقارب صفرًا — لكن المنافسة والاكتشاف يصبحان التحدي.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>٦. مقارنة واقعية</h2>
+      <p>أرقام تقديرية من مصادر 2026 — ليست وعودًا.</p>
+    </div>
+    <div class="card table-scroll">
+      <table class="compare">
+        <thead>
+          <tr><th>النموذج</th><th>رأس المال</th><th>الربح الشهري الواقعي</th><th>ملاحظة</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>متجر/منتجك</td><td>200–500 $</td><td>100–1,000 $</td><td>الأفضل إن كان لديك منتج أو جمهور</td></tr>
+          <tr><td>منتجات رقمية</td><td>0–200 $</td><td>50–800 $</td><td>هامش 85–95٪ لكن اكتشاف صعب</td></tr>
+          <tr><td>تسويق بالعمولة</td><td>0–200 $</td><td>0–800 $</td><td>يحتاج محتوى يوميًا 60–90 يومًا</td></tr>
+          <tr><td>طباعة عند الطلب</td><td>0–200 $</td><td>50–500 $</td><td>هامش 15–25٪، منافسة عالية</td></tr>
+          <tr><td>بيع بالتجزئة (Arbitrage)</td><td>200–500 $</td><td>100–400 $</td><td>يحتاج مشاوير وتخزين وشحن</td></tr>
+          <tr><td>عمل حر</td><td>0–100 $</td><td>200–1,500 $</td><td>الأسرع نقدًا إن كانت لديك مهارة</td></tr>
+          <tr><td>مهام صغيرة</td><td>0 $</td><td>40–350 $</td><td>1–7 $/ساعة، ليست مشروعًا</td></tr>
+          <tr><td>عملات رقمية (Arbitrage)</td><td>3,000–5,000 $</td><td>غير مناسب</td><td>الرسوم تفترس رأس المال الصغير</td></tr>
+        </tbody>
+      </table>
+      <div class="note" style="margin-top:12px">
+        <b>الخلاصة:</b> مع 200 $، لا تبدأ بمشروع يتطلب 3,000 $ أو 1,000 عملية يوميًا. ابدأ بمنتج/خدمة واحدة، بهامش 5–15 $ للعملية، وبهدف 1–3 عمليات يوميًا. ثم أعد استثمار 70٪ من الربح في المحتوى أو المخزون.
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <h2>٧. تحذيرات قبل أن تدفع</h2>
+      <p>إن وعدك أحد بربح مضمون، فالأرجح أنه يريد مالك أنت.</p>
+    </div>
+      <div class="card">
+        <div class="note" style="margin-top:0">
+          <ul>
+            <li><b>«بوت تداول/إشارات تضمن أرباحًا يومية»</b> — لا يوجد ربح مضمون. اطلب سجلًا حقيقيًا، ولا تمنح صلاحية سحب من حسابك.</li>
+            <li><b>«ادفع رسومًا للانضمام»</b> — المنصات الحقيقية لا تطلب رسومًا لتبدأ. انتبه للمخططات الهرمية.</li>
+            <li><b>«حساب مُدار لك»</b> — يعني أنك تعطي مالك لشخص آخر. لا تفعلها.</li>
+            <li><b>شراء حسابات/بطاقات/هويات</b> — احتيال ومخالفة قانونية، وقد يؤدي إلى تجميد الحساب.</li>
+            <li><b>تقسيم المبالغ لتجاوز الفحص</b> — علامة خطر على غسيل الأموال. لا تفعلها.</li>
+            <li><b>دفع عبر تحويل شخصي لشراء بضاعة</b> — استخدم منصات بضمان (Escrow) أو ادفع عند الاستلام.</li>
+            <li><b>لقطة شاشة للدفع</b> — ليست إثباتًا. انتظر وصول المبلغ فعليًا.</li>
+            <li><b>«صفر مخاطر»</b> — إن كان صفر مخاطر، فالعائد أيضًا صفر. لا استثناء.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  <footer>
+    <p><b>رواء | RAWAA</b> — أداة داخلية لتقييم الصفقات. لا تُعد نصيحة مالية أو ضريبية أو قانونية. تحقق من الرسوم والسياسات الرسمية، ومن إمكانية استلام المدفوعات في بلدك/حسابك قبل البدء.</p>
+    <p>مصادر الأرقام: <a href="https://ecomprofitcalculator.site/guides/ebay-vs-amazon-fees/" target="_blank" rel="noopener">رسوم eBay وAmazon 2026</a>، <a href="https://profitcalcu.com/blog/ebay-seller-fees-2026/" target="_blank" rel="noopener">تفصيل رسوم eBay</a>، <a href="https://quickbooks.intuit.com/r/payments/small-business-payment-methods/" target="_blank" rel="noopener">رسوم الدفع</a>، <a href="https://www.underpriced.app/blog/amazon-fba-retail-arbitrage-complete-guide-2026" target="_blank" rel="noopener">بيع التجزئة</a>، <a href="https://merchtitans.com/blog/how-to-make-money-print-on-demand" target="_blank" rel="noopener">الطباعة عند الطلب</a>، <a href="https://theeliteengines.com/answers/how-much-can-you-earn-etsy-digital-downloads.html" target="_blank" rel="noopener">منتجات Etsy الرقمية</a>، <a href="https://www.doppelgainger.com/blog/is-tiktok-shop-affiliate-worth-it-2026/" target="_blank" rel="noopener">التسويق بالعمولة</a>، <a href="https://opportuna.io/blog/is-arbitrage-profitable" target="_blank" rel="noopener">التحكيم الرقمي</a>.</p>
+  </footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 });
+  var num = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+  var pct = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
+  var STORAGE_KEY = 'rawaa-profit-calc-v1';
+  var inputs = [
+    'price','cost','shipping','platformPct','platformFixed','paymentPct','paymentFixed',
+    'ads','returnRate','targetMargin','ordersPerDay','timePerOrder','targetDaily',
+    'views','ctr','conv','funnelProfit'
+  ];
+
+  function val(id) {
+    var v = parseFloat($(id).value);
+    return Number.isFinite(v) && v >= 0 ? v : 0;
+  }
+  function text(id, value) {
+    var el = $(id);
+    if (el) el.textContent = value;
+  }
+  function clampPct(v) { return Math.min(Math.max(v, 0), 100); }
+  function duration(hours) {
+    if (!Number.isFinite(hours) || hours < 0) return '—';
+    if (hours < 1) return Math.max(1, Math.round(hours * 60)) + ' دقيقة';
+    return (Math.round(hours * 10) / 10) + ' ساعة';
+  }
+  function setVerdict(kind, badge, message) {
+    var box = $('verdict');
+    box.classList.remove('good', 'warn', 'bad');
+    box.classList.add(kind);
+    text('verdictBadge', badge);
+    text('verdictText', message);
+  }
+  function setCard(kind, id) {
+    var el = $(id);
+    if (!el) return;
+    el.classList.remove('good', 'bad', 'warn');
+    if (kind) el.classList.add(kind);
+  }
+  function showToast(message) {
+    var t = $('toast');
+    t.textContent = message;
+    t.classList.add('show');
+    window.clearTimeout(showToast._timer);
+    showToast._timer = window.setTimeout(function () { t.classList.remove('show'); }, 2600);
+  }
+
+  function readInputs() {
+    var out = {};
+    inputs.forEach(function (id) { out[id] = val(id); });
+    out.returnRate = clampPct(out.returnRate);
+    out.ctr = clampPct(out.ctr);
+    out.conv = clampPct(out.conv);
+    return out;
+  }
+
+  function calculate() {
+    var v = readInputs();
+    var price = v.price;
+    var platformFee = price * v.platformPct / 100 + v.platformFixed;
+    var paymentFee = price * v.paymentPct / 100 + v.paymentFixed;
+    var totalFees = platformFee + paymentFee;
+    var netBeforeReturns = price - v.cost - v.shipping - totalFees - v.ads;
+    var r = v.returnRate / 100;
+    var lossOnReturn = v.cost + v.shipping + v.platformFixed + v.paymentFixed;
+    var net = netBeforeReturns * (1 - r) - lossOnReturn * r;
+    var margin = price > 0 ? net / price * 100 : 0;
+    var daily = net * v.ordersPerDay;
+    var monthly = daily * 30;
+    var feeShare = price > 0 ? totalFees / price * 100 : 0;
+    var totalPct = v.platformPct + v.paymentPct;
+    var breakEven = totalPct < 100
+      ? (v.cost + v.shipping + v.platformFixed + v.paymentFixed + v.ads) / (1 - totalPct / 100)
+      : NaN;
+    var targetProfit = price * v.targetMargin / 100;
+    var maxAd = price - v.cost - v.shipping - totalFees - targetProfit;
+    var ordersNeeded = net > 0 ? v.targetDaily / net : NaN;
+    var hoursNeeded = Number.isFinite(ordersNeeded) ? ordersNeeded * v.timePerOrder / 60 : NaN;
+
+    text('netValue', usd.format(net));
+    text('netSub', net > 0 ? 'بعد كل الرسوم والاسترجاع' : 'القيمة سالبة — أنت تخسر في كل عملية');
+    text('marginValue', pct.format(margin) + '٪');
+    text('marginSub', margin >= 20 ? 'هامش جيد' : margin >= 10 ? 'هامش مقبول' : margin > 0 ? 'هامش ضعيف' : 'لا يوجد هامش');
+    text('feeValue', usd.format(totalFees));
+    text('feeSub', 'نسبة ' + pct.format(feeShare) + '٪ من سعر البيع');
+    text('dailyValue', usd.format(daily));
+    text('dailySub', v.ordersPerDay + ' عمليات × ' + usd.format(net));
+    text('monthlyValue', usd.format(monthly));
+    text('breakEvenValue', Number.isFinite(breakEven) ? usd.format(breakEven) : '—');
+    text('breakEvenSub', Number.isFinite(breakEven) ? 'أقل سعر لا تخسر فيه' : 'الرسوم النسبية ≥ 100٪');
+
+    setCard(net > 0 ? 'good' : 'bad', 'cardNet');
+    if (net <= 0) {
+      setVerdict('bad', 'خسارة', 'بهذه الأرقام تخسر في كل عملية. ارفع السعر، أو اخفض التكلفة/الرسوم، أو اترك الصفقة.');
+    } else if (net < 0.5) {
+      setVerdict('bad', 'هش جدًا', 'ربح أقل من 0.50 $ للعملية. أي استرجاع أو خطأ بسيط يلغي الربح. اهدف لهامش 5–15 $ للعملية.');
+    } else if (margin < 10) {
+      setVerdict('warn', 'هامش ضعيف', 'هامش أقل من 10٪. جرّب حزمة أو سعرًا أعلى أو تكلفة أقل قبل التنفيذ.');
+    } else if (margin < 20) {
+      setVerdict('warn', 'مقبول', 'هامش 10–20٪. ممكن، لكن احتفظ باحتياطي للاسترجاع وتقلب الرسوم.');
+    } else {
+      setVerdict('good', 'جيد', 'هامش 20٪ أو أكثر. هذا هو النوع الذي يستحق الاختبار — لكن تحقق من الطلب أولًا.');
+    }
+
+    var kProfit = net * 1000;
+    var kFees = totalFees * 1000;
+    var kTime = v.timePerOrder * 1000 / 60;
+    var kHourly = kTime > 0 ? kProfit / kTime : 0;
+    text('kProfit', usd.format(kProfit));
+    text('kFees', usd.format(kFees));
+    text('kTime', duration(kTime));
+    text('kHourly', usd.format(kHourly));
+    var kKind, kBadge, kMsg, kSub;
+    if (net <= 0) {
+      kKind = 'bad'; kBadge = 'غير ممكن'; kMsg = 'أنت تخسر في كل عملية، فمضاعفة 1000× لا تصنع ربحًا.'; kSub = 'أصلح معادلة الربح أولًا.';
+    } else if (v.timePerOrder <= 0) {
+      kKind = 'warn'; kBadge = 'أدخل وقتًا'; kMsg = 'لم تُدخل وقتًا لكل عملية، لذا لا يمكن الحكم على جدوى 1000 عملية.'; kSub = 'اكتب وقتًا واقعيًا للتجهيز والشحن والرد.';
+    } else if (kTime > 16) {
+      kKind = 'bad'; kBadge = 'غير ممكن'; kMsg = 'تحتاج ' + duration(kTime) + ' يوميًا لشخص واحد.'; kSub = 'لا يمكن لإنسان واحد تنفيذ 1000 عملية يدويًا.';
+    } else if (net < 1) {
+      kKind = 'warn'; kBadge = 'هش'; kMsg = 'الربح ' + usd.format(net) + ' للعملية، والرسوم ' + usd.format(totalFees) + '؛ أي خطأ يلغي اليوم.'; kSub = 'ارفع قيمة الطلب أو اهدف لعدد أقل من العمليات.';
+    } else if (kHourly < 5) {
+      kKind = 'warn'; kBadge = 'غير مجدٍ'; kMsg = 'الربح ' + usd.format(kHourly) + ' للساعة أقل من قيمة وقتك.'; kSub = 'الأفضل التركيز على قيمة أعلى لكل عملية.';
+    } else {
+      kKind = 'good'; kBadge = 'ممكن نظريًا'; kMsg = 'الرياضيات ممكنة، لكنها تحتاج أتمتة/فريقًا، لا شخصًا واحدًا.'; kSub = 'اختبر 10 عمليات أولًا قبل التفكير في 1000.';
+    }
+    var kb = $('verdictBox');
+    kb.classList.remove('good', 'warn', 'bad');
+    kb.classList.add(kKind);
+    var kv = $('kVerdict');
+    kv.textContent = kBadge + ' — ' + kMsg;
+    kv.style.color = kKind === 'good' ? '#174d34' : kKind === 'warn' ? '#5f3f00' : '#6d1a14';
+    text('kVerdictSub', kSub);
+
+    var clicks = v.views * v.ctr / 100;
+    var sales = clicks * v.conv / 100;
+    var funnelProfit = sales * v.funnelProfit;
+    text('fViews', num.format(Math.round(v.views)));
+    text('fClicks', num.format(Math.round(clicks * 10) / 10));
+    text('fSales', num.format(Math.round(sales * 10) / 10));
+    text('fProfit', usd.format(funnelProfit));
+    var needed = (v.ctr > 0 && v.conv > 0 && v.funnelProfit > 0)
+      ? v.targetDaily / (v.ctr / 100 * v.conv / 100 * v.funnelProfit)
+      : NaN;
+    text('viewsNeeded', Number.isFinite(needed) ? num.format(Math.ceil(needed)) + ' مشاهدة' : '—');
+    var fn = $('funnelNote');
+    if (Number.isFinite(needed)) {
+      fn.innerHTML = 'بهذه الأرقام تحتاج <b>' + num.format(Math.ceil(needed)) + ' مشاهدة</b> يوميًا لتحقيق هدف <b>' + usd.format(v.targetDaily) + '</b>. هذا هو الرقم الذي يجب أن تطارده، لا عدد العمليات.';
+    } else {
+      fn.textContent = 'أدخل أرقامًا موجبة في القمع لحساب عدد المشاهدات المطلوب.';
+    }
+
+    var ratio = v.cost > 0 ? price / v.cost : NaN;
+    text('ratioValue', Number.isFinite(ratio) ? (Math.round(ratio * 10) / 10) + '×' : '—');
+    text('ratioSub', !Number.isFinite(ratio) ? 'أدخل تكلفة > 0' : ratio >= 3 ? 'جيد (≥ 3×)' : ratio >= 2.5 ? 'حدودي' : 'ضعيف (< 2.5×)');
+    text('maxAdValue', usd.format(Math.max(maxAd, 0)));
+    text('ordersNeeded', Number.isFinite(ordersNeeded) ? num.format(Math.ceil(ordersNeeded)) + ' عملية' : '—');
+    text('hoursNeeded', duration(hoursNeeded));
+
+    text('calcStatus', 'تم الحساب: صافي الربح ' + usd.format(net) + ' لكل عملية، والربح اليومي ' + usd.format(daily) + '.');
+    return { v: v, net: net, daily: daily, monthly: monthly, totalFees: totalFees, margin: margin, breakEven: breakEven, maxAd: maxAd, ordersNeeded: ordersNeeded, hoursNeeded: hoursNeeded, kTime: kTime, kHourly: kHourly };
+  }
+
+  function saveState() {
+    try {
+      var data = {};
+      inputs.forEach(function (id) { data[id] = $(id).value; });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) { /* التخزين قد يكون معطلًا في وضع التصفح الخاص */ }
+  }
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      inputs.forEach(function (id) {
+        if (Object.prototype.hasOwnProperty.call(data, id) && data[id] !== '' && data[id] !== null) {
+          $(id).value = data[id];
+        }
+      });
+    } catch (e) { /* تجاهل */ }
+  }
+
+  var PRESETS = {
+    ebay: { price: 30, cost: 10, shipping: 5, platformPct: 13.6, platformFixed: 0.40, paymentPct: 0, paymentFixed: 0, ads: 0, returnRate: 5, targetMargin: 20, ordersPerDay: 5, timePerOrder: 10, targetDaily: 10 },
+    amazon: { price: 30, cost: 10, shipping: 5, platformPct: 15, platformFixed: 0, paymentPct: 0, paymentFixed: 0, ads: 3, returnRate: 5, targetMargin: 20, ordersPerDay: 5, timePerOrder: 12, targetDaily: 10 },
+    etsy: { price: 12, cost: 0, shipping: 0, platformPct: 6.5, platformFixed: 0.20, paymentPct: 3, paymentFixed: 0.25, ads: 0, returnRate: 1, targetMargin: 70, ordersPerDay: 10, timePerOrder: 3, targetDaily: 10 },
+    shopify: { price: 40, cost: 10, shipping: 5, platformPct: 0, platformFixed: 0, paymentPct: 2.9, paymentFixed: 0.30, ads: 8, returnRate: 3, targetMargin: 20, ordersPerDay: 3, timePerOrder: 12, targetDaily: 10 },
+    tiktok: { price: 30, cost: 10, shipping: 5, platformPct: 5, platformFixed: 0, paymentPct: 0, paymentFixed: 0, ads: 0, returnRate: 8, targetMargin: 20, ordersPerDay: 5, timePerOrder: 8, targetDaily: 10 },
+    cod: { price: 25, cost: 10, shipping: 2, platformPct: 0, platformFixed: 0, paymentPct: 0, paymentFixed: 0, ads: 0, returnRate: 10, targetMargin: 20, ordersPerDay: 4, timePerOrder: 15, targetDaily: 10 }
+  };
+
+  function applyPreset(name) {
+    var p = PRESETS[name];
+    if (!p) return;
+    Object.keys(p).forEach(function (id) { if ($(id)) $(id).value = p[id]; });
+    Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (chip) {
+      chip.setAttribute('aria-pressed', chip.getAttribute('data-preset') === name ? 'true' : 'false');
+    });
+    calculate();
+    saveState();
+    showToast('تم تطبيق إعداد ' + (chipLabel(name)) + '. عدّل الأرقام كما يناسبك.');
+  }
+  function chipLabel(name) {
+    var labels = { ebay: 'eBay', amazon: 'Amazon FBA', etsy: 'Etsy رقمي', shopify: 'Shopify + Stripe', tiktok: 'TikTok Shop', cod: 'كاش/واتساب' };
+    return labels[name] || name;
+  }
+
+  function resetAll() {
+    var defaults = { price: 30, cost: 10, shipping: 5, platformPct: 13.6, platformFixed: 0.40, paymentPct: 0, paymentFixed: 0, ads: 0, returnRate: 5, targetMargin: 20, ordersPerDay: 5, timePerOrder: 10, targetDaily: 10, views: 1000, ctr: 2, conv: 5, funnelProfit: 10 };
+    Object.keys(defaults).forEach(function (id) { if ($(id)) $(id).value = defaults[id]; });
+    Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (chip) { chip.setAttribute('aria-pressed', 'false'); });
+    calculate();
+    saveState();
+    showToast('تم مسح الأرقام والعودة للقيم الافتراضية.');
+  }
+
+  function summary() {
+    var r = calculate();
+    return [
+      'ملخص صفقة — RAWAA',
+      'سعر البيع: ' + usd.format(r.v.price),
+      'التكلفة: ' + usd.format(r.v.cost) + ' + شحن ' + usd.format(r.v.shipping),
+      'الرسوم: ' + usd.format(r.totalFees) + ' (' + pct.format(r.v.platformPct + r.v.paymentPct) + '٪ + ' + usd.format(r.v.platformFixed + r.v.paymentFixed) + ')',
+      'صافي الربح/عملية: ' + usd.format(r.net),
+      'الهامش: ' + pct.format(r.margin) + '٪',
+      'الربح اليومي: ' + usd.format(r.daily) + ' (' + r.v.ordersPerDay + ' عمليات)',
+      'الربح الشهري: ' + usd.format(r.monthly),
+      'سعر التعادل: ' + (Number.isFinite(r.breakEven) ? usd.format(r.breakEven) : '—'),
+      'أقصى إنفاق إعلاني: ' + usd.format(Math.max(r.maxAd, 0)),
+      'عمليات لتحقيق هدف ' + usd.format(r.v.targetDaily) + ': ' + (Number.isFinite(r.ordersNeeded) ? Math.ceil(r.ordersNeeded) : '—'),
+      'الوقت المطلوب: ' + duration(r.hoursNeeded),
+      'محاكاة 1000 عملية: ربح ' + usd.format(r.net * 1000) + '، وقت ' + duration(r.kTime) + '، ربح/ساعة ' + usd.format(r.kHourly) + '.'
+    ].join('\n');
+  }
+
+  function copySummary() {
+    var textValue = summary();
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = textValue;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); showToast('تم نسخ الملخص.'); }
+      catch (e) { showToast('تعذر النسخ. جرّب تحديد النص يدويًا.'); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(textValue).then(function () { showToast('تم نسخ الملخص.'); }).catch(fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    loadState();
+    calculate();
+    Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (chip) {
+      chip.addEventListener('click', function () { applyPreset(chip.getAttribute('data-preset')); });
+    });
+    inputs.forEach(function (id) {
+      var el = $(id);
+      if (!el) return;
+      el.addEventListener('input', function () { calculate(); saveState(); });
+    });
+    $('calcBtn').addEventListener('click', function () { calculate(); showToast('تم تحديث النتائج.'); });
+    $('useNetBtn').addEventListener('click', function () {
+      var r = calculate();
+      $('funnelProfit').value = Math.max(r.net, 0).toFixed(2);
+      calculate();
+      saveState();
+      showToast('تم استخدام صافي الربح من الحاسبة.');
+    });
+    $('copyBtn').addEventListener('click', copySummary);
+    $('printBtn').addEventListener('click', function () { window.print(); });
+    $('resetBtn').addEventListener('click', resetAll);
+  });
+})();
+</script>
+</body>
+</html>
