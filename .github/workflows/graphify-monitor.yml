@@ -35,6 +35,9 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
+          cache: npm
+      - name: تثبيت اعتماديات فحص الموقع المقفلة
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: تثبيت Graphify المعزول
         run: |
           python -m venv .cache/graphify-venv
