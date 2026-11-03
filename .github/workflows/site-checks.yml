@@ -33,6 +33,10 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: '24'
+          cache: npm
+
+      - name: تثبيت parser YAML من الإصدارات المقفلة
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: فحص بناء JavaScript
         run: |
