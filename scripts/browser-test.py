@@ -273,10 +273,10 @@ def run(base: str) -> int:
                 };
             }"""
         )
-        check("المعادلة: استلام/محافظات = 9700 سنتًا",
-              zone_pricing["codOther"] == 9700, json.dumps(zone_pricing))
-        check("المعادلة: شام كاش/محافظات = 8770 سنتًا وتوصيل 400",
-              zone_pricing["scOther"] == 8770 and zone_pricing["scDelivery"] == 400,
+        check("المعادلة: استلام/محافظات = 7100 سنتًا",
+              zone_pricing["codOther"] == 7100, json.dumps(zone_pricing))
+        check("المعادلة: شام كاش/محافظات = 6430 سنتًا وتوصيل 400",
+              zone_pricing["scOther"] == 6430 and zone_pricing["scDelivery"] == 400,
               json.dumps(zone_pricing))
 
         # نصوص طرق الدفع يجب أن تعكس المنطقة لا رقمًا ثابتًا (كانت تعرض $2 دائمًا)
