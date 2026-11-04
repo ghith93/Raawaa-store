@@ -61,7 +61,7 @@ def run(base: str, browser_name: str, ignore_https: bool) -> int:
             check('صفحة الهبوط تفتح بنجاح', bool(response and response.status == 200))
             check('عنوان عربي واحد واتجاه RTL', page.locator('h1').count() == 1 and page.evaluate("getComputedStyle(document.body).direction") == 'rtl')
             check('نسخة المحتوى تختار زاوية الأسعار من UTM', page.locator('html').get_attribute('data-campaign-angle') == 'reference_prices' and 'قارني الأحجام' in page.locator('h1').inner_text())
-            check('ثلاثة أسعار تطابق config.js', page.locator('.campaign-product-price').all_inner_texts() == ['$19', '$26', '$29'])
+            check('ثلاثة أسعار تطابق config.js', page.locator('.campaign-product-price').all_inner_texts() == ['$13', '$16', '$25'])
             check('روابط المنتج تحمل وسوم الحملة المسموح بها', all(
                 all(value in (link.get_attribute('href') or '') for value in ['utm_source=facebook','utm_medium=organic','utm_campaign=pilot_14day','utm_content=reference_prices'])
                 for link in page.locator('.campaign-product-card a').all()))
