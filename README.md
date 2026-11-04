@@ -39,6 +39,9 @@ python3 -m http.server 8080 --bind 0.0.0.0
 - [`/campaign`](https://raawaa-store.pages.dev/campaign) — صفحة هبوط للزيارات من حملات المحتوى؛ زوايا UTM مسموحة وأسعارها من `js/config.js`، بلا Pixel أو نشر آلي.
 - [`docs/ORGANIC-TEST-KIT-AR.md`](docs/ORGANIC-TEST-KIT-AR.md) — مسودات منشورات وروابط حملة عضوية؛ غير منشورة.
 - [`docs/organic-test-tracker.csv`](docs/organic-test-tracker.csv) — قالب أعداد مجمعة، بلا بيانات شخصية.
+- [`docs/HAMA-SALES-PLAN-AR.md`](docs/HAMA-SALES-PLAN-AR.md) — خطة البيع الثانية: حماة بسعر ١٢ دولارًا، شبكة بائعات ونقاط بيع وتشغيل بأقل تدخل. الصفحة المنفّذة: [`/hama`](hama.html).
+- [`docs/HAMA-SALES-KIT-AR.md`](docs/HAMA-SALES-KIT-AR.md) — نصوص المنشورات والردود والسكريبتات واتفاق البائعة وإعلان التوظيف.
+- [`docs/HAMA-VISUALS-AR.md`](docs/HAMA-VISUALS-AR.md) — حزمة الصور والفيديوهات التصوّرية لحماة: ما هو مولّد، وقواعد استخدامه، وبرومبتات إعادة التوليد.
 - `PROMPT-WORLD-CLASS-AR.md`, `PROMPT-MARKETING-AR.md`, `LAUNCH-KIT-AR.md` — مواد تاريخية موسومة بأنها متقادمة؛ لا تنشر منها أسعارًا أو أرقامًا دون مراجعة.
 
 ## قواعد النشر والعمل

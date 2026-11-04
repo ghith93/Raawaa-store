@@ -16,7 +16,7 @@ rm -rf "$OUT"
 mkdir -p "$OUT"
 
 # 1) ملفات الجذر التي يطلبها المتصفح
-for f in index.html serum.html campaign.html privacy.html check.html setup.html 404.html manifest.webmanifest sw.js robots.txt sitemap.xml _headers _redirects .nojekyll; do
+for f in index.html serum.html campaign.html hama.html privacy.html check.html setup.html 404.html manifest.webmanifest sw.js robots.txt sitemap.xml _headers _redirects .nojekyll; do
   [ -f "$ROOT/$f" ] && cp "$ROOT/$f" "$OUT/"
 done
 
@@ -29,6 +29,8 @@ done
 rm -rf "$OUT/assets/img/design-raw" "$OUT/assets/img/design-raw-reference.png" 2>/dev/null || true
 # ملفات المصدر الخام للصور لا تُنشر — فقط المشتقات المُحسَّنة
 rm -rf "$OUT/assets/img/source" 2>/dev/null || true
+# موسيقى البناء (تُستخدم لتوليد الفيديو فقط) لا تُنشر
+rm -rf "$OUT/assets/audio" 2>/dev/null || true
 
 # ملاحظة: كانت هنا قائمة أسماء خطوط ثابتة (Almarai/Amiri) تحذف كل ملف لا يطابقها.
 # بعد استبدال الخط بـ IBM Plex صارت تحذف **كل الخطوط الجديدة** — وهو سبب اختفاء

@@ -37,7 +37,7 @@ function ok(msg) { pass++; if (!QUIET) console.log(`  ✓ ${msg}`); }
 function fail(msg, detail) { failures.push(detail ? `${msg} — ${detail}` : msg); console.log(`  ✗ ${msg}${detail ? ` — ${detail}` : ''}`); }
 function note(msg) { notes.push(msg); if (!QUIET) console.log(`  · ${msg}`); }
 
-const PAGES = ['index.html', 'serum.html', 'campaign.html', 'privacy.html', '404.html', 'check.html', 'setup.html'];
+const PAGES = ['index.html', 'serum.html', 'campaign.html', 'hama.html', 'privacy.html', '404.html', 'check.html', 'setup.html'];
 const SCRIPTS = ['js/config.js', 'js/cart.js', 'js/marketing.js', 'js/campaign.js', 'js/serum-views.js', 'js/pwa-install.js'];
 const STYLES = ['css/styles.css', 'css/serum.css', 'css/campaign.css'];
 const EXTERNAL = /^(?:[a-z]+:|\/\/|#|data:|mailto:|tel:)/i;
@@ -98,7 +98,7 @@ console.log('\n▸ عامل الخدمة');
   if (!entries.length) fail('قائمة CORE غير قابلة للقراءة');
   // '' هي الجذر، و'serum' مسار يُقدَّم من serum.html عبر توجيه Cloudflare
   // (html_handling: auto-trailing-slash) — ليست ملفًا على القرص، فلا تُعد مفقودة.
-  const routeEntries = new Set(['', 'serum', 'campaign', 'privacy']);
+  const routeEntries = new Set(['', 'serum', 'campaign', 'hama', 'privacy']);
   const broken = entries.filter((e) => e && !routeEntries.has(e) && !exists(e));
   if (broken.length) broken.forEach((b) => fail(`CORE يشير إلى ملف مفقود: ${b}`));
   else ok(`${entries.length} أصلًا في CORE كلها موجودة`);
