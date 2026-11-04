@@ -1,0 +1,97 @@
+# الصور والفيديوهات — حزمة حماة (تصوّر تصميمي)
+
+> **ما هذه الملفات؟** صور ومقاطع **مولّدة بالذكاء الاصطناعي** اعتمادًا على تصاميم عبوات رواء الموجودة في المتجر، لأن كاميرا المالك غير متوفرة.
+> **ما ليست؟** ليست صورة للمنتج النهائي، ولا للمخزون الفعلي، ولا نتيجة استخدام. لا تُنشر أبدًا بصيغة «هذه صور المنتج الحقيقي» أو «نتائج حقيقية».
+
+---
+
+## ١) ما الذي بُني
+
+| الملف | المقاس | الاستخدام |
+|---|---|---|
+| `card-50-hero.jpg` | 1080×1350 | منشور البطل ٥٠ مل — «الحجم الأنسب للاستخدام المنتظم» |
+| `card-30-entry.jpg` | 1080×1350 | منشور الدخول ٣٠ مل بـ12$ |
+| `card-compare.jpg` | 1080×1350 | بطاقة المقارنة ٣٠/٥٠ — أقوى مادة بيع |
+| `card-payment.jpg` | 1080×1350 | بطاقة شام كاش (رمز + اسم + خطوات) |
+| `card-reel-cover.jpg` | 1080×1350 | غلاف الريل |
+| `hero-50.jpg` · `hero-30.jpg` | 4:5 | مشهدان للعبوتين على حجر ترافرتين |
+| `duo-sizes.jpg` | 4:5 | العبوتان جنبًا إلى جنب |
+| `lifestyle-hands.jpg` | 4:5 | يد تمسك العبوة وشعر لامع — بلا وجه |
+| `hama-window.jpg` | 4:5 | نافذة حماة والناعورة في الخلفية |
+| `salon-shelf.jpg` | 4:5 | رفّ صالون — مادة B2B |
+| `story-bg.jpg` | 9:16 | خلفية ستوري بمساحة نص |
+| `reel-50ml.mp4` | 1080×1920 · 14 ث | «الفرق ٦ دولارات» — أربعة مشاهد بلا صوت |
+| `reel-hama.mp4` | 1080×1920 · 14 ث | «من حماة… لحماة» — توصيل ودفع عند الاستلام |
+| `payment/sham-cash-qr.png` | 620×620 | رمز شام كاش مقصوص من صورة المالك |
+
+الملفات في `assets/img/hama/`، والبناء في `scripts/hama-assets.py` (بطاقات + فيديو).
+
+---
+
+## ٢) لماذا مقبول أن تكون مولّدة؟
+
+المالك أقرّ سابقًا أن **الصور التصميمية مقبولة**، وأن الصورة الحقيقية ليست شرطًا للتطوير. المولّد هنا لا يخلق ادعاءً: لا «قبل/بعد»، لا شعر لامع منسوب للسيروم، لا شهادة، لا أثر استخدام. يوضّح **شكل العبوة وتجربة العلامة**، وهذا كل شيء.
+
+**الخط الفاصل:** الصورة تستطيع أن تقول «هكذا تبدو العبوة في اليد». لا تستطيع أن تقول «هكذا سيصبح شعرك». الثانية ممنوعة حتى لو كانت الصورة جميلة.
+
+---
+
+## ٣) قواعد النشر
+
+1. **لا تسمية خاطئة:** إن سُئلت، الجواب: «تصوّر تصميمي للعبوة». لا تكتب «صورة حقيقية».
+2. **لا شهادة ولا «قبل/بعد»** مولّدة أو مركّبة، ولو للتجربة.
+3. **لا مكوّن أو نسبة** تظهر على الملصق في الصورة تُعتبر تصريحًا رسميًا؛ النسب ما زالت غير محسّمة في `js/config.js` (`formula.status`).
+4. **لا مقارنة بعلامة أخرى** بالاسم في صورة أو نص.
+5. **الصوت:** الريلولات بلا صوت. أضيفي الموسيقى من داخل إنستغرام/فيسبوك (مكتبتهما المرخّصة)، لا من ملف خارجي.
+6. **العمر:** لا وجوه نساء في المشاهد الحالية. إذا أضفتِ وجهًا مولّدًا، لا تنسبيه لزبونة.
+
+---
+
+## ٤) ما ينقص هذه الحزمة (بصراحة)
+
+- **الملصق في الصور المولّدة تقريبي.** الكلمات العربية على الملصق قد تظهر مشوّهة عند التقريب. لذلك: الصور القريبة من الملصق تُؤخذ من `assets/img/products/detail-label-*` الأصلية، لا من المولّد.
+- **لا صورة للمنتج الحقيقي في اليد.** أول صورة حقيقية (هاتف مستعار، إضاءة نافذة) ترفع الثقة أكثر من عشر صور مولّدة. الهدف: ٣ لقطات فقط — العبوة في اليد، الملصق عن قرب، العبوة على رفّ الحمّام.
+- **لا فيديو لحركة حقيقية.** الريل الحالي حركة كاميرا على صورة ثابتة (Ken Burns)، وهذا واضح لمن يتابع. مقبول كبداية، لا كبديل دائم.
+- **`100 ml` غير ممثّل بصورة.** إن كان متوفرًا فعلًا، يحتاج مشهدًا خاصًا.
+
+---
+
+## ٥) برومبتات إعادة التوليد
+
+استُخدمت صورة العبوة الأصلية كمرجع في كل مرة (`size-50-v6-720.jpg` أو `size-30-v6-720.jpg`) للحفاظ على الزجاج الكهرماني والغطاء الذهبي والملصق الكريمي.
+
+**٥٠ مل — مشهد رئيسي**
+> Amber glass dropper bottle, gold-black cap, cream RAWAA label, on warm travertine in a sunlit minimalist Middle Eastern bathroom, soft morning light, olive branch, editorial 85mm, warm amber and sand palette, empty space above, vertical 4:5.
+
+**٣٠ مل — مشهد الدخول**
+> Same bottle in the smaller 30 ml size, cream label reading "30 mL", travertine ledge, beige plaster, soft directional light, vertical 4:5.
+
+**الاثنان معًا**
+> Two identical amber bottles side by side, left one clearly smaller (30 ml), right one taller (50 ml), linen cloth and dried olive branch, travertine slab, generous empty space at top, vertical 4:5.
+
+**يد وشعر**
+> Woman's hands holding the bottle at arm's length, silky glossy dark brown hair in the foreground, beige linen sleeve, blurred warm bathroom, no face, no mirror, editorial beauty, vertical 4:5.
+
+**حماة**
+> Bottle on a weathered stone window sill of an old Hama house, golden hour, blurred Orontes river and wooden noria in the bokeh, jasmine sprig, cinematic, vertical 4:5.
+
+**صالون**
+> Bottle on an oak shelf under a round mirror with warm bulbs, blurred salon chair and plants, beige and terracotta, no people, vertical 4:5.
+
+**ستوري**
+> Low-angle bottle on stone, large soft shadow on beige plaster, upper 60% clean empty wall for text, vertical 9:16.
+
+---
+
+## ٦) إعادة البناء
+
+```bash
+python3 scripts/hama-assets.py cards   # البطاقات الخمس
+python3 scripts/hama-assets.py video   # الريلان
+```
+
+**المتطلبات:** `pillow` · `arabic-reshaper` · `python-bidi` · `imageio-ffmpeg` · خط IBM Plex Sans Arabic (موجود في `assets/fonts/` بترخيص OFL).
+
+**لماذا Plex وليس أي خط؟** جرّبنا Tajawal وCairo وAlmarai: أشكال الحروف العربية المنفصلة تُرسم غير متصلة بلا `libraqm`. Plex يعرض الأشكال العربية المتصلة صحيحًا، وهو خط الموقع أصلًا.
+
+**ملاحظة تقنية:** النص العربي يُشكَّل بـ`arabic-reshaper` + `python-bidi`، والأرقام والأسعار تُرسم منفصلة (لاتينية) لتجنّب انقلاب الاتجاه. رقم هاتف واحد في كل مادة، لا أكثر.
