@@ -114,7 +114,7 @@ python3 scripts/hama-assets.py cards   # البطاقات الخمس
 python3 scripts/hama-assets.py video   # الريلان
 ```
 
-**المتطلبات:** `pillow` · `arabic-reshaper` · `python-bidi` · `imageio-ffmpeg` · خط IBM Plex Sans Arabic (موجود في `assets/fonts/` بترخيص OFL).
+**المتطلبات:** `pillow` · `arabic-reshaper` · `python-bidi` · `imageio-ffmpeg` · خط IBM Plex Sans Arabic (نسخ TTF للبناء في `scripts/fonts/` بترخيص OFL، والموقع يستخدم نسخ woff2 في `assets/fonts/`).
 
 **لماذا Plex وليس أي خط؟** جرّبنا Tajawal وCairo وAlmarai: أشكال الحروف العربية المنفصلة تُرسم غير متصلة بلا `libraqm`. Plex يعرض الأشكال العربية المتصلة صحيحًا، وهو خط الموقع أصلًا.
 

@@ -22,7 +22,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "assets/img/hama"
-FONTS = ROOT / "assets/fonts"
+FONTS = ROOT / "scripts/fonts"
 
 MUSIC = ROOT / "assets/audio/hama-theme.m4a"
 BOLD = FONTS / "IBMPlexSansArabic-Bold.ttf"
