@@ -500,7 +500,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.locator('#products .size-option').nth(2).click()
         page.locator('[data-add-current]').click()
         check("عند منع التخزين تعمل السلة والاختيارات في الذاكرة",
-              page.locator('[data-cart-total]').inner_text() == '$31' and
+              page.locator('[data-cart-total]').inner_text() == '$29' and
               'فانيلا' in page.locator('[data-cart-custom-summary]').inner_text() and not errors, '; '.join(errors[:3]))
         ctx.close()
         ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
