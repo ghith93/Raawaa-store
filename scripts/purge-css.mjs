@@ -28,7 +28,7 @@ const css = fs.readFileSync(cssPath, 'utf8');
 
 /** كل المصادر التي قد تذكر اسم فصل — أي إغفال هنا يعني حذف تنسيق حيّ. */
 const SOURCE_FILES = [
-  'index.html', 'serum.html', 'privacy.html', '404.html', 'check.html', 'setup.html',
+  'index.html', 'serum.html', 'campaign.html', 'hama.html', 'privacy.html', '404.html', 'check.html', 'setup.html',
   'owner/index.html', 'owner/app.mjs', 'owner/owner-client.mjs',
   'js/cart.js', 'js/config.js', 'js/marketing.js', 'js/serum-views.js'
 ];

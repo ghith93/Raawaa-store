@@ -40,6 +40,9 @@
   .hama-price span { color: var(--ink-soft); }
   .hama-actions { display: flex; flex-wrap: wrap; gap: 0.7rem; }
   .hama-hero img { width: 100%; height: auto; border-radius: 18px; display: block; }
+  .hama-qr { margin: 1.1rem 0 0; }
+  .hama-qr img { width: 100%; max-width: 230px; height: auto; border-radius: 14px; background: #fff; padding: 8px; display: block; }
+  .hama-qr figcaption { font-size: 0.82rem; color: var(--ink-soft); margin-top: 0.45rem; }
   .hama-note { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.9rem; }
   .sizes { display: grid; gap: 1rem; grid-template-columns: 1fr; }
   @media (min-width: 760px) { .sizes { grid-template-columns: repeat(3, 1fr); } }
@@ -192,7 +195,7 @@
         </figure>
         <figure>
           <video controls preload="none" playsinline width="1080" height="1920"
-                 poster="assets/img/hama/hama-window.jpg" aria-label="ريل: من حماة لحماة — ١٥ ثانية">
+                 poster="assets/img/hama/outro.jpg" aria-label="ريل: من حماة لحماة — ١٥ ثانية">
             <source src="assets/img/hama/reel-hama.mp4" type="video/mp4">
             متصفحك لا يعرض الفيديو. <a href="assets/img/hama/reel-hama.mp4">حمّليه هنا</a>.
           </video>
@@ -216,7 +219,7 @@
         <img src="assets/img/hama/hama-window.jpg" width="928" height="1152" loading="lazy" alt="تصوّر تصميمي: عبوة رواء على نافذة بيت حموي قديم والناعورة في الخلفية">
         <img src="assets/img/hama/lifestyle-hands.jpg" width="928" height="1152" loading="lazy" alt="تصوّر تصميمي: يد تمسك عبوة رواء وشعر لامع">
         <img src="assets/img/hama/salon-shelf.jpg" width="928" height="1152" loading="lazy" alt="تصوّر تصميمي: عبوة رواء على رفّ صالون">
-        <img src="assets/img/hama/card-payment.jpg" width="1080" height="1350" loading="lazy" alt="بطاقة الدفع عبر شام كاش">
+        <img src="assets/img/hama/story-bg.jpg" width="768" height="1376" loading="lazy" alt="تصوّر تصميمي: عبوة رواء ٥٠ مل على حجر حموي قديم وضوء العصر">
       </div>
     </div>
   </section>
@@ -233,6 +236,11 @@
           <li>حوّلي ١١$ للـ٣٠ مل أو ١٨$ للـ٥٠ مل (الدفع المسبق اختياري).</li>
           <li>أرسلي صورة الإشعار مع الاسم والعنوان.</li>
         </ol>
+        <figure class="hama-qr">
+          <img src="assets/img/hama/payment/sham-cash-qr.png" width="620" height="620" loading="lazy"
+               alt="رمز QR لمحفظة شام كاش باسم غيث هيثم الشيخ خالد">
+          <figcaption>امسحي الرمز من تطبيق شام كاش — باسم غيث هيثم الشيخ خالد</figcaption>
+        </figure>
         <p class="hama-note">التحويل وحده لا يؤكد الطلب قبل ردّنا عليك بالتوفّر ووقت التوصيل.</p>
       </div>
     </div>
