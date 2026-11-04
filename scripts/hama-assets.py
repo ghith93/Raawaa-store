@@ -24,6 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "assets/img/hama"
 FONTS = ROOT / "assets/fonts"
 
+MUSIC = ROOT / "assets/audio/hama-theme.m4a"
 BOLD = FONTS / "IBMPlexSansArabic-Bold.ttf"
 SEMI = FONTS / "IBMPlexSansArabic-SemiBold.ttf"
 REG = FONTS / "IBMPlexSansArabic-Regular.ttf"
@@ -108,10 +109,16 @@ def logo(im, xy=(76, 64), color=INK, small=False):
     d.line((xy[0], xy[1] + 94, xy[0] + 92, xy[1] + 94), fill=color + (110,), width=2)
 
 
-def save(im: Image.Image, name: str, quality=92):
+def save(im: Image.Image, name: str, quality=90, max_kb=122):
     p = OUT / name
-    im.convert("RGB").save(p, "JPEG", quality=quality, optimize=True, progressive=True)
-    print("✓", p.relative_to(ROOT), im.size)
+    rgb = im.convert("RGB")
+    q = quality
+    while q >= 62:
+        rgb.save(p, "JPEG", quality=q, optimize=True, progressive=True)
+        if p.stat().st_size <= max_kb * 1024:
+            break
+        q -= 4
+    print("✓", p.relative_to(ROOT), im.size, p.stat().st_size // 1024, "KB")
 
 
 def card_50():
@@ -206,6 +213,31 @@ def card_payment():
     save(im, "card-payment.jpg")
 
 
+def outro_card():
+    w, h = 1080, 1920
+    im = Image.new("RGB", (w, h), CREAM)
+    d = ImageDraw.Draw(im)
+    for y in range(h):
+        t = y / h
+        d.line([(0, y), (w, y)], fill=(int(246 - 10 * t), int(238 - 12 * t), int(224 - 16 * t)))
+    d.rectangle((0, 0, w, 14), fill=INK)
+    d.text((w / 2, 560), "RAWAA", font=font(SERIF, 96), fill=INK, anchor="mm")
+    d.text((w / 2, 660), ar("رواء"), font=font(SEMI, 46), fill=INK, anchor="mm")
+    d.line((w / 2 - 90, 720, w / 2 + 90, 720), fill=(190, 168, 132), width=2)
+    write(d, (w / 2, 820), "سيروم للشعر", font(SEMI, 44), GOLD)
+    rows = [("30 مل", "12$"), ("50 مل", "18$"), ("100 مل", "24$")]
+    for i, (label, price) in enumerate(rows):
+        y = 890 + i * 66
+        write(d, (690, y), label, font(SEMI, 36), INK, anchor="rm")
+        latin(d, (450, y), price, font(BOLD, 42), GOLD, anchor="lm")
+    write(d, (w / 2, 1110), "توصيل داخل حماة · دفع عند الاستلام", font(REG, 34), MUTED)
+    latin(d, (w / 2, 1240), "0997310856", font(BOLD, 62), INK)
+    write(d, (w / 2, 1340), "raawaa-store.pages.dev/hama", font(REG, 28), (120, 96, 70))
+    p = OUT / "outro.jpg"
+    im.save(p, "JPEG", quality=88, optimize=True, progressive=True)
+    print("✓", p.relative_to(ROOT))
+
+
 def caption(w, text, sub=None, price=None):
     lines = text.count("\n") + 1
     height = 300 + (60 if sub else 0) + (90 if price else 0)
@@ -223,7 +255,7 @@ def caption(w, text, sub=None, price=None):
     return img
 
 
-def build_video(scenes, out_name, fps=30):
+def build_video(scenes, out_name, fps=30, music=None):
     ffmpeg = __import__("imageio_ffmpeg").get_ffmpeg_exe()
     w, h = 1080, 1920
     out = OUT / out_name
@@ -254,37 +286,49 @@ def build_video(scenes, out_name, fps=30):
                 if fade < 1:
                     c.putalpha(c.getchannel("A").point(lambda v: int(v * fade)))
                 frame.alpha_composite(c, (0, h - cap.height - 210))
-            d = ImageDraw.Draw(frame)
-            d.text((w / 2, 96), "RAWAA", font=font(SERIF, 36), fill=(255, 252, 246, 228), anchor="mm")
-            d.text((w / 2, 142), ar("رواء"), font=font(SEMI, 22), fill=(255, 252, 246, 190), anchor="mm")
-            d.text((w / 2, h - 92), "0997310856", font=font(BOLD, 38), fill=(255, 252, 246, 220), anchor="mm")
+            if sc.get("chrome", True):
+                d = ImageDraw.Draw(frame)
+                d.text((w / 2, 96), "RAWAA", font=font(SERIF, 36), fill=(255, 252, 246, 228), anchor="mm")
+                d.text((w / 2, 142), ar("رواء"), font=font(SEMI, 22), fill=(255, 252, 246, 190), anchor="mm")
+                d.text((w / 2, h - 92), "0997310856", font=font(BOLD, 38), fill=(255, 252, 246, 220), anchor="mm")
             proc.stdin.write(frame.convert("RGB").tobytes())
     proc.stdin.close()
     proc.wait()
+
+    if music and music.exists():
+        muxed = out.with_name(out.stem + "-mux.mp4")
+        subprocess.run(
+            [ffmpeg, "-y", "-i", str(out), "-i", str(music), "-c:v", "copy",
+             "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(muxed)],
+            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        )
+        muxed.replace(out)
     print("✓", out.relative_to(ROOT), out.stat().st_size // 1024, "KB")
 
 
 def video_50():
     build_video(
         [
-            {"img": OUT / "hero-30.jpg", "dur": 3.2, "text": "30 مل… بتخلص بسرعة", "price": "12$", "focus": 0.55},
-            {"img": OUT / "duo-sizes.jpg", "dur": 3.8, "text": "50 مل — تقريبًا ضعف الكمية", "price": "18$", "focus": 0.62},
-            {"img": OUT / "lifestyle-hands.jpg", "dur": 3.4, "text": "فرق ٦ دولارات فقط", "sub": "ونفس التركيبة", "focus": 0.45},
-            {"img": OUT / "hero-50.jpg", "dur": 3.6, "text": "اطلبيها على واتساب", "sub": "توصيل حماة · دفع عند الاستلام", "focus": 0.55},
+            {"img": OUT / "hero-30.jpg", "dur": 3.0, "text": "30 مل… بتخلص بسرعة", "price": "12$", "focus": 0.55},
+            {"img": OUT / "duo-sizes.jpg", "dur": 3.4, "text": "50 مل — تقريبًا ضعف الكمية", "price": "18$", "focus": 0.62},
+            {"img": OUT / "lifestyle-hands.jpg", "dur": 3.2, "text": "فرق ٦ دولارات فقط", "sub": "ونفس التركيبة", "focus": 0.45},
+            {"img": OUT / "hero-50.jpg", "dur": 3.2, "text": "اطلبيها على واتساب", "sub": "توصيل حماة · دفع عند الاستلام", "focus": 0.55},
+            {"img": OUT / "outro.jpg", "dur": 2.2, "chrome": False},
         ],
-        "reel-50ml.mp4",
+        "reel-50ml.mp4", music=MUSIC,
     )
 
 
 def video_hama():
     build_video(
         [
-            {"img": OUT / "hama-window.jpg", "dur": 3.4, "text": "من حماة… لحماة", "focus": 0.5},
-            {"img": OUT / "hero-50.jpg", "dur": 3.4, "text": "سيروم للشعر", "sub": "30 مل 12$ · 50 مل 18$", "focus": 0.5},
-            {"img": OUT / "salon-shelf.jpg", "dur": 3.4, "text": "توصيل داخل المدينة", "focus": 0.6},
-            {"img": OUT / "lifestyle-hands.jpg", "dur": 3.6, "text": "بتفتحي قبل ما تدفعي", "sub": "توصيل حماة · دفع عند الاستلام", "focus": 0.45},
+            {"img": OUT / "hama-window.jpg", "dur": 3.2, "text": "من حماة… لحماة", "focus": 0.5},
+            {"img": OUT / "hero-50.jpg", "dur": 3.2, "text": "سيروم للشعر", "sub": "30 مل 12$ · 50 مل 18$", "focus": 0.5},
+            {"img": OUT / "salon-shelf.jpg", "dur": 3.0, "text": "توصيل داخل المدينة", "focus": 0.6},
+            {"img": OUT / "lifestyle-hands.jpg", "dur": 3.2, "text": "بتفتحي قبل ما تدفعي", "sub": "توصيل حماة · دفع عند الاستلام", "focus": 0.45},
+            {"img": OUT / "outro.jpg", "dur": 2.4, "chrome": False},
         ],
-        "reel-hama.mp4",
+        "reel-hama.mp4", music=MUSIC,
     )
 
 
@@ -296,6 +340,7 @@ if __name__ == "__main__":
         card_compare()
         card_reel_cover()
         card_payment()
+        outro_card()
     elif what == "video":
         video_50()
         video_hama()

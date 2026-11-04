@@ -14,7 +14,7 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'v1793498248';
+const CACHE_VERSION = 'v1793753129';
 // استبدال الذاكرة القديمة يمسح مفاتيحها التي ربما احتوت استعلامات روابط.
 const RUNTIME = 'rawaa-runtime-v7';
 
@@ -24,6 +24,7 @@ const CORE = [
   './',
   './serum',
   './campaign',
+  './hama',
   // Pages canonicalizes .html paths; cache the clean privacy route so offline aliases resolve.
   './privacy',
   './404.html',
