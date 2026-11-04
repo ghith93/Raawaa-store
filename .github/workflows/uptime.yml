@@ -157,6 +157,12 @@ jobs:
           BASE: https://raawaa-store.pages.dev/serum
           PERF_REPORT: BENCHMARKS-serum.json
         run: node scripts/perf-budget.mjs
+      - name: ميزانية صفحة حماة (وسيط 3 قراءات)
+        if: ${{ !cancelled() }}
+        env:
+          BASE: https://raawaa-store.pages.dev/hama
+          PERF_REPORT: BENCHMARKS-hama.json
+        run: node scripts/perf-budget.mjs
       - name: حفظ قراءات الأداء حتى عند الإخفاق
         if: always()
         uses: actions/upload-artifact@v7
@@ -165,4 +171,5 @@ jobs:
           path: |
             BENCHMARKS-lighthouse-latest.json
             BENCHMARKS-serum.json
+            BENCHMARKS-hama.json
           if-no-files-found: warn
