@@ -33,7 +33,7 @@ test('video payment examples recalculate from the store config', () => {
     product.price + hama.fee,
     product.price + other.fee
   ];
-  assert.deepEqual(totals.map(value => Math.round(value * 100) / 100), [23.4, 27.4, 28, 30],
+  assert.deepEqual(totals.map(value => Math.round(value * 100) / 100), [14.4, 18.4, 18, 20],
     'raw calculation still matches the configured price, discount, and delivery fees');
   const displayedTotals = totals.map(value => {
     const fixed = value.toFixed(2);

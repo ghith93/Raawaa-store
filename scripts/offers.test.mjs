@@ -15,7 +15,7 @@ vm.createContext(sandbox);
 vm.runInContext(source, sandbox);
 const Offers = sandbox.window.RawaaOffers;
 
-// الأسعار المعتمدة 19 / 26 / 29 → بالسنتات كما يبنيها cart.js
+// أسعار اختبار ثابتة (لا تقرأ config.js) — كما يبنيها cart.js بالسنتات
 const PRICES = { 'serum-30': 1900, 'serum-50': 2600, 'serum-100': 2900 };
 const DAY = '2026-10-30';
 

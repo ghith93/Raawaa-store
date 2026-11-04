@@ -115,9 +115,9 @@ function checkConfig(config, source) {
   group('الإعدادات والأسعار');
 
   const expected = [
-    { id: 'serum-30', sizeMl: 30, price: 19 },
-    { id: 'serum-50', sizeMl: 50, price: 26 },
-    { id: 'serum-100', sizeMl: 100, price: 29 }
+    { id: 'serum-30', sizeMl: 30, price: 13 },
+    { id: 'serum-50', sizeMl: 50, price: 16 },
+    { id: 'serum-100', sizeMl: 100, price: 25 }
   ];
 
   const familyImages = [config.imagery.hero, config.imagery.trio];
@@ -546,11 +546,11 @@ async function checkCartLogic() {
   const price = (id) => config.products.find((p) => p.id === id).price;
 
   const cases = [
-    { cart: { 'serum-30': 1 }, expected: 19 },
-    { cart: { 'serum-50': 2 }, expected: 52 },
-    { cart: { 'serum-100': 3 }, expected: 87 },
-    { cart: { 'serum-30': 2, 'serum-50': 1 }, expected: 64 },
-    { cart: { 'serum-30': 1, 'serum-50': 1, 'serum-100': 1 }, expected: 74 }
+    { cart: { 'serum-30': 1 }, expected: 13 },
+    { cart: { 'serum-50': 2 }, expected: 32 },
+    { cart: { 'serum-100': 3 }, expected: 75 },
+    { cart: { 'serum-30': 2, 'serum-50': 1 }, expected: 42 },
+    { cart: { 'serum-30': 1, 'serum-50': 1, 'serum-100': 1 }, expected: 54 }
   ];
 
   for (const c of cases) {

@@ -8,7 +8,7 @@ const source = await readFile(new URL('../js/config.js', import.meta.url), 'utf8
 test('reads size and price as a pair, phone and both delivery zones', () => {
   const result = extractOrderConfig(source);
   assert.deepEqual(result.products.map(p => [p.id, p.size, p.price]), [
-    ['serum-100', 100, 29], ['serum-30', 30, 19], ['serum-50', 50, 26]
+    ['serum-100', 100, 25], ['serum-30', 30, 13], ['serum-50', 50, 16]
   ]);
   assert.deepEqual(result.zones.map(z => [z.id, z.fee, z.freeWithShamCash]), [
     ['hama', 2, true], ['other', 4, false]
@@ -22,7 +22,7 @@ test('reads size and price as a pair, phone and both delivery zones', () => {
 });
 
 test('detects swapped prices even though all three prices still appear', () => {
-  const changed = source.replace('price: 19,', 'price: TEMP,').replace('price: 26,', 'price: 19,').replace('price: TEMP,', 'price: 26,');
+  const changed = source.replace('price: 13,', 'price: TEMP,').replace('price: 16,', 'price: 13,').replace('price: TEMP,', 'price: 16,');
   assert.notDeepEqual(extractOrderConfig(changed).products, extractOrderConfig(source).products);
 });
 

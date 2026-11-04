@@ -130,7 +130,7 @@ def card_50():
     d.text((w - 92, 96), ar("سيروم للشعر"), font=font(REG, 30), fill=MUTED, anchor="ra")
     write(d, (w / 2, 200), "50 مل", font(BOLD, 94), INK)
     write(d, (w / 2, 292), "الحجم الأنسب للاستخدام المنتظم", font(SEMI, 30), GOLD)
-    pill(d, w / 2, 362, "18$", font(BOLD, 56), pad_x=48, pad_y=16)
+    pill(d, w / 2, 362, "16$", font(BOLD, 56), pad_x=48, pad_y=16)
     write(d, (w / 2, 436), "توصيل داخل حماة · دفع عند الاستلام", font(REG, 22), MUTED)
     save(im, "card-50-hero.jpg")
 
@@ -143,7 +143,7 @@ def card_30():
     logo(im, (92, 74))
     d.text((w - 92, 96), ar("ابدئي صغيرًا"), font=font(REG, 30), fill=MUTED, anchor="ra")
     write(d, (w / 2, 190), "30 مل", font(BOLD, 86), INK)
-    pill(d, w / 2, 272, "12$", font(BOLD, 54), pad_x=44, pad_y=14)
+    pill(d, w / 2, 272, "13$", font(BOLD, 54), pad_x=44, pad_y=14)
     write(d, (w / 2, 360), "عبوة تجريبية تعرفين فيها\nإن كان يناسب شعرك", font(REG, 24), MUTED, spacing=1.35)
     write(d, (w / 2, 440), "توصيل حماة · دفع عند الاستلام", font(REG, 21), MUTED)
     save(im, "card-30-entry.jpg")
@@ -156,9 +156,9 @@ def card_compare():
     panel(d, (0, 0, w, 815), radius=0, fill=(246, 238, 224, 244))
     logo(im, (76, 54))
     write(d, (w / 2, 250), "ليش 50 مل؟", font(BOLD, 84), INK)
-    write(d, (w / 2, 335), "فرق ٦ دولارات… وكمية تقريبًا الضعف", font(REG, 36), MUTED)
+    write(d, (w / 2, 335), "فرق ٣ دولارات… وكمية تقريبًا الضعف", font(REG, 36), MUTED)
 
-    for cx, size, price, life, hero in ((292, "30 مل", "12$", "٤–٦ أسابيع", False), (788, "50 مل", "18$", "٨–١٠ أسابيع", True)):
+    for cx, size, price, life, hero in ((292, "30 مل", "13$", "٤–٦ أسابيع", False), (788, "50 مل", "16$", "٨–١٠ أسابيع", True)):
         box = (cx - 232, 405, cx + 232, 690)
         d.rounded_rectangle(box, radius=26, fill=(255, 252, 246, 255), outline=GOLD if hero else (216, 202, 180), width=3 if hero else 2)
         if hero:
@@ -181,7 +181,7 @@ def card_reel_cover():
     d = ImageDraw.Draw(im, "RGBA")
     logo(im, (76, 60), WHITE)
     write(d, (76, 1000), "الفرق\nبتحسّيه من أول مرة.", font(BOLD, 86), WHITE, anchor="la", shadow=(0, 0, 0, 90))
-    write(d, (76, 1210), "50 مل — 18$ · توصيل حماة", font(SEMI, 38), CREAM, anchor="la")
+    write(d, (76, 1210), "50 مل — 16$ · توصيل حماة", font(SEMI, 38), CREAM, anchor="la")
     save(im, "card-reel-cover.jpg")
 
 
@@ -225,7 +225,7 @@ def outro_card():
     d.text((w / 2, 660), ar("رواء"), font=font(SEMI, 46), fill=INK, anchor="mm")
     d.line((w / 2 - 90, 720, w / 2 + 90, 720), fill=(190, 168, 132), width=2)
     write(d, (w / 2, 820), "سيروم للشعر", font(SEMI, 44), GOLD)
-    rows = [("30 مل", "12$"), ("50 مل", "18$"), ("100 مل", "24$")]
+    rows = [("30 مل", "13$"), ("50 مل", "16$"), ("100 مل", "25$")]
     for i, (label, price) in enumerate(rows):
         y = 890 + i * 66
         write(d, (690, y), label, font(SEMI, 36), INK, anchor="rm")
@@ -309,9 +309,9 @@ def build_video(scenes, out_name, fps=30, music=None):
 def video_50():
     build_video(
         [
-            {"img": OUT / "hero-30.jpg", "dur": 3.0, "text": "30 مل… بتخلص بسرعة", "price": "12$", "focus": 0.55},
-            {"img": OUT / "duo-sizes.jpg", "dur": 3.4, "text": "50 مل — تقريبًا ضعف الكمية", "price": "18$", "focus": 0.62},
-            {"img": OUT / "lifestyle-hands.jpg", "dur": 3.2, "text": "فرق ٦ دولارات فقط", "sub": "ونفس التركيبة", "focus": 0.45},
+            {"img": OUT / "hero-30.jpg", "dur": 3.0, "text": "30 مل… بتخلص بسرعة", "price": "13$", "focus": 0.55},
+            {"img": OUT / "duo-sizes.jpg", "dur": 3.4, "text": "50 مل — تقريبًا ضعف الكمية", "price": "16$", "focus": 0.62},
+            {"img": OUT / "lifestyle-hands.jpg", "dur": 3.2, "text": "فرق ٣ دولارات فقط", "sub": "ونفس التركيبة", "focus": 0.45},
             {"img": OUT / "hero-50.jpg", "dur": 3.2, "text": "اطلبيها على واتساب", "sub": "توصيل حماة · دفع عند الاستلام", "focus": 0.55},
             {"img": OUT / "outro.jpg", "dur": 2.2, "chrome": False},
         ],
@@ -323,7 +323,7 @@ def video_hama():
     build_video(
         [
             {"img": OUT / "hama-window.jpg", "dur": 3.2, "text": "من حماة… لحماة", "focus": 0.5},
-            {"img": OUT / "hero-50.jpg", "dur": 3.2, "text": "سيروم للشعر", "sub": "30 مل 12$ · 50 مل 18$", "focus": 0.5},
+            {"img": OUT / "hero-50.jpg", "dur": 3.2, "text": "سيروم للشعر", "sub": "30 مل 13$ · 50 مل 16$", "focus": 0.5},
             {"img": OUT / "salon-shelf.jpg", "dur": 3.0, "text": "توصيل داخل المدينة", "focus": 0.6},
             {"img": OUT / "lifestyle-hands.jpg", "dur": 3.2, "text": "بتفتحي قبل ما تدفعي", "sub": "توصيل حماة · دفع عند الاستلام", "focus": 0.45},
             {"img": OUT / "outro.jpg", "dur": 2.4, "chrome": False},
