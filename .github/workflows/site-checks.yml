@@ -63,6 +63,9 @@ jobs:
       - name: اختبار تجميع ميزانية Lighthouse المتسامح مع الضجيج
         run: node --test scripts/perf-budget.test.mjs
 
+      - name: اختبار عدّة التشغيل (رسائل ما بعد الطلب والأسعار)
+        run: node --test scripts/ops-kit.test.mjs
+
       - name: اختبار محرك الطلبات قيد التطوير
         run: node --test order-system/*.test.mjs
 
