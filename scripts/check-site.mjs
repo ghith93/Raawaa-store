@@ -999,6 +999,24 @@ async function checkMarketingConsistency() {
  * 14) PWA: مانيفست + عامل خدمة + أيقونات.
  * أيقونات iOS و Android هي ما يجعل الموقع «تطبيقًا» على شاشة الآيفون.
  */
+async function checkLuxuryLanding() {
+  group('صفحة الهوية الفاخرة');
+  const page = await read('luxury.html');
+  const build = await read('scripts/build-deploy.sh');
+  const sw = await read('sw.js');
+  if (/for f in [^\n]*\bluxury\.html\b/.test(build)) pass('luxury.html مدرجة في حزمة Cloudflare'); else fail('luxury.html غير مدرجة في حزمة النشر');
+  if (page.includes('assets/brand/logo-primary-v2.svg')) pass('الشعار الرسمي مستخدم في الصفحة الفاخرة'); else fail('الشعار الرسمي غير مربوط بالصفحة الفاخرة');
+  for (const asset of ['assets/img/products/editorial-v5-720.jpg','assets/img/products/trio-v6-1080.jpg','assets/img/products/size-100-v6-720.jpg']) {
+    if (await exists(asset) && page.includes(asset)) pass('صورة الصفحة موجودة: ' + asset); else fail('صورة الصفحة مفقودة أو غير مرتبطة: ' + asset);
+  }
+  if (sw.includes(String.fromCharCode(39) + './luxury' + String.fromCharCode(39))) pass('صفحة الهوية تدخل ذاكرة PWA'); else fail('صفحة الهوية غير موجودة في ذاكرة PWA');
+  for (const invented of ['Lustre','Velvet','Aura','الأكثر طلبًا','من $18','من $22','من $28']) {
+    if (!page.includes(invented)) pass('لا يعرض محتوى غير معتمد: ' + invented); else fail('محتوى غير معتمد ما زال في صفحة الهوية: ' + invented);
+  }
+  if (page.includes('ليست صورة للمنتج الفعلي') || page.includes('ليست تصويرًا للمنتج الفعلي')) pass('التصورات البصرية موصوفة بوضوح'); else fail('الصور التصورية غير موسومة بوضوح');
+  if (page.includes('href="/serum"')) pass('مسار واضح إلى صفحة المنتج المعتمدة'); else fail('رابط صفحة المنتج المعتمدة مفقود');
+}
+
 async function checkPwa() {
   group('تطبيق الويب التثبيتي (PWA)');
 
@@ -1272,6 +1290,7 @@ try {
   await checkWorkflow();
   await checkMarketingConsistency();
   await checkPwa();
+  await checkLuxuryLanding();
 } catch (error) {
   fail('خطأ غير متوقع في أداة الفحص', error.message);
 }
