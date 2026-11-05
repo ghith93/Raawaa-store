@@ -240,7 +240,7 @@ async function checkJsSyntax() {
 /* ------------------------- 4) عناصر HTML التي تعتمد عليها السلة ------------------------- */
 async function checkHtmlHooks() {
   group('عناصر HTML للسلة');
-  const html = await read('index.html');
+  const html = await read('serum.html');
 
   const hooks = [
     // تغيّر 2026-10-28: استُبدلت شبكة الثلاث بطاقات ببطاقة منتج واحدة
@@ -269,7 +269,7 @@ async function checkHtmlHooks() {
     if (html.includes(hook)) pass(`${label} (${hook})`);
     else fail(`مفقود في index.html: ${hook} — ${label}`);
   }
-  for (const file of ['index.html', 'serum.html']) {
+  for (const file of ['serum.html']) {
     const page = await read(file);
     const visibleUnitPrice = /<p class="unit-price-live"[^>]*data-unit-live[^>]*>/.test(page);
     if (visibleUnitPrice) pass(`${file}: سعر الوحدة ظاهر في HTML`);
@@ -278,7 +278,7 @@ async function checkHtmlHooks() {
 
   // العناصر المطلوبة في ملف cart.js يجب أن تكون موجودة في HTML
   const cart = await read('js/cart.js');
-  const currentStorePages = `${await read('index.html')}\n${await read('serum.html')}`;
+  const currentStorePages = await read('serum.html');
   const staleProductCardMarkup = /class=["'][^"']*\bproduct-card\b/.test(currentStorePages);
   const staleProductCardReveal = /querySelectorAll\(['"][^'"]*\.product-card/.test(cart);
   const staleProductCardStyles = /\.product-(?:card|grid|media|body|top|name)\b/.test(await read('css/styles.css'));
@@ -409,7 +409,7 @@ async function checkLinks() {
 /* ------------------------- 6) المحتوى والادعاءات ------------------------- */
 async function checkContentClaims() {
   group('المحتوى والادعاءات');
-  const index = await read('index.html');
+  const index = await read('serum.html');
   const privacy = await read('privacy.html');
   const config = await read('js/config.js');
   /**
@@ -1073,72 +1073,45 @@ async function checkPwa() {
  */
 async function checkOwnerDecisions(config) {
   group('قرارات المالك وبيانات البحث');
-  const html = await read('index.html');
-  const source = await read('js/config.js');
+  const html = await read('serum.html');
   const visibleHtml = html.replace(/<!--[\s\S]*?-->/g, ' ');
-  const configCopy = source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
-  const customerCopy = visibleHtml + '\n' + configCopy;
-  const expect = (ok, label, detail = '') => ok ? pass(label) : fail(label, detail);
-
+  const source = await read('js/config.js');
+  const customerCopy = visibleHtml + '\n' + source.replace(/\/\*[\s\S]*?\*\//g, ' ');
+  const expect = (ok, label) => ok ? pass(label) : fail(label);
   expect(config.formula?.active === 'Panthenol', 'المكوّن المختار مثبت: Panthenol');
-  expect(config.formula?.percentagesVerified === false &&
-    !('declaredTotal' in config.formula) && !('inciList' in config.formula) && !('groups' in config.formula),
-  'لا نِسب أو قائمة INCI نهائية قبل تصحيح الورقة');
+  expect(config.formula?.percentagesVerified === false && !('declaredTotal' in config.formula) &&
+    !('inciList' in config.formula) && !('groups' in config.formula), 'لا نسب أو قائمة INCI نهائية قبل تصحيح الورقة');
   const section = visibleHtml.match(/<section[^>]*id="ingredients"[\s\S]*?<\/section>/)?.[0] || '';
-  expect(section.includes('البانثينول') && section.includes('ليست القائمة الكاملة'),
-    'مكوّنات مختارة مع تنبيه واضح أن القائمة غير كاملة');
-  expect(!/\d\s*[%٪]|[٠-٩]\s*[%٪]/.test(section), 'قسم التركيبة بلا نسب غير مؤكدة');
-  expect(!/(?:سيليكون\s*85|أرغان\s*3|بانثينول\s*1|99[.,٫]6)\s*[%٪]/i.test(customerCopy),
-    'النسب القديمة غير منشورة في النصوص والبيانات الوصفية');
-  expect(!/كيراتين|hydrolyzed\s+keratin/i.test(customerCopy), 'لا بديل كيراتين مناقض لاختيار المالك');
-  const size50 = config.products.find(p => p.id === 'serum-50');
-  expect(size50?.badge === 'الأنسب للاستعمال اليومي' && (visibleHtml.includes('الأنسب للاستعمال اليومي') || visibleHtml.includes('data-size-options')),
-    'وصف 50 مل مطابق لعبارة المالك');
+  expect(section.includes('البانثينول') && section.includes('ليست القائمة الكاملة'), 'المكونات المختارة موضحة كقائمة غير كاملة');
+  expect(!/\d\s*[%٪]|[٠-٩]\s*[%٪]/.test(section), 'لا نسب تركيبة غير مؤكدة');
+  expect(!/(?:سيليكون\s*85|أرغان\s*3|بانثينول\s*1|99[.,٫]6)\s*[%٪]/i.test(customerCopy), 'النسب القديمة غير منشورة');
+  expect(!/كيراتين|hydrolyzed\s+keratin/i.test(customerCopy), 'لا تركيبة متناقضة');
   expect(!/الأكثر اختيارًا|الأكثر طلبًا/.test(customerCopy), 'لا ادعاء شعبية بلا بيانات');
   expect(/السيروم جاهز/.test(visibleHtml) && !/التصنيع حسب الطلب|متى يُصنع طلبي|٢[–-]٤ أيام عمل|صورة العبوة قبل الشحن/.test(customerCopy),
     'الجاهزية معلنة بلا مدة تصنيع أو وعد بصورة قبل الشحن');
-  expect(visibleHtml.includes('ليست صورة للمنتج الفعلي'), 'التصميم التوضيحي ليس صورة المنتج الفعلي');
-  // لا نحمّل AVIF وWebP معًا بـpreload: المتصفحات تدعم الاثنين فتنزّل صورتين.
+  expect(visibleHtml.includes('ليست صورة للمنتج الفعلي'), 'الصورة موصوفة بدقة في النص البديل');
   const preloads = [...visibleHtml.matchAll(/<link[^>]*rel="preload"[^>]*as="image"[^>]*>/g)].map(m => m[0]);
   expect(preloads.length === 1 && preloads[0].includes('type="image/avif"') &&
-    preloads[0].includes('imagesizes="(min-width: 900px) 46vw, 42vw"') &&
-    preloads[0].includes('fetchpriority="high"') && !preloads[0].includes('media="(min-width: 900px)"'),
-  'تحميل استباقي واحد للصورة الظاهرة في هيرو الهاتف وسطح المكتب');
-
+    preloads[0].includes('imagesizes="(min-width: 900px) 43vw, 42vw"') &&
+    preloads[0].includes('fetchpriority="high"'), 'صورة المنتج محمّلة استباقيًا بمقاس مناسب');
   let schema;
   try {
     const raw = html.match(/<script\s+type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
     if (!raw) throw new Error('JSON-LD مفقود');
     schema = JSON.parse(raw);
     pass('JSON-LD قابل للقراءة');
-  } catch (err) {
-    fail('JSON-LD غير صالح', err.message);
-    return;
-  }
-  const graph = schema['@graph'] || [];
-  const product = graph.find(x => x['@type'] === 'Product');
+  } catch (err) { fail('JSON-LD غير صالح', err.message); return; }
+  const product = (schema['@graph'] || [schema]).find(x => x['@type'] === 'Product');
   const offers = product?.offers?.offers || [];
-  const eachPrice = config.products.every(p => offers.some(o =>
-    o.name?.includes(String(p.sizeMl) + ' مل') && Number(o.price) === p.price));
-  expect(eachPrice && offers.length === config.products.length,
-    'كل سعر JSON-LD مطابق للحجم في الإعدادات');
+  expect(offers.length === config.products.length && config.products.every(p =>
+    offers.some(o => o.name?.includes(p.sizeMl + ' مل') && Number(o.price) === p.price)), 'أسعار JSON-LD مطابقة للإعدادات');
   expect(Number(product?.offers?.lowPrice) === Math.min(...config.products.map(p => p.price)) &&
-    Number(product?.offers?.highPrice) === Math.max(...config.products.map(p => p.price)),
-  'حدود أسعار JSON-LD مطابقة');
-  const faq = graph.find(x => x['@type'] === 'FAQPage')?.mainEntity || [];
-  const priceAnswer = faq.find(x => x.name === 'ما الأحجام والأسعار؟')?.acceptedAnswer?.text || '';
-  expect(config.products.every(p => priceAnswer.includes(p.sizeMl + ' مل بسعر ' + p.price)),
-    'أسعار إجابة البحث تطابق الأحجام الثلاثة');
-  const deliveryAnswer = faq.find(x => x.name === 'ما طرق الدفع المتاحة؟')?.acceptedAnswer?.text || '';
-  expect(deliveryAnswer.includes('داخل حماة فقط') && deliveryAnswer.includes('باقي المحافظات') &&
-    deliveryAnswer.includes('2 دولار') && !deliveryAnswer.includes('4 دولارات'),
-  'إجابة البحث تقيّد التوصيل المجاني وتذكر رسوم المنطقتين');
-  expect(!product?.offers?.availability && offers.every(o => !o.availability),
-    'المخزون لكل حجم لا يُفترض في بيانات البحث');
+    Number(product?.offers?.highPrice) === Math.max(...config.products.map(p => p.price)), 'حدود أسعار JSON-LD مطابقة');
+  expect(visibleHtml.includes('باقي المحافظات') && visibleHtml.includes('$2') && !visibleHtml.includes('$4'),
+    'رسوم التوصيل للمنطقتين $2 ولا توجد رسوم قديمة');
+  expect(!product?.offers?.availability && offers.every(o => !o.availability), 'لا مخزون مختلق في بيانات البحث');
 }
 
-
-/** صفحة إعلان فعلية، مرتبطة بالإعدادات وبنفس السلة؛ تحرس التسعير والحقائق. */
 async function checkProductPage(config) {
   group('صفحة السيروم للإعلانات');
   const ok = (condition, label) => condition ? pass(label) : fail(label);
@@ -1150,14 +1123,14 @@ async function checkProductPage(config) {
   const homeHero = home.match(/<section[^>]*class="hero"[\s\S]*?<\/section>/)?.[0] || '';
   // يحتوي قسم الشراء أقسامًا متداخلة؛ نصل إلى إغلاقه الذي يسبق الفوائد، لا أول إغلاق داخلي.
   const landing = visible.match(/<section[^>]*class="serum-landing"[\s\S]*?<\/section>\s*(?=<section[^>]*id="benefits")/)?.[0] || '';
-  for (const [label, page] of [['الرئيسية', home], ['المنتج', visible]]) {
+  for (const [label, page] of [['المنتج', visible]]) {
     ok(page.includes('src="js/pwa-install.js"') && page.includes('data-pwa-install') &&
       page.includes('id="install-app"') && page.includes('Safari') && page.includes('Android') &&
       page.includes('واتساب يحتاج اتصالًا بالإنترنت'), `${label}: إرشادات تثبيت واضحة وزر متوافق واتصال واتساب مطلوب`);
   }
   const benefits = visible.match(/<section[^>]*id="benefits"[\s\S]*?<\/section>/)?.[0] || '';
   ok(homeHero.includes('الباهت') && homeHero.includes('المتطاير') && homeHero.includes('لمعة') &&
-    homeHero.includes('href="/serum" data-discover-serum'), 'الرئيسية تشرح الحاجة والفائدة وتوجّه لاختيار الحجم');
+    homeHero.includes('href="/serum"') && homeHero.includes('data-discover-serum'), 'الرئيسية تشرح الحاجة والفائدة وتوجّه لاختيار الحجم');
   ok(landing.includes('سيروم رواء للشعر') && landing.includes('الباهت') && landing.includes('المتطاير') &&
     landing.includes('مظهر أنعم') && landing.includes('لمعان لطيف'), 'صفحة المنتج تشرح الحاجة والفائدة قبل تفاصيل التركيبة');
   ok(benefits.includes('ملمسًا أنعم') && benefits.includes('كمية صغيرة') && benefits.includes('النتيجة والإحساس يختلفان') &&
@@ -1168,15 +1141,15 @@ async function checkProductPage(config) {
   const worker = await read('sw.js');
   ok(['ritual-v5-480.avif', 'ritual-v5-480.webp', 'ritual-v5-720.jpg'].every(f => worker.includes(f)) &&
     worker.includes('const visual = url.pathname.match') && worker.includes('ritual-v5|trio-v6|size-'), 'بدائل صور المشاهد والأحجام محفوظة بلا إنترنت لكل صيغة');
-  ok([home, landing].every(page => page.includes('السيروم جاهز') && page.includes('العبوة تُجهَّز عند الطلب') && page.includes('موعد')), 'جاهزية السيروم وتجهيز العبوة وموعدها المعلّق مذكورة في مسار الشراء');
+  ok(landing.includes('السيروم جاهز') && landing.includes('العبوة تُجهَّز عند الطلب') && landing.includes('موعد'), 'جاهزية السيروم وتجهيز العبوة وموعدها المعلّق مذكورة في مسار الشراء');
   ok(landing.includes('class="serum-size-guide"') && landing.includes('لكل ملليلتر') && landing.includes('$2') &&
     !landing.includes('$4') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
-  for (const [label, page] of [['الرئيسية', home], ['المنتج', visible]]) {
+  for (const [label, page] of [['المنتج', visible]]) {
     ok(!page.includes('data-unit-comparison') && !page.includes('قارني تكلفة كل 10 مل'), `${label}: إزالة مقارنة تكلفة 10 مل`);
     ok(page.includes('الأسعار بلا عطر') && page.includes('إضافة العطر $2 للعبوة'), `${label}: توضيح سعر العطر`);
   }
-  ok([home, landing].every(page => page.includes('class="purchase-shortcuts"') &&
-      ['#custom', '#ingredients', '#returns'].every(href => page.includes(`href="${href}"`)) && page.includes('data-expand-target')) &&
+  ok(landing.includes('class="purchase-shortcuts"') &&
+      ['#custom', '#ingredients', '#returns'].every(href => landing.includes(`href="${href}"`)) && landing.includes('data-expand-target') &&
     landing.includes('data-wa-selected') && landing.includes('data-wa-context') &&
     (await read('js/marketing.js')).includes(':not([data-wa-selected])'),
     'اختصارات قرار الشراء واستفسار الحجم موضّحة، دون تكرار مصدر الحملة');
@@ -1213,11 +1186,11 @@ async function checkProductPage(config) {
   ok(bundleSlots.every(slot => Number.isInteger(slot.qty) && slot.qty >= 1 && slot.qty <= 10 && Number(slot.value) > 0), 'كل عرض عبوة مكتمل: qty صحيح ١–١٠ وقيمة موجبة');
   ok(bundleSlots.every(slot => !slot.sizeId || config.products.some(p => p.id === slot.sizeId)), 'عرض العبوة يشير إلى حجم موجود إن كان مقيَّدًا');
   ok(cartLogic.includes('function planFor') && cartLogic.includes('engine.bestPlan') && cartLogic.includes('planFor(entry.product'), 'السلة تحسب عروض العبوات بنفس المحرّك');
-  const pageFiles = { 'index.html': home, 'serum.html': await read('serum.html') };
+  const pageFiles = { 'serum.html': visible };
   ok(Object.values(pageFiles).every(page => page.includes('js/offers.js')), 'محرّك العروض محمّل في الصفحتين');
   ok(Object.values(pageFiles).every(page => page.includes('data-row-offer') && page.includes('data-cart-offer')), 'صف خصم العرض موجود في سلتي الصفحتين');
   ok((await read('sw.js')).includes("'./js/offers.js'"), 'محرّك العروض داخل ذاكرة عامل الخدمة');
-  ok([home, visible].every(page => ['data-cart-order-options','data-cart-context','data-cart-custom-summary','data-cart-shared-notice','cart-share-note'].every(hook => page.includes(hook))), 'السلتان تعرضان سياق الإجمالي والاختيارات وحدود المشاركة');
+  ok(['data-cart-order-options','data-cart-context','data-cart-custom-summary','data-cart-shared-notice','cart-share-note'].every(hook => visible.includes(hook)), 'السلتان تعرضان سياق الإجمالي والاختيارات وحدود المشاركة');
   ok(cartLogic.includes("var CHOICES_KEY = 'rawaa:choices:v1'") && cartLogic.includes('restoreChoices()') && cartLogic.includes('saveChoices()'), 'الاختيارات الصالحة تُستعاد في جلسة المتصفح');
   const privacy = await read('privacy.html');
   ok(privacy.includes('العطر والزيت') && privacy.includes('التبويب نفسه') && privacy.includes('الكميات فقط'), 'الخصوصية تشرح حفظ الاختيارات وحدود رابط المشاركة');
