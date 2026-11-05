@@ -112,7 +112,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("استفسار واتساب يوضح الحجم الافتراضي والسعر المرجعي وموعد التجهيز",
                   all(x in direct_msg for x in ['50 مل','$16','قبل الخصم والتوصيل','موعد تجهيز العبوة']) and
                   page.locator('[data-wa-context]').is_visible() and 'راجعي الرسالة' in page.locator('[data-wa-context]').inner_text())
-            check("رسوم التوصيل وشروطها قرب الشراء", all(x in page.locator('.serum-trust').inner_text() for x in ['حماة فقط','$4','$2','بلا خصم']))
+            check("رسوم التوصيل وشروطها قرب الشراء", all(x in page.locator('.serum-trust').inner_text() for x in ['حماة فقط','$2','بلا خصم']))
             estimate = page.locator('[data-order-estimate]')
             check("تقدير العبوة الواحدة يظهر بافتراضاته قبل فتح السلة",
                   estimate.is_visible() and 'عبوة واحدة' in estimate.inner_text() and
@@ -184,12 +184,12 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("50 مل + شام كاش حماة = $14.40", page.locator('[data-cart-subtotal]').inner_text() == '$16' and page.locator('[data-cart-total]').inner_text() == '$14.40' and page.locator('[data-cart-delivery]').inner_text() == 'مجاني')
             hama_fee = page.locator('[data-zone-select="hama"]').locator('..').locator('.zone-fee')
             other_fee = page.locator('[data-zone-select="other"]').locator('..').locator('.zone-fee')
-            check("بطاقتا المنطقة تتبعان رسوم شام كاش الفعلية", 'مجاني' in hama_fee.inner_text() and '$4' in other_fee.inner_text())
+            check("بطاقتا المنطقة تتبعان رسوم شام كاش الفعلية", 'مجاني' in hama_fee.inner_text() and '$2' in other_fee.inner_text())
             page.locator('[data-zone-select="other"]').check()
-            check("50 مل + شام كاش المحافظات = $18.40", page.locator('[data-cart-total]').inner_text() == '$16.40')
+            check("50 مل + شام كاش المحافظات = $16.40", page.locator('[data-cart-total]').inner_text() == '$16.40')
             page.locator('[data-pay-select="cod"]').check()
-            check("بطاقتا المنطقة تتبعان رسوم الاستلام الفعلية", '$2' in hama_fee.inner_text() and '$4' in other_fee.inner_text())
-            check("50 مل + استلام المحافظات = $20", page.locator('[data-cart-total]').inner_text() == '$18')
+            check("بطاقتا المنطقة تتبعان رسوم الاستلام الفعلية", '$2' in hama_fee.inner_text() and '$2' in other_fee.inner_text())
+            check("50 مل + استلام المحافظات = $18", page.locator('[data-cart-total]').inner_text() == '$18')
             page.locator('[data-zone-select="hama"]').check()
             check("50 مل + استلام حماة = $18", page.locator('[data-cart-total]').inner_text() == '$18')
             audit(page, 'السلة المفتوحة')
