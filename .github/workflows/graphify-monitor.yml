@@ -38,6 +38,8 @@ jobs:
           cache: npm
       - name: تثبيت اعتماديات فحص الموقع المقفلة
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: إعادة بناء حزمة استقبال الطلبات من إعدادات المتجر الحالية
+        run: node scripts/build-order-entry.mjs
       - name: تثبيت Graphify المعزول
         run: |
           python -m venv .cache/graphify-venv
