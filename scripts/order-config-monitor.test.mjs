@@ -11,7 +11,7 @@ test('reads size and price as a pair, phone and both delivery zones', () => {
     ['serum-100', 100, 25], ['serum-30', 30, 13], ['serum-50', 50, 16]
   ]);
   assert.deepEqual(result.zones.map(z => [z.id, z.fee, z.freeWithShamCash]), [
-    ['hama', 2, true], ['other', 4, false]
+    ['hama', 2, true], ['other', 2, false]
   ]);
   assert.match(result.phone, /^\d+$/);
   assert.equal(result.defaultZone, 'hama');
@@ -33,7 +33,7 @@ test('fails closed for missing products, duplicated phone, or missing zone', () 
 });
 
 test('detects delivery charge drift', () => {
-  assert.notDeepEqual(extractOrderConfig(source.replace("fee: 4, freeWithShamCash: false", "fee: 5, freeWithShamCash: false")).zones, extractOrderConfig(source).zones);
+  assert.notDeepEqual(extractOrderConfig(source.replace("fee: 2, freeWithShamCash: false", "fee: 3, freeWithShamCash: false")).zones, extractOrderConfig(source).zones);
 });
 
 test('detects payment discount, free-shipping and availability drift', () => {
