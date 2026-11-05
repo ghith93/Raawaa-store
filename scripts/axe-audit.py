@@ -21,11 +21,10 @@ from playwright.sync_api import sync_playwright
 
 AXE = (Path(__file__).parent / "vendor" / "axe.min.js").read_text(encoding="utf-8")
 
-# تُفحص الصفحة والحوار الفارغ والممتلئ، بما فيه بديل واتساب عند حظر النافذة.
-PAGES = [("/", "page"), ("/serum.html", "page"), ("/campaign.html", "page"), ("/hama.html", "page"),
-         ("/privacy.html", "page"), ("/404.html", "page"), ("/", "empty"), ("/serum.html", "empty"),
-         ("/", "cart"), ("/serum.html", "cart"),
-         ("/", "fallback"), ("/serum.html", "fallback")]
+# افحص صفحات العلامة والمنتج والصفحات الثابتة؛ حالات السلة تخص صفحة المنتج فقط.
+PAGES = [("/", "page"), ("/serum", "page"), ("/campaign.html", "page"), ("/hama.html", "page"),
+         ("/privacy.html", "page"), ("/404.html", "page"), ("/serum", "empty"),
+         ("/serum", "cart"), ("/serum", "fallback")]
 SEVERITY = {"critical": 3, "serious": 2, "moderate": 1, "minor": 0}
 
 
@@ -52,6 +51,8 @@ def audit(base: str, threshold: str, viewport: tuple[int, int]) -> int:
                 if state == "fallback":
                     page.locator('[data-cart-checkout]').click()
                     page.locator('[data-cart-fallback]').wait_for(state="visible")
+                # أداة التدقيق تُحقن من سياق Playwright؛ تجاوز CSP محصور بجلسة الاختبار هذه.
+                page.context.new_cdp_session(page).send("Page.setBypassCSP", {"enabled": True})
                 page.add_script_tag(content=AXE)
                 res = page.evaluate("""async () => {
                     const r = await axe.run(document, {
