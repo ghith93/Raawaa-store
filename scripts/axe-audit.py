@@ -21,11 +21,10 @@ from playwright.sync_api import sync_playwright
 
 AXE = (Path(__file__).parent / "vendor" / "axe.min.js").read_text(encoding="utf-8")
 
-# تُفحص الصفحة والحوار الفارغ والممتلئ، بما فيه بديل واتساب عند حظر النافذة.
+# افحص صفحات العلامة والمنتج والصفحات الثابتة؛ حالات السلة تخص صفحة المنتج فقط.
 PAGES = [("/", "page"), ("/serum.html", "page"), ("/campaign.html", "page"), ("/hama.html", "page"),
-         ("/privacy.html", "page"), ("/404.html", "page"), ("/", "empty"), ("/serum.html", "empty"),
-         ("/", "cart"), ("/serum.html", "cart"),
-         ("/", "fallback"), ("/serum.html", "fallback")]
+         ("/privacy.html", "page"), ("/404.html", "page"), ("/serum.html", "empty"),
+         ("/serum.html", "cart"), ("/serum.html", "fallback")]
 SEVERITY = {"critical": 3, "serious": 2, "moderate": 1, "minor": 0}
 
 
@@ -42,7 +41,12 @@ def audit(base: str, threshold: str, viewport: tuple[int, int]) -> int:
             try:
                 if state == "fallback":
                     page.add_init_script("window.open = () => null")
+                # The audit uses Python's static server, which does not implement
+                # Cloudflare Pages clean-URL routing. Test the canonical file path;
+                # production clean URLs are covered by the dedicated browser suite.
                 suffix = "?cart=serum-50x1" if state in ("cart", "fallback") else ""
+                cdp = page.context.new_cdp_session(page)
+                cdp.send("Page.setBypassCSP", {"enabled": True})
                 response = page.goto(base.rstrip("/") + path + suffix, wait_until="load", timeout=45000)
                 if not response or (response.status >= 400 and path != "/404.html"):
                     raise RuntimeError(f"HTTP {response.status if response else 'no response'}")
@@ -52,6 +56,7 @@ def audit(base: str, threshold: str, viewport: tuple[int, int]) -> int:
                 if state == "fallback":
                     page.locator('[data-cart-checkout]').click()
                     page.locator('[data-cart-fallback]').wait_for(state="visible")
+                # أداة التدقيق تُحقن من سياق Playwright؛ تجاوز CSP محصور بجلسة الاختبار هذه.
                 page.add_script_tag(content=AXE)
                 res = page.evaluate("""async () => {
                     const r = await axe.run(document, {

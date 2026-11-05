@@ -40,15 +40,21 @@ jobs:
       - name: Build Pages output
         run: bash scripts/build-deploy.sh
 
-      - name: Verify preview payload
+      - name: Verify preview payload and isolate indexing
         run: |
+          set -euo pipefail
           test -s dist/site/index.html
-          test -s dist/site/luxury.html
+          test -s dist/site/serum.html
+          grep -q 'لمعان يُرى، ونعومة تُلمَس' dist/site/index.html
+          grep -q 'canonical" href="https://raawaa-store.pages.dev/serum"' dist/site/serum.html
           test -s dist/site/assets/brand/logo-primary-v2.svg
-          test -s dist/site/assets/img/products/editorial-v5-720.jpg
+          test -s dist/site/assets/brand/logo-primary-v2-dark.svg
+          test -s dist/site/assets/img/products/size-50-v6-720.avif
           fonts=$(find dist/site/assets/fonts -maxdepth 1 -name '*.woff2' -type f 2>/dev/null | wc -l)
           echo "Fonts in preview package: $fonts"
           test "$fonts" -ge 5
+          # Preview-only noindex header: never modify production source headers.
+          printf '%b' '\n/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n' >> dist/site/_headers
 
       - name: Deploy isolated Cloudflare Pages preview
         id: deploy
@@ -58,42 +64,41 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist/site --project-name=raawaa-store --branch=pr-${{ github.event.pull_request.number }} --commit-hash=${{ github.event.pull_request.head.sha }} --commit-message="Preview PR #${{ github.event.pull_request.number }}"
 
-      - name: Verify deployed preview and noindex
+      - name: Verify deployed homepage, product page and noindex
         env:
           PREVIEW_URL: https://pr-${{ github.event.pull_request.number }}.raawaa-store.pages.dev
         run: |
           set -euo pipefail
           for attempt in 1 2 3 4 5 6; do
-            if curl -fsSL --max-time 25 "$PREVIEW_URL/luxury.html" -o /tmp/luxury.html; then
+            if curl -fsSL --max-time 25 "$PREVIEW_URL/" -o /tmp/home.html; then
               break
             fi
             echo "Waiting for preview propagation ($attempt/6)"
             sleep 10
           done
-          grep -q 'RAWAA | رواء' /tmp/luxury.html
-          grep -qi '<meta name="robots" content="noindex,follow">' /tmp/luxury.html
+          curl -fsSL --max-time 25 "$PREVIEW_URL/serum" -o /tmp/serum.html
+          grep -q 'RAWAA | رواء' /tmp/home.html
+          grep -q 'لمعان يُرى، ونعومة تُلمَس' /tmp/home.html
+          grep -q 'canonical" href="https://raawaa-store.pages.dev/serum"' /tmp/serum.html
           curl -fsSL --max-time 25 "$PREVIEW_URL/assets/brand/logo-primary-v2.svg" -o /dev/null
-          curl -fsSL --max-time 25 "$PREVIEW_URL/assets/img/products/editorial-v5-720.jpg" -o /dev/null
-          headers=$(curl -sSI --max-time 25 "$PREVIEW_URL/luxury.html" | tr -d '\r' || true)
-          if grep -qi '^x-robots-tag:.*noindex' <<< "$headers"; then
-            echo "Cloudflare preview header confirms noindex."
-          else
-            echo "::warning::Cloudflare X-Robots-Tag was not visible; page-level noindex meta was verified."
-          fi
-          echo "Verified preview content, logo, image assets and page-level noindex: $PREVIEW_URL/luxury.html"
+          curl -fsSL --max-time 25 "$PREVIEW_URL/assets/brand/logo-primary-v2-dark.svg" -o /dev/null
+          curl -fsSL --max-time 25 "$PREVIEW_URL/assets/img/products/size-50-v6-720.avif" -o /dev/null
+          headers=$(curl -sSI --max-time 25 "$PREVIEW_URL/" | tr -d '\r')
+          grep -qi '^x-robots-tag:.*noindex' <<< "$headers"
+          echo "Verified preview homepage, product checkout, brand assets and preview-only noindex: $PREVIEW_URL"
           {
             echo "## Cloudflare Pages preview"
             echo ""
-            echo "- URL: $PREVIEW_URL/luxury.html"
-            echo "- PR branch alias: `pr-${{ github.event.pull_request.number }}`"
-            echo "- Search indexing: blocked (X-Robots-Tag: noindex)"
+            echo "- Homepage: $PREVIEW_URL/"
+            echo "- Product page: $PREVIEW_URL/serum"
+            echo "- Search indexing: blocked on preview only (X-Robots-Tag: noindex)"
             echo "- Production site: untouched"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish or update PR preview comment
         uses: actions/github-script@v8
         env:
-          PREVIEW_URL: https://pr-${{ github.event.pull_request.number }}.raawaa-store.pages.dev/luxury.html
+          PREVIEW_URL: https://pr-${{ github.event.pull_request.number }}.raawaa-store.pages.dev/
         with:
           script: |
             const marker = '<!-- raawaa-pages-preview -->';
@@ -101,7 +106,7 @@ jobs:
               marker,
               '### Raawaa visual preview',
               '',
-              `[Open the isolated PR #${context.issue.number} preview](${process.env.PREVIEW_URL})`,
+              `[Open the isolated PR #${context.issue.number} homepage preview](${process.env.PREVIEW_URL})`,
               '',
               '_This is a review-only Cloudflare Pages preview. The production site has not been changed._'
             ].join('\n');

@@ -64,7 +64,7 @@ def run(base: str) -> int:
             page.on("response", lambda r: _account(r, transfer))
 
             page.goto(base + "/index.html", wait_until="load")
-            page.wait_for_selector("#products [data-add-current]")
+            page.wait_for_selector(".hero h1")
             page.evaluate("document.fonts.ready")
             page.wait_for_timeout(900)
 
@@ -92,6 +92,43 @@ def run(base: str) -> int:
                 }"""
             )
             findings[label] = result
+            if page.evaluate("document.documentElement.scrollWidth > innerWidth + 1"):
+                findings[label]["violations"].append({
+                    "id": "horizontal-overflow", "impact": "serious",
+                    "help": "لا تمرير أفقي في الصفحة الرئيسية", "nodes": 1,
+                    "targets": ["document.documentElement"]
+                })
+
+            # صفحة المنتج هي موضع السلة والشراء، وليست الصفحة الرئيسية.
+            product_page = ctx.new_page()
+            product_page.goto(base + "/serum.html", wait_until="load")
+            product_page.wait_for_selector("#products [data-add-current]")
+            product_page.evaluate("document.fonts.ready")
+            product_page.wait_for_timeout(350)
+            product_page.add_script_tag(content=axe_src)
+            product_result = product_page.evaluate(
+                """async () => {
+                    const r = await axe.run(document, {
+                      runOnly: { type: 'tag', values: ['wcag2a','wcag2aa','wcag21a','wcag21aa','best-practice'] }
+                    });
+                    return {
+                      violations: r.violations.map(v => ({
+                        id: v.id, impact: v.impact, help: v.help,
+                        nodes: v.nodes.length,
+                        targets: v.nodes.slice(0, 3).map(n => n.target.join(' '))
+                      })),
+                      passes: r.passes.length,
+                      incomplete: r.incomplete.map(i => i.id)
+                    };
+                }"""
+            )
+            findings[label + " — صفحة المنتج"] = product_result
+            if product_page.evaluate("document.documentElement.scrollWidth > innerWidth + 1"):
+                findings[label + " — صفحة المنتج"]["violations"].append({
+                    "id": "horizontal-overflow", "impact": "serious",
+                    "help": "لا تمرير أفقي في صفحة المنتج", "nodes": 1,
+                    "targets": ["document.documentElement"]
+                })
 
             # صفحة الحملة لها رحلة وصورة وصفّ أسعار مستقلان؛ افحصها على المقاس نفسه.
             campaign_page = ctx.new_page()
@@ -124,12 +161,13 @@ def run(base: str) -> int:
             campaign_page.close()
 
             # نافذة السلة مفتوحة أيضًا
-            page.locator("#products .size-option").nth(1).click()
-            page.wait_for_timeout(120)
-            page.locator("#products [data-add-current]").click()
-            page.locator("[data-cart-open]").first.click()
-            page.wait_for_timeout(350)
-            cart_result = page.evaluate(
+            product_page.locator("#products .size-option").nth(1).click()
+            product_page.wait_for_timeout(120)
+            product_page.locator("#products [data-add-current]").click()
+            if not product_page.locator("#cart-dialog").evaluate("(dialog) => dialog.open"):
+                product_page.locator("[data-cart-open]").first.click()
+            product_page.wait_for_timeout(350)
+            cart_result = product_page.evaluate(
                 """async () => {
                     const r = await axe.run(document.getElementById('cart-dialog'), {
                       runOnly: { type: 'tag', values: ['wcag2a','wcag2aa','wcag21a','wcag21aa','best-practice'] }
@@ -141,6 +179,7 @@ def run(base: str) -> int:
                 }"""
             )
             findings[label + " — السلة مفتوحة"] = {"violations": cart_result, "passes": 0, "incomplete": []}
+            product_page.close()
             ctx.close()
 
         browser.close()

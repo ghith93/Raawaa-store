@@ -40,7 +40,7 @@ jobs:
           for path in "" "serum" "privacy.html" "manifest.webmanifest" "sw.js" \
                       "css/styles.css" "css/serum.css" "js/config.js" "js/cart.js" "js/marketing.js" \
                       "assets/icons/apple-touch-icon.png" \
-                      "assets/img/products/trio-v5-480.avif" \
+                      "assets/img/products/trio-v6-480.avif" \
                       "sitemap.xml" "robots.txt"; do
             CODE=$(curl -sSL -o /dev/null -w "%{http_code}" --max-time 25 --retry 3 --retry-delay 5 "$BASE/$path") || CODE=000
             if [ "$CODE" != "200" ]; then
@@ -58,7 +58,7 @@ jobs:
       - name: فحص المحتوى الحرج في الصفحة الرئيسية
         run: |
           HTML=$(curl -fsSL --max-time 25 --retry 3 "https://raawaa-store.pages.dev/")
-          for needle in "RAWAA" "رواء" "data-add-current" "963997310856" "شام كاش"; do
+          for needle in "RAWAA" "رواء" "data-discover-serum" "963997310856" "شام كاش"; do
             if grep -qF "$needle" <<< "$HTML"; then
               echo "✓ يحتوي: $needle"
             else

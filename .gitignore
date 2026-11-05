@@ -8,3 +8,11 @@ BENCHMARKS-lighthouse.json
 BENCHMARKS-serum.json
 BENCHMARKS-lighthouse-latest.json
 order-system/edge/store-config.generated.mjs
+
+# Local runtime state, credentials stores, browser profiles, and generated caches
+.local/
+.config/
+**/__pycache__/
+*.py[cod]
+*.log
+.DS_Store

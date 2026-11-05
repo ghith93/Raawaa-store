@@ -127,8 +127,10 @@ console.log('\n▸ نزاهة الترميز');
   for (const page of ['index.html', 'serum.html']) {
     const html = read(page);
     const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
-    if (!blocks.length) { fail(`${page}: لا JSON-LD`); continue; }
-    for (const block of blocks) {
+    // Product structured data belongs to the dedicated product page, not the brand homepage.
+    if (page === 'serum.html') {
+      if (!blocks.length) { fail(`${page}: لا JSON-LD`); continue; }
+      for (const block of blocks) {
       let data;
       try { data = JSON.parse(block[1]); } catch (e) { fail(`${page}: JSON-LD غير صالح`, e.message); continue; }
       const nodes = data['@graph'] || [data];
@@ -143,6 +145,7 @@ console.log('\n▸ نزاهة الترميز');
       if (Number(offer.lowPrice) !== low || Number(offer.highPrice) !== high) {
         fail(`${page}: حدود AggregateOffer لا تطابق config.js`);
       } else ok(`${page}: حدود الأسعار مطابقة (${low}–${high})`);
+      }
     }
 
     const imgs = [...html.matchAll(/<img\b[^>]*>/g)].map((m) => m[0]);

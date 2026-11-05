@@ -76,7 +76,7 @@ def run(base: str, browser_name: str, ignore_https: bool) -> int:
               setTimeout(() => resolve(false), 15000);
             })""")
             check('المشهد التحريري يحمل وصفًا يمنع ادعاء نتيجة', editorial_loaded and 'مولّد' in page.locator('.campaign-editorial-image figcaption').inner_text())
-            check('الدفع والتوصيل مأخوذان من الإعدادات', all(s in page.locator('[data-campaign-delivery]').inner_text() for s in ['شام كاش','$2','$4','الدفع عند الاستلام']))
+            check('الدفع والتوصيل مأخوذان من الإعدادات', all(s in page.locator('[data-campaign-delivery]').inner_text() for s in ['شام كاش','$2','الدفع عند الاستلام']) and page.locator('[data-campaign-delivery]').inner_text().count('$2') >= 2)
             wa = page.locator('[data-campaign-whatsapp]').get_attribute('href') or ''
             message = parse_qs(urlparse(wa).query).get('text', [''])[0]
             check('رابط واتساب يحمل مصدر الحملة ولا يرسل تلقائيًا', 'wa.me/' in wa and 'المصدر: pilot_14day' in message and 'نسخة المحتوى: reference_prices' in message and not page.evaluate('window.__waCalls?.length'))

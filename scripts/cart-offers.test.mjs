@@ -1,7 +1,7 @@
 /**
  * اختبار تكامل السلة مع العروض — يعمل في Node عبر jsdom، بلا متصفح وبلا شبكة.
  *
- * يحمّل صفحة المنتج الحقيقية (index.html)، ثم يحقن خانات عروض قبل تشغيل cart.js،
+ * يحمّل صفحة المنتج الحقيقية (serum.html)، ثم يحقن خانات عروض قبل تشغيل cart.js،
  * ويتحقق من: السعر المعروض في بطاقة الحجم، السلة، الإجمالي، رسالة واتساب،
  * واختفاء العرض بعد انتهائه، وسقوط نسبة فوق السقف.
  *
@@ -15,15 +15,15 @@ import { JSDOM } from 'jsdom';
 const root = new URL('../', import.meta.url);
 const read = (file) => readFile(new URL(file, root), 'utf8');
 
-const html = (await read('index.html')).replace(/<script[\s\S]*?<\/script>/g, '');
 const serumHtml = (await read('serum.html')).replace(/<script[\s\S]*?<\/script>/g, '');
+const html = serumHtml;
 const serumViewsJs = await read('js/serum-views.js');
 const offersJs = await read('js/offers.js');
 const cartJs = await read('js/cart.js');
 const configJs = await read('js/config.js');
 
 /** نافذة كاملة بسلوك مطابق للموقع، مع خانات عروض مُحقَنة قبل تحميل السلة. */
-async function boot(slots, pageHtml) {
+async function boot(slots, pageHtml = serumHtml) {
   const dom = new JSDOM(pageHtml || html, {
     url: 'https://raawaa-store.pages.dev/',
     runScripts: 'outside-only',
@@ -174,8 +174,8 @@ test('سعر خاص لحجم يُعرض ويُحتسب كسعر جديد', async
   api.addToCart('serum-100');
   api.setMethod('shamcash', true);
   api.setZone('other', true);
-  // 20 − 2 (شام كاش) + 4 (توصيل المحافظات) = 22
-  assert.equal(api.totals().amount, 22);
+  // 20 − 2 (شام كاش) + 2 (توصيل المحافظات) = 20
+  assert.equal(api.totals().amount, 20);
 });
 
 test('صفحة السيروم تحمل العرض نفسه ولا تختلف عن الرئيسية', async () => {
