@@ -964,7 +964,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page = ctx.new_page(); page.goto(base + '/', wait_until='load')
         check("الرئيسية الجديدة تعمل دون JavaScript وتوجّه لصفحة المنتج",
               page.locator('.brand-logo').is_visible() and page.locator('.hero h1').count() == 1 and
-              page.locator('[data-discover-serum]').get_attribute('href') == '/serum' and
+              page.locator('[data-discover-serum]').count() == 3 and page.locator('[data-discover-serum]').evaluate_all("els => els.every(a => a.getAttribute('href') === '/serum')") and
               'الباهت' in page.locator('.hero-lead').inner_text())
         ctx.close()
 
