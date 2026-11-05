@@ -1,5 +1,4 @@
 name: PR preview — Cloudflare Pages
-# A stable pr-N alias is used so the review URL survives subsequent commits.
 
 on:
   pull_request:
