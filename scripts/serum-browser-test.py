@@ -505,9 +505,14 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.locator('[data-custom-scent="vanilla"]').click()
         page.locator('#products .size-option').nth(2).click()
         page.locator('[data-add-current]').click()
-        check("عند منع التخزين تعمل السلة والاختيارات في الذاكرة",
-              page.locator('[data-cart-total]').inner_text() == '$27' and
-              'فانيلا' in page.locator('[data-cart-custom-summary]').inner_text() and not errors, '; '.join(errors[:3]))
+        blocked_total = page.locator('[data-cart-total]').inner_text()
+        blocked_custom = page.locator('[data-cart-custom-summary]').inner_text()
+        check("عند منع التخزين: إجمالي 100 مل مع توصيل حماة",
+              blocked_total == '$27', f"observed_total={blocked_total!r}")
+        check("عند منع التخزين: اختيار العطر يبقى في الذاكرة",
+              'فانيلا' in blocked_custom, f"custom_summary_present={'فانيلا' in blocked_custom}")
+        check("عند منع التخزين: لا أخطاء JavaScript",
+              not errors, f"page_error_count={len(errors)}")
         ctx.close()
         ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         ctx.add_init_script("Object.defineProperty(window, 'sessionStorage', {get(){throw new DOMException('blocked','SecurityError')}})")
