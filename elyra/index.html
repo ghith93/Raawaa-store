@@ -1,1 +1,99 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELYRA | إليرا — فخامة العناية بالشعر</title>
+<meta name="description" content="إليرا — علامة سورية فاخرة. ثلاث تركيبات راقية: لمعان، كثافة، نعومة. خصم 10% شام كاش.">
+<meta name="theme-color" content="#0b0a09">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0a09;--bg-elevated:#141210;--bg-soft:#1c1916;--text:#f6f1e9;--text-muted:#9c9285;--gold:#c9a86c;--gold-light:#e2c58f;--border:rgba(201,168,108,0.14);--radius:2px;--font-ar:'Noto Sans Arabic',system-ui,sans-serif;--font-display:'Cormorant Garamond',Georgia,serif;--header-h:72px}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:var(--font-ar);background:var(--bg);color:var(--text);line-height:1.75;font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3{font-family:var(--font-display);font-weight:500}.eyebrow{font-size:0.68rem;letter-spacing:0.32em;text-transform:uppercase;color:var(--gold);font-weight:500}
+.shell{max-width:1180px;margin:0 auto;padding:0 1.35rem}@media(min-width:768px){.shell{padding:0 2.2rem}}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:0.95rem 1.9rem;font-family:var(--font-ar);font-size:0.86rem;font-weight:500;letter-spacing:0.06em;border:none;cursor:pointer;transition:all .3s;border-radius:var(--radius)}
+.btn-gold{background:var(--gold);color:#0b0a09}.btn-gold:hover{background:var(--gold-light);transform:translateY(-2px)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-sm{padding:.62rem 1.25rem;font-size:.8rem}
+.site-header{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--header-h);background:rgba(11,10,9,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;height:100%}
+.brand{display:flex;flex-direction:column;line-height:1.15}.brand-latin{font-family:var(--font-display);font-size:1.45rem;letter-spacing:.42em}.brand-ar{font-size:.7rem;color:var(--gold);letter-spacing:.2em}
+.nav-desktop{display:none;list-style:none;gap:2rem}@media(min-width:900px){.nav-desktop{display:flex}.nav-desktop a{color:var(--text-muted);font-size:.82rem}.nav-desktop a:hover{color:var(--gold)}}
+.header-cta{display:flex;align-items:center;gap:.85rem}.nav-toggle{display:flex;width:40px;height:40px;background:none;border:1px solid var(--border);color:var(--text);cursor:pointer}@media(min-width:900px){.nav-toggle{display:none}}
+.mobile-nav{position:fixed;inset:var(--header-h) 0 0 0;z-index:190;background:var(--bg);padding:2rem 1.4rem;transform:translateY(-110%);opacity:0;visibility:hidden;transition:all .4s}.mobile-nav.open{transform:translateY(0);opacity:1;visibility:visible}
+.mobile-nav ul{list-style:none}.mobile-nav a{display:block;padding:1.1rem 0;font-size:1.1rem}
+.hero{min-height:100vh;display:flex;align-items:center;padding:calc(var(--header-h)+2.8rem) 0 4.5rem;position:relative}
+.hero-grid{display:grid;gap:3.2rem;align-items:center}@media(min-width:960px){.hero-grid{grid-template-columns:1.05fr .95fr}}
+.hero-content{max-width:520px}.hero h1{font-size:clamp(2.85rem,6.2vw,4.3rem);line-height:1.1;margin-bottom:1.3rem}.hero h1 em{color:var(--gold);font-style:italic}
+.hero-lead{font-size:1.1rem;color:var(--text-muted);margin-bottom:2rem;font-weight:300}
+.hero-actions{display:flex;flex-wrap:wrap;gap:.85rem;margin-bottom:2.5rem}
+.hero-meta{display:flex;flex-wrap:wrap;gap:1.6rem;font-size:.76rem;color:var(--text-muted)}.hero-meta strong{color:var(--gold);display:block;font-size:.9rem}
+.visual-panel{aspect-ratio:4/5;background:linear-gradient(155deg,#1a1714,#100e0c);border:1px solid var(--border);display:flex;align-items:center;justify-content:center}
+.visual-inner{text-align:center;padding:2rem}.visual-inner .mark{font-family:var(--font-display);font-size:2.5rem;color:var(--gold);letter-spacing:.25em;margin-bottom:.55rem}
+section{padding:5.8rem 0}.section-head{text-align:center;max-width:600px;margin:0 auto 3.4rem}.section-head h2{font-size:clamp(1.95rem,4vw,2.7rem);margin-bottom:.9rem}
+.offer-bar{background:linear-gradient(90deg,#1a1612,#221e19);border-bottom:1px solid var(--border);padding:.85rem 0;text-align:center;font-size:.86rem}.offer-bar strong{color:var(--gold)}
+.products-grid{display:grid;gap:1.4rem}@media(min-width:800px){.products-grid{grid-template-columns:repeat(3,1fr)}}
+.product-card{background:var(--bg-elevated);border:1px solid var(--border);overflow:hidden;transition:transform .35s}.product-card:hover{transform:translateY(-5px)}
+.product-visual{aspect-ratio:1;background:linear-gradient(150deg,#1f1b17,#12100e);display:flex;align-items:center;justify-content:center;position:relative}
+.product-visual .tag{position:absolute;top:1rem;right:1rem;background:var(--gold);color:#0b0a09;font-size:.62rem;padding:.35rem .7rem;font-weight:600}
+.product-visual .name-mark{font-family:var(--font-display);font-size:1.9rem;color:var(--gold)}
+.product-info{padding:1.7rem 1.55rem}.product-info h3{font-size:1.28rem;margin-bottom:.4rem}.product-info .desc{color:var(--text-muted);font-size:.9rem;margin-bottom:1.25rem}
+.product-price{display:flex;align-items:center;justify-content:space-between}.price{font-family:var(--font-display);font-size:1.5rem;color:var(--gold)}
+.why{background:var(--bg-elevated)}.why-grid{display:grid;gap:1.3rem}@media(min-width:768px){.why-grid{grid-template-columns:repeat(3,1fr)}}
+.why-card{padding:2.2rem 1.7rem;border:1px solid var(--border);background:var(--bg)}.why-card .num{font-family:var(--font-display);font-size:1.9rem;color:var(--gold);margin-bottom:.9rem}
+.process-list{list-style:none;display:flex;flex-direction:column;gap:1.7rem;max-width:640px;margin:0 auto}.process-list li{display:flex;gap:1.25rem}.process-list .step{font-family:var(--font-display);font-size:1.5rem;color:var(--gold)}
+.cta{background:linear-gradient(145deg,#141210,#221e19);border-top:1px solid var(--border);text-align:center;padding:5rem 0}.cta h2{font-size:clamp(1.85rem,3.8vw,2.5rem);margin-bottom:.9rem}
+footer{padding:4rem 0 2.2rem;border-top:1px solid var(--border)}.footer-grid{display:grid;gap:2.5rem}@media(min-width:768px){.footer-grid{grid-template-columns:1.5fr 1fr 1fr}}.footer-bottom{padding-top:1.8rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:.76rem;color:var(--text-muted)}
+</style>
+</head>
+<body>
+<div class="offer-bar"><div class="shell"><strong>خصم 10%</strong> على الدفع بشام كاش · توصيل مجاني داخل حماة · الدفع عند الاستلام في كل المحافظات</div></div>
+<header class="site-header"><div class="shell header-inner">
+<a href="#" class="brand"><span class="brand-latin">ELYRA</span><span class="brand-ar">إليرا</span></a>
+<nav><ul class="nav-desktop"><li><a href="#collection">المجموعة</a></li><li><a href="#why">لماذا إليرا</a></li><li><a href="#order">كيف تطلبين</a></li></ul></nav>
+<div class="header-cta"><a href="https://wa.me/963997310856?text=%D9%85%D8%B1%D8%AD%D8%A8%D8%A7%20%D8%A5%D9%84%D9%8A%D8%B1%D8%A7" class="btn btn-gold btn-sm" target="_blank">اطلبي الآن</a><button class="nav-toggle" id="navToggle">☰</button></div>
+</div></header>
+<div class="mobile-nav" id="mobileNav" hidden><ul><li><a href="#collection">المجموعة</a></li><li><a href="#why">لماذا إليرا</a></li><li><a href="#order">كيف تطلبين</a></li><li style="margin-top:1.4rem;border:none"><a href="https://wa.me/963997310856" class="btn btn-gold" style="width:100%" target="_blank">واتساب</a></li></ul></div>
+<main>
+<section class="hero"><div class="shell"><div class="hero-grid">
+<div class="hero-content"><span class="eyebrow">مجموعة العناية الفاخرة</span>
+<h1>شعركِ يستحق<br><em>طقوسًا استثنائية</em></h1>
+<p class="hero-lead">إليرا علامة سورية للعناية بالشعر صُممت للنساء اللواتي يرفضن العادي. ثلاث تركيبات راقية تمنح لمعانًا عميقًا وكثافة ونعومة تُشعرِكِ بالتميز.</p>
+<div class="hero-actions"><a href="#collection" class="btn btn-gold">اكتشفي المجموعة</a><a href="https://wa.me/963997310856" class="btn btn-outline" target="_blank">تحدثي معنا</a></div>
+<div class="hero-meta"><div><strong>صنع في سوريا</strong>حرفية دقيقة</div><div><strong>تجهيز عند الطلب</strong>طازج لكِ</div><div><strong>خصم 10%</strong>على شام كاش</div></div>
+</div>
+<div class="visual-panel"><div class="visual-inner"><div class="mark">ELYRA</div><p>ثلاث تركيبات<br>لشعركِ الأكثر إشراقًا</p></div></div>
+</div></div></section>
+<section id="collection"><div class="shell">
+<div class="section-head"><span class="eyebrow">المجموعة</span><h2>ثلاثة منتجات… نتيجة واحدة استثنائية</h2></div>
+<div class="products-grid">
+<article class="product-card"><div class="product-visual"><span class="tag">الأكثر طلبًا</span><div style="text-align:center"><div class="name-mark">Lustre</div><div style="color:var(--text-muted);font-size:.85rem">إكسير اللمعان</div></div></div><div class="product-info"><h3>إكسير لاستِر</h3><p class="desc">تركيبة خفيفة تمنح لمعانًا عميقًا ونعومة حريرية دون وزن.</p><div class="product-price"><div class="price">من $19</div><a href="https://wa.me/963997310856" class="btn btn-outline btn-sm" target="_blank">اطلبي</a></div></div></article>
+<article class="product-card"><div class="product-visual"><div style="text-align:center"><div class="name-mark">Density</div><div style="color:var(--text-muted);font-size:.85rem">سيروم الكثافة</div></div></div><div class="product-info"><h3>سيروم دينسيتي</h3><p class="desc">يرعى فروة الرأس ويدعم مظهر الكثافة والقوة.</p><div class="product-price"><div class="price">من $24</div><a href="https://wa.me/963997310856" class="btn btn-outline btn-sm" target="_blank">اطلبي</a></div></div></article>
+<article class="product-card"><div class="product-visual"><div style="text-align:center"><div class="name-mark">Velvet</div><div style="color:var(--text-muted);font-size:.85rem">ماسك ليلي</div></div></div><div class="product-info"><h3>ماسك فيلفيت</h3><p class="desc">علاج ليلي مكثف. استيقظي على شعر أكثر انسيابية ولمعانًا.</p><div class="product-price"><div class="price">من $29</div><a href="https://wa.me/963997310856" class="btn btn-outline btn-sm" target="_blank">اطلبي</a></div></div></article>
+</div></div></section>
+<section class="why" id="why"><div class="shell">
+<div class="section-head"><span class="eyebrow">لماذا إليرا</span><h2>ما يميزنا</h2></div>
+<div class="why-grid">
+<article class="why-card"><div class="num">01</div><h3>الشعور أولًا</h3><p>النعومة والانسيابية واللمعان الذي يُرى ويُحس.</p></article>
+<article class="why-card"><div class="num">02</div><h3>حرفية سورية</h3><p>كل دفعة تُجهَّز عند الطلب لتصل بأفضل حالة.</p></article>
+<article class="why-card"><div class="num">03</div><h3>تجربة خاصة</h3><p>إمكانية اختيار عطر شخصي. جزء من طقوسكِ.</p></article>
+</div></div></section>
+<section id="order"><div class="shell">
+<div class="section-head"><span class="eyebrow">كيف تطلبين</span><h2>ثلاث خطوات بسيطة</h2></div>
+<ol class="process-list">
+<li><span class="step">١</span><div><h4>اختاري منتجكِ</h4><p>تصفحي المجموعة وحددي ما يناسبك.</p></div></li>
+<li><span class="step">٢</span><div><h4>تواصلي معنا</h4><p>أرسلي واتساب. نؤكد التوفر خلال دقائق.</p></div></li>
+<li><span class="step">٣</span><div><h4>استلمي وادفعي</h4><p>الدفع عند الاستلام أو شام كاش بخصم 10%.</p></div></li>
+</ol></div></section>
+<section class="cta"><div class="shell"><h2>جاهزة لتجربة إليرا؟</h2><p style="color:var(--text-muted);margin:1rem auto 1.9rem;max-width:440px">تواصلي عبر واتساب وسنساعدكِ في اختيار التركيبة الأنسب.</p>
+<div style="display:flex;justify-content:center;gap:.85rem;flex-wrap:wrap"><a href="https://wa.me/963997310856" class="btn btn-gold" target="_blank">ابدئي المحادثة الآن</a><a href="#collection" class="btn btn-outline">عودي للمجموعة</a></div></div></section>
+</main>
+<footer><div class="shell"><div class="footer-grid">
+<div><div class="brand-latin">ELYRA</div><div class="brand-ar" style="color:var(--gold)">إليرا</div><p style="color:var(--text-muted);margin-top:.8rem;max-width:260px">علامة سورية فاخرة للعناية بالشعر.</p></div>
+<div><h4 style="color:var(--gold);font-size:.7rem;letter-spacing:.18em;margin-bottom:1.15rem">استكشفي</h4><ul style="list-style:none"><li style="margin-bottom:.55rem"><a href="#collection" style="color:var(--text-muted)">المجموعة</a></li><li style="margin-bottom:.55rem"><a href="#why" style="color:var(--text-muted)">لماذا إليرا</a></li></ul></div>
+<div><h4 style="color:var(--gold);font-size:.7rem;letter-spacing:.18em;margin-bottom:1.15rem">تواصلي</h4><ul style="list-style:none"><li style="margin-bottom:.55rem"><a href="https://wa.me/963997310856" style="color:var(--text-muted)" target="_blank">واتساب</a></li><li style="color:var(--text-muted)">حماة، سوريا</li></ul></div>
+</div><div class="footer-bottom"><span>© 2026 إليرا | ELYRA</span><span>صُنع بحب في سوريا</span></div></div></footer>
+<script>(function(){const t=document.getElementById('navToggle'),n=document.getElementById('mobileNav');if(!t||!n)return;t.onclick=function(){const o=n.classList.toggle('open');n.hidden=!o;document.body.style.overflow=o?'hidden':''};n.querySelectorAll('a').forEach(a=>a.onclick=function(){n.classList.remove('open');n.hidden=true;document.body.style.overflow=''})})()</script>
+</body>
+</html>
