@@ -43,7 +43,7 @@ def check(name: str, condition: bool, detail: str = "") -> None:
 
 def open_cart_if_closed(page):
     if not page.locator('#cart-dialog').evaluate('(dialog) => dialog.open'):
-        open_cart_if_closed(page)
+        page.locator('[data-cart-open]').first.click()
 
 
 def audit(page, label: str) -> None:
