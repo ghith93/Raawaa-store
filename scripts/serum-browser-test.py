@@ -41,6 +41,11 @@ def check(name: str, condition: bool, detail: str = "") -> None:
         print(f"::error::{name}")
 
 
+def open_cart_if_closed(page):
+    if not page.locator('#cart-dialog').evaluate('(dialog) => dialog.open'):
+        open_cart_if_closed(page)
+
+
 def audit(page, label: str) -> None:
     page.add_script_tag(content=AXE)
     violations = page.evaluate("""async () => {
@@ -222,7 +227,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                 page.locator('#products .size-option').nth(index).click()
                 page.locator('[data-add-current]').click()
                 page.locator('[data-cart-close]').click()
-            page.locator('[data-cart-open]').first.click()
+            open_cart_if_closed(page)
             check("تظهر خيارات العطر والزيت للاستفسار داخل السلة",
                   all(x in page.locator('[data-cart-custom-summary]').inner_text() for x in ['الطلب ككل','فانيلا','أرجان','نؤكد']))
             check("الأحجام الثلاثة مع العطر = $60 قبل الخصم", page.locator('[data-cart-subtotal]').inner_text() == '$60')
@@ -367,7 +372,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               set(stored) == {'size','zone','method','scent','oil'} and
               stored == {'size':'serum-100','zone':'other','method':'cod','scent':'vanilla','oil':'argan'} and
               page.evaluate("localStorage.getItem('rawaa:choices:v1')") is None, str(stored))
-        page.locator('[data-cart-open]').first.click()
+        open_cart_if_closed(page)
         draft = parse_qs(urlparse(page.locator('[data-cart-fallback-link]').get_attribute('href') or '').query).get('text', [''])[0]
         check("السلة والرسالة المعدّة تستعيدان السعر والاختيارات والمصدر",
               page.locator('[data-cart-total]').inner_text() == '$29' and
@@ -390,7 +395,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               '$25' in page.locator('[data-price-live]').text_content() and
               page.locator('[data-custom-scent="vanilla"]').get_attribute('aria-pressed') == 'true' and
               page.locator('[data-custom-oil="argan"]').get_attribute('aria-pressed') == 'true')
-        page.locator('[data-cart-open]').first.click()
+        open_cart_if_closed(page)
         check("السلة في صفحة المنتج تحافظ على الإجمالي والمنطقة والدفع",
               page.locator('[data-cart-total]').inner_text() == '$29' and
               page.locator('[data-zone-select="other"]').is_checked() and page.locator('[data-pay-select="cod"]').is_checked())
@@ -401,7 +406,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.locator('[data-custom-oil="almond"]').click()
         page.locator('#products .size-option').nth(0).click()
         page.locator('[data-add-current]').click()
-        page.locator('[data-cart-open]').first.click()
+        open_cart_if_closed(page)
         page.locator('[data-remove-item="serum-100"]').click()
         page.locator('[data-cart-close]').click()
         page.go_back(wait_until='load')
@@ -411,7 +416,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               page.locator('[data-custom-scent="rose"]').get_attribute('aria-pressed') == 'true' and
               page.locator('[data-custom-oil="almond"]').get_attribute('aria-pressed') == 'true' and
               page.locator('[data-estimate-total]').inner_text() == '$13.50')
-        page.locator('[data-cart-open]').first.click()
+        open_cart_if_closed(page)
         check("العودة لا تعيد عنصرًا حُذف في الصفحة الأخرى",
               page.locator('[data-cart-count]').inner_text() == '1' and
               page.locator('[data-cart-item="serum-30"]').count() == 1 and
@@ -421,7 +426,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.locator('[data-custom-scent="rose"]').click()
         page.locator('[data-custom-oil="almond"]').click()
         page.reload(wait_until='load')
-        page.locator('[data-cart-open]').first.click()
+        open_cart_if_closed(page)
         check("إلغاء العطر والإضافة يبقى ملغيًا بعد التحديث",
               page.locator('[data-custom-scent="rose"]').get_attribute('aria-pressed') == 'false' and
               page.locator('[data-custom-oil="almond"]').get_attribute('aria-pressed') == 'false' and
@@ -443,7 +448,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.evaluate("sessionStorage.setItem('rawaa:cart:v1', JSON.stringify({'serum-50':3}))")
         shared_path = base + path + '?cart=serum-50x1,serum-100x2&offer=cod'
         page.goto(shared_path, wait_until='load')
-        page.locator('[data-cart-open]').first.click()
+        open_cart_if_closed(page)
         check("رابط مشترك يحافظ على الكمية السابقة ويضيف الحجم الجديد مع توضيح الدمج",
               page.locator('[data-cart-count]').inner_text() == '5' and
               page.locator('[data-cart-item="serum-50"] [data-qty-value]').inner_text() == '3' and
@@ -454,19 +459,19 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.locator('[data-remove-item="serum-100"]').click()
         page.locator('[data-pay-select="shamcash"]').check()
         page.reload(wait_until='load')
-        page.locator('[data-cart-open]').first.click()
+        open_cart_if_closed(page)
         check("تحديث الرابط لا يعيد الحجم المحذوف ولا يفرض العرض بعد تعديل الدفع",
               page.locator('[data-cart-item="serum-100"]').count() == 0 and
               page.locator('[data-cart-item="serum-50"] [data-qty-value]').inner_text() == '3' and
               page.locator('[data-pay-select="shamcash"]').is_checked())
         page.locator('[data-remove-item="serum-50"]').click()
         page.reload(wait_until='load')
-        page.locator('[data-cart-open]').first.click()
+        open_cart_if_closed(page)
         check("السلة المفرغة لا تمتلئ مجددًا عند تحديث الرابط نفسه",
               page.locator('[data-cart-empty]').is_visible() and page.locator('[data-cart-items] li').count() == 0)
         page.goto(base + path, wait_until='load')
         page.goto(shared_path, wait_until='load')
-        page.locator('[data-cart-open]').first.click()
+        open_cart_if_closed(page)
         check("فتح رابط مشترك من جديد يطبق أحجامه مرة جديدة",
               page.locator('[data-cart-item="serum-50"] [data-qty-value]').inner_text() == '1' and
               page.locator('[data-cart-item="serum-100"] [data-qty-value]').inner_text() == '2' and
@@ -507,7 +512,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         ctx.add_init_script("Object.defineProperty(window, 'sessionStorage', {get(){throw new DOMException('blocked','SecurityError')}})")
         page = ctx.new_page(); page.goto(base + path + '?cart=serum-30x1', wait_until='load')
-        page.locator('[data-cart-open]').first.click()
+        open_cart_if_closed(page)
         check("رابط السلة المشترك يفتح حتى عند منع التخزين",
               page.locator('[data-cart-count]').inner_text() == '1' and page.locator('[data-cart-total]').inner_text() == '$11.70')
         ctx.close()
@@ -570,7 +575,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             page = ctx.new_page(); page.goto(base + target_path + '?utm_campaign=copy-test', wait_until='load')
             page.locator('[data-add-current]').click()
             if not page.locator('#cart-dialog').evaluate('(d) => d.open'):
-                page.locator('[data-cart-open]').first.click()
+                open_cart_if_closed(page)
             page.locator('[data-cart-checkout]').click()
             box = page.locator('#cart-dialog').bounding_box()
             page.mouse.move(box['x'] + box['width'] / 2, 280)
@@ -856,7 +861,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             page.locator('[data-add-current]').click()
             page.locator('[data-cart-close]').click()
             page.reload(wait_until='load')
-            page.locator('[data-cart-open]').first.click()
+            open_cart_if_closed(page)
             check("بلا إنترنت تبقى خيارات الطلب والسلة بعد التحديث",
                   page.locator('[data-cart-total]').inner_text() == '$29' and
                   page.locator('[data-custom-scent="vanilla"]').get_attribute('aria-pressed') == 'true' and
