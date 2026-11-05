@@ -1076,7 +1076,7 @@ async function checkOwnerDecisions(config) {
   const html = await read('serum.html');
   const visibleHtml = html.replace(/<!--[\s\S]*?-->/g, ' ');
   const source = await read('js/config.js');
-  const customerCopy = visibleHtml + '\n' + source.replace(/\/\*[\s\S]*?\*\//g, ' ');
+  const customerCopy = visibleHtml + '\n' + source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1 ');
   const expect = (ok, label) => ok ? pass(label) : fail(label);
   expect(config.formula?.active === 'Panthenol', 'المكوّن المختار مثبت: Panthenol');
   expect(config.formula?.percentagesVerified === false && !('declaredTotal' in config.formula) &&
