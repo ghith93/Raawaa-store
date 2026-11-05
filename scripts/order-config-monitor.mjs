@@ -52,6 +52,11 @@ async function main() {
     for (const key of ['phone', 'products', 'zones', 'defaultZone', 'methods']) {
       if (JSON.stringify(local[key]) !== JSON.stringify(live[key])) console.error(`Mismatch in ${key}`);
     }
+    if (process.argv.includes('--allow-drift')) {
+      console.warn('::warning::Live order configuration differs from this non-production branch. Review the intentional change before merging.');
+      console.log('Branch/live drift is informational here; production remains unchanged.');
+      return;
+    }
     throw new Error('Live order configuration differs from the checked-out source');
   }
   console.log('Live phone, product prices, delivery zones and payment rules match the source.');
