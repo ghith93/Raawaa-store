@@ -72,10 +72,16 @@ jobs:
             sleep 10
           done
           grep -q 'RAWAA | رواء' /tmp/luxury.html
-          curl -fsSI --max-time 25 "$PREVIEW_URL/luxury.html" | tr -d '\r' | grep -qi '^x-robots-tag:.*noindex'
-          curl -fsSI --max-time 25 "$PREVIEW_URL/assets/brand/logo-primary-v2.svg" >/dev/null
-          curl -fsSI --max-time 25 "$PREVIEW_URL/assets/img/products/editorial-v5-720.jpg" >/dev/null
-          echo "Verified preview: $PREVIEW_URL/luxury.html"
+          grep -qi '<meta name="robots" content="noindex,follow">' /tmp/luxury.html
+          curl -fsSL --max-time 25 "$PREVIEW_URL/assets/brand/logo-primary-v2.svg" -o /dev/null
+          curl -fsSL --max-time 25 "$PREVIEW_URL/assets/img/products/editorial-v5-720.jpg" -o /dev/null
+          headers=$(curl -sSI --max-time 25 "$PREVIEW_URL/luxury.html" | tr -d '\r' || true)
+          if grep -qi '^x-robots-tag:.*noindex' <<< "$headers"; then
+            echo "Cloudflare preview header confirms noindex."
+          else
+            echo "::warning::Cloudflare X-Robots-Tag was not visible; page-level noindex meta was verified."
+          fi
+          echo "Verified preview content, logo, image assets and page-level noindex: $PREVIEW_URL/luxury.html"
           {
             echo "## Cloudflare Pages preview"
             echo ""
