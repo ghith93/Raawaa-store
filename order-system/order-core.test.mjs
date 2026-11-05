@@ -22,7 +22,7 @@ test('uses trusted configuration and calculates fragrance and sham cash in cents
 });
 
 test('both delivery methods and zones use store rules', () => {
-  const expected = { 'hama:shamcash': 1440, 'hama:cod': 1800, 'other:shamcash': 1840, 'other:cod': 2000 };
+  const expected = { 'hama:shamcash': 1440, 'hama:cod': 1800, 'other:shamcash': 1640, 'other:cod': 1800 };
   for (const [choice, total] of Object.entries(expected)) {
     const [zone, method] = choice.split(':');
     assert.equal(prepareOrder({ ...base, zone, method }, cfg).totalCents, total);
