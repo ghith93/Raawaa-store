@@ -54,7 +54,7 @@ jobs:
           echo "Fonts in preview package: $fonts"
           test "$fonts" -ge 5
           # Preview-only noindex header: never modify production source headers.
-          printf '\n/*\\n  X-Robots-Tag: noindex, nofollow, noarchive\\n' >> dist/site/_headers
+          printf '%b' '\n/*\n  X-Robots-Tag: noindex, nofollow, noarchive\n' >> dist/site/_headers
 
       - name: Deploy isolated Cloudflare Pages preview
         id: deploy
