@@ -49,5 +49,8 @@ jobs:
       - name: فحص الموقع ونظام الطلبات قيد التطوير
         run: |
           node scripts/check-site.mjs
+          # The checked-in edge bundle is a deployment artifact. Rebuild it from
+          # the trusted current config before tests, just as Site checks does.
+          node scripts/build-order-entry.mjs
           node --test order-system/*.test.mjs scripts/order-config-monitor.test.mjs
       # No graph artifacts are uploaded: graph data may reproduce project content.
