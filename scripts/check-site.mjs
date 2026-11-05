@@ -1002,6 +1002,7 @@ async function checkMarketingConsistency() {
 async function checkLuxuryLanding() {
   group('صفحة الهوية الفاخرة');
   const page = await read('luxury.html');
+  if (!page.slice(0, page.indexOf('</head>')).includes(String.fromCharCode(92) + 'n')) pass('رأس الصفحة خالٍ من محارف newline المهروبة كنص'); else fail('رأس الصفحة يحتوي محارف newline مهروبة كنص');
   const build = await read('scripts/build-deploy.sh');
   const sw = await read('sw.js');
   if (/for f in [^\n]*\bluxury\.html\b/.test(build)) pass('luxury.html مدرجة في حزمة Cloudflare'); else fail('luxury.html غير مدرجة في حزمة النشر');
