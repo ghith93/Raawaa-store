@@ -135,7 +135,9 @@ jobs:
       - name: تدقيق الإتاحة وقياس الوزن
         env:
           AXE_PATH: ${{ github.workspace }}/node_modules/axe-core/axe.min.js
-        run: python scripts/a11y-audit.py --base http://127.0.0.1:8080
+        run: |
+          python scripts/a11y-audit.py --base http://127.0.0.1:8080
+          python scripts/axe-audit.py --base http://127.0.0.1:8080 --fail-on serious
 
       - name: رفع تقرير الإتاحة
         if: always()
