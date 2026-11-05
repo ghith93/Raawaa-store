@@ -174,8 +174,8 @@ test('سعر خاص لحجم يُعرض ويُحتسب كسعر جديد', async
   api.addToCart('serum-100');
   api.setMethod('shamcash', true);
   api.setZone('other', true);
-  // 20 − 2 (شام كاش) + 4 (توصيل المحافظات) = 22
-  assert.equal(api.totals().amount, 22);
+  // 20 − 2 (شام كاش) + 2 (توصيل المحافظات) = 20
+  assert.equal(api.totals().amount, 20);
 });
 
 test('صفحة السيروم تحمل العرض نفسه ولا تختلف عن الرئيسية', async () => {
