@@ -23,6 +23,7 @@ const CORE = [
   // Pages redirects /index.html to /; cache the canonical route for offline reload.
   './',
   './serum',
+  './luxury',
   './campaign',
   './hama',
   // Pages canonicalizes .html paths; cache the clean privacy route so offline aliases resolve.
