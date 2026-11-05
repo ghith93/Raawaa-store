@@ -809,7 +809,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("عامل الخدمة يحفظ صفحة المنتج ومشهدًا صغيرًا", controller and cached)
             ctx.set_offline(True)
             with page.expect_navigation(wait_until='load'):
-                page.locator('[data-discover-serum]').click()
+                page.locator('[data-discover-serum]').first.click()
             page.wait_for_selector('#products .size-option input', state='attached')
             page.locator('#ritual img').scroll_into_view_if_needed()
             offline_image = page.locator('#ritual img').evaluate("""el => new Promise(resolve => {
