@@ -44,6 +44,7 @@ const CORE = [
   './assets/icons/apple-touch-icon.png',
   './assets/icons/favicon-64.png',
   './assets/favicon.svg',
+  './assets/brand/logo-primary-v2-dark.svg',
   // الخطوط — مولَّدة من ملفات حقيقية؛ لا أسماء ميتة (عطل 2026-10-28)
   './assets/fonts/cormorant-500-latin.subset.woff2',
   './assets/fonts/plexar-400.subset.woff2',
