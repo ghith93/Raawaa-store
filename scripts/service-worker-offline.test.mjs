@@ -84,13 +84,14 @@ test('install precaches only the compact offline shell and required small image 
   const imagePaths = paths.filter((path) => /\.(?:avif|webp|jpe?g)$/i.test(path));
   const allPaths = paths.join('\n');
 
-  assert.equal(paths.length, 42, '42 shell resources include the canonical root route and the Hama landing page');
+  assert.equal(paths.length, 43, '43 shell resources include the canonical root route, Hama landing page, and active logo');
   assert.ok(paths.includes('/'), 'canonical root is cached for offline reload after Pages redirects /index.html');
   assert.ok(paths.includes('/privacy'), 'canonical clean privacy route is cached for Pages .html redirects');
   assert.ok(!paths.includes('/privacy.html'), 'the redirected privacy alias is not relied on as a cache key');
   assert.ok(!paths.includes('/index.html'), 'the redirected index response is not duplicated in the offline shell');
   assert.equal(imagePaths.length, 15, 'three formats for each of four product images plus the ritual scene');
-  assert.ok(!allPaths.includes('/assets/brand/logo-'), 'unused brand SVGs are not pre-cached');
+  assert.ok(paths.includes('/assets/brand/logo-primary-v2-dark.svg'), 'the active dark homepage logo is cached offline');
+  assert.ok(!paths.some((path) => path.startsWith('/assets/brand/') && path !== '/assets/brand/logo-primary-v2-dark.svg'), 'unused brand SVGs are not pre-cached');
   assert.ok(!imagePaths.some((path) => /-(?:720|900|1080)\./.test(path) && !path.endsWith('/ritual-v5-720.jpg')),
     'large responsive variants are fetched and cached on demand');
 
