@@ -79,10 +79,19 @@ miss=0
 # وpipefail يعتبر الأمر فاشلًا — فيُعلن «مفقود» وهو موجود.
 # الحل: نقرأ الصفحة مرة واحدة إلى متغيّر، ثم نفحص منه بلا أنابيب.
 HOME_HTML=$(curl -s --max-time 20 "$SITE/" || true)
-for token in data-size-options marketing.js data-wa-direct; do
+PRODUCT_HTML=$(curl -sL --max-time 20 "$SITE/serum" || true)
+
+# الصفحة الرئيسية أصبحت صفحة علامة تجارية؛ محددات المنتج والسلة انتقلت إلى /serum.
+for token in data-discover-serum marketing.js; do
   case "$HOME_HTML" in
-    *"$token"*) pass "الحى يحتوي «$token»" ;;
-    *) fail "الحى **لا** يحتوي «$token» — الموقع منشور بإصدار قديم"; miss=$((miss+1)) ;;
+    *"$token"*) pass "الرئيسية تحتوي «$token»" ;;
+    *) fail "الرئيسية لا تحتوي «$token» — تحقق من إصدار النشر"; miss=$((miss+1)) ;;
+  esac
+done
+for token in data-size-options data-open-cart-after-add; do
+  case "$PRODUCT_HTML" in
+    *"$token"*) pass "صفحة السيروم تحتوي «$token»" ;;
+    *) fail "صفحة السيروم لا تحتوي «$token» — تحقق من مسار المنتج أو إصدار النشر"; miss=$((miss+1)) ;;
   esac
 done
 
