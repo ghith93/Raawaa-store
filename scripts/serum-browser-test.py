@@ -189,7 +189,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("50 مل + شام كاش المحافظات = $16.40", page.locator('[data-cart-total]').inner_text() == '$16.40')
             page.locator('[data-pay-select="cod"]').check()
             check("بطاقتا المنطقة تتبعان رسوم الاستلام الفعلية", '$2' in hama_fee.inner_text() and '$2' in other_fee.inner_text())
-            check("50 مل + استلام المحافظات = $20", page.locator('[data-cart-total]').inner_text() == '$18')
+            check("50 مل + استلام المحافظات = $18", page.locator('[data-cart-total]').inner_text() == '$18')
             page.locator('[data-zone-select="hama"]').check()
             check("50 مل + استلام حماة = $18", page.locator('[data-cart-total]').inner_text() == '$18')
             audit(page, 'السلة المفتوحة')
