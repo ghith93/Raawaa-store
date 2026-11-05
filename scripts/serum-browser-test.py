@@ -562,7 +562,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             ctx.close()
 
         # عند منع واتساب أو الحافظة يمكن استعادة نص الاستفسار دون إرسال.
-        for target_path in [path, '/']:
+        for target_path in [path]:
             ctx = browser.new_context(viewport={"width":320,"height":568}, locale="ar",
                                       reduced_motion="reduce", ignore_https_errors=ignore_https,
                                       service_workers='block')
