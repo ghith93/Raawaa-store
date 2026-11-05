@@ -9,6 +9,9 @@ name: Deploy to Cloudflare Pages
 on:
   push:
     branches: [main]
+    # Workflow-only changes must not redeploy the production site.
+    paths-ignore:
+      - '.github/workflows/**'
   workflow_dispatch:
 
 permissions:
