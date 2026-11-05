@@ -1131,8 +1131,8 @@ async function checkOwnerDecisions(config) {
     'أسعار إجابة البحث تطابق الأحجام الثلاثة');
   const deliveryAnswer = faq.find(x => x.name === 'ما طرق الدفع المتاحة؟')?.acceptedAnswer?.text || '';
   expect(deliveryAnswer.includes('داخل حماة فقط') && deliveryAnswer.includes('باقي المحافظات') &&
-    deliveryAnswer.includes('2 دولار') && deliveryAnswer.includes('4 دولارات'),
-  'إجابة البحث تقيّد التوصيل المجاني وتذكر رسوم المنطقتين');
+    deliveryAnswer.includes('2 دولار') && !deliveryAnswer.includes('4 دولارات'),
+  'إجابة البحث تقيّد التوصيل المجاني وتذكر رسم $2 للمنطقتين');
   expect(!product?.offers?.availability && offers.every(o => !o.availability),
     'المخزون لكل حجم لا يُفترض في بيانات البحث');
 }
@@ -1170,7 +1170,7 @@ async function checkProductPage(config) {
     worker.includes('const visual = url.pathname.match') && worker.includes('ritual-v5|trio-v6|size-'), 'بدائل صور المشاهد والأحجام محفوظة بلا إنترنت لكل صيغة');
   ok([home, landing].every(page => page.includes('السيروم جاهز') && page.includes('العبوة تُجهَّز عند الطلب') && page.includes('موعد')), 'جاهزية السيروم وتجهيز العبوة وموعدها المعلّق مذكورة في مسار الشراء');
   ok(landing.includes('class="serum-size-guide"') && landing.includes('لكل ملليلتر') && landing.includes('$2') &&
-    landing.includes('$4') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
+    landing.includes('$2') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
   for (const [label, page] of [['الرئيسية', home], ['المنتج', visible]]) {
     ok(!page.includes('data-unit-comparison') && !page.includes('قارني تكلفة كل 10 مل'), `${label}: إزالة مقارنة تكلفة 10 مل`);
     ok(page.includes('الأسعار بلا عطر') && page.includes('إضافة العطر $2 للعبوة'), `${label}: توضيح سعر العطر`);
@@ -1198,7 +1198,7 @@ async function checkProductPage(config) {
   ok(!/\d\s*[%٪]|[٠-٩]\s*[%٪]/.test(ingredients), 'لا نسب تركيبة غير مصححة');
   ok(/ليست صورة للمنتج الفعلي/.test(visible) && /تصميم مقترح/.test(visible), 'الصورة موصوفة كتصوّر لا تصوير حقيقي');
   ok(!/الأكثر اختيارًا|الأكثر طلبًا|التصنيع حسب الطلب|كيراتين/.test(visible), 'لا شعبية أو مدة تصنيع أو تركيبة متناقضة');
-  ok(visible.includes('توصيل مجاني داخل حماة فقط') && visible.includes('$4'), 'قيود ورسوم التوصيل واضحة');
+  ok(visible.includes('توصيل مجاني داخل حماة فقط') && visible.includes('$2'), 'قيود ورسوم التوصيل واضحة');
   ok(/data-estimate-interface[^>]*hidden/.test(visible) && visible.includes('data-estimate-fallback') && visible.includes('تقدير عبوة واحدة مع التوصيل'), 'التقدير الرقمي مخفي دون JavaScript وله بديل ومحدّد بعبوة واحدة');
   ok(['data-estimate-zone', 'data-estimate-method', 'data-estimate-total', 'data-estimate-discount', 'data-estimate-delivery'].every(hook => visible.includes(hook)), 'خيارات وتفاصيل التقدير موجودة');
   const cartLogic = await read('js/cart.js');
