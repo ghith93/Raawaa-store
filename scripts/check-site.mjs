@@ -1121,6 +1121,16 @@ async function checkProductPage(config) {
   ok(visible.includes('rel="canonical" href="https://raawaa-store.pages.dev/serum"'), 'رابط canonical مستقل');
   const home = (await read('index.html')).replace(/<!--[\s\S]*?-->/g, ' ');
   const homeHero = home.match(/<section[^>]*class="hero"[\s\S]*?<\/section>/)?.[0] || '';
+  ok(home.includes('assets/brand/logo-primary-v2-dark.svg') && home.includes('لمعان يُرى، ونعومة تُلمَس'),
+    'الرئيسية تعرض الشعار الرسمي والشعار اللفظي');
+  ok(home.includes('size-50-v6-720.avif') && home.includes('og-image-v6-1200.jpg') &&
+    home.includes('type="image/avif"') && home.includes('srcset='),
+    'الرئيسية تعرض صورًا متجاوبة وبيانات مشاركة اجتماعية');
+  ok(home.includes('js/config.js') && home.includes('js/marketing.js'),
+    'مصدر الحملة يُحفظ عند الانتقال من الرئيسية إلى صفحة المنتج');
+  ok(home.includes('rel="manifest"') && home.includes('apple-touch-icon') &&
+    home.includes('serviceWorker.register') && !/fonts\.googleapis|fonts\.gstatic/.test(home),
+    'الرئيسية تستخدم خطوطًا محلية وتدعم PWA دون خطوط خارجية');
   // يحتوي قسم الشراء أقسامًا متداخلة؛ نصل إلى إغلاقه الذي يسبق الفوائد، لا أول إغلاق داخلي.
   const landing = visible.match(/<section[^>]*class="serum-landing"[\s\S]*?<\/section>\s*(?=<section[^>]*id="benefits")/)?.[0] || '';
   for (const [label, page] of [['المنتج', visible]]) {
