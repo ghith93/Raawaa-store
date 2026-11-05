@@ -112,7 +112,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("استفسار واتساب يوضح الحجم الافتراضي والسعر المرجعي وموعد التجهيز",
                   all(x in direct_msg for x in ['50 مل','$16','قبل الخصم والتوصيل','موعد تجهيز العبوة']) and
                   page.locator('[data-wa-context]').is_visible() and 'راجعي الرسالة' in page.locator('[data-wa-context]').inner_text())
-            check("رسوم التوصيل وشروطها قرب الشراء", all(x in page.locator('.serum-trust').inner_text() for x in ['حماة فقط','$4','$2','بلا خصم']))
+            check("رسوم التوصيل وشروطها قرب الشراء", all(x in page.locator('.serum-trust').inner_text() for x in ['حماة فقط','$2','بلا خصم']) and '$4' not in page.locator('.serum-trust').inner_text())
             estimate = page.locator('[data-order-estimate]')
             check("تقدير العبوة الواحدة يظهر بافتراضاته قبل فتح السلة",
                   estimate.is_visible() and 'عبوة واحدة' in estimate.inner_text() and
@@ -246,9 +246,9 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("زر واتساب يقيس النقرة فقط لا الشراء", 'InitiateCheckout' in events and 'Contact' in events and 'Purchase' not in events, str(events))
             page.locator('[data-cart-close]').click()
             check('لا ادعاء حماية حرارية بلا تأكيد', 'حماية حرارية' not in (page.locator('main').text_content() or ''))
-            page.goto(base + '/', wait_until='load')
+            page.goto(base + path, wait_until='load')
             page.wait_for_selector('#products .size-option input', state='attached')
-            check("السلة والمصدر ينتقلان للرئيسية في التبويب نفسه", page.locator('[data-cart-count]').inner_text() == '3' and page.evaluate('window.rawaaSrcTag()') == 'serum-oct')
+            check("السلة والمصدر يبقيان محفوظين عند إعادة فتح صفحة المنتج", page.locator('[data-cart-count]').inner_text() == '3' and page.evaluate('window.rawaaSrcTag()') == 'serum-oct')
             check("لا أخطاء JavaScript", not errors, '; '.join(errors[:3]))
             check("لا استجابات فاشلة", not bad, '; '.join(bad[:3]))
             ctx.close()
@@ -384,13 +384,14 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               shared.locator('[data-custom-scent="vanilla"]').get_attribute('aria-pressed') == 'false' and
               shared.locator('[data-custom-oil="argan"]').get_attribute('aria-pressed') == 'false')
         shared.close()
-        page.goto(base + '/', wait_until='load')
-        check("الخيارات تنتقل للرئيسية في التبويب نفسه",
+        page.goto(base + path, wait_until='load')
+        page.wait_for_selector('#products .size-option input', state='attached')
+        check("الخيارات تبقى محفوظة في صفحة المنتج بعد إعادة فتحها",
               '$25' in page.locator('[data-price-live]').text_content() and
               page.locator('[data-custom-scent="vanilla"]').get_attribute('aria-pressed') == 'true' and
               page.locator('[data-custom-oil="argan"]').get_attribute('aria-pressed') == 'true')
         page.locator('[data-cart-open]').first.click()
-        check("السلة في الرئيسية تحافظ على الإجمالي والمنطقة والدفع",
+        check("السلة في صفحة المنتج تحافظ على الإجمالي والمنطقة والدفع",
               page.locator('[data-cart-total]').inner_text() == '$29' and
               page.locator('[data-zone-select="other"]').is_checked() and page.locator('[data-pay-select="cod"]').is_checked())
         page.locator('[data-zone-select="hama"]').check()
@@ -863,14 +864,13 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             ctx.close()
 
         # تكبير النص 200%: الترويسة وخيارات الأحجام والمشاهد لا تُقصّ أفقيًا.
-        for zoom_path in ['/', path]:
+        for zoom_path in [path]:
             ctx = browser.new_context(viewport={"width":320,"height":844}, is_mobile=True, has_touch=True,
                                       locale="ar", ignore_https_errors=ignore_https)
             page = ctx.new_page(); page.goto(base + zoom_path, wait_until='load')
             page.wait_for_selector('#products .size-option input', state='attached')
             page.add_style_tag(content='html { font-size: 200% !important; }')
-            target_selector = ('.header-actions button, .price-strip li' if zoom_path == '/' else
-                               '.header-actions button, #products .size-option, [data-serum-controls]:visible button')
+            target_selector = '.header-actions button, #products .size-option, [data-serum-controls]:visible button'
             target_selector += ', .unit-comparison-list li, .purchase-shortcuts a'
             in_bounds = page.locator(target_selector).evaluate_all("""els => els.every(e => {
               const r = e.getBoundingClientRect();
@@ -957,10 +957,10 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.close()
         ctx = browser.new_context(java_script_enabled=False, ignore_https_errors=ignore_https, viewport={"width":390,"height":844})
         page = ctx.new_page(); page.goto(base + '/', wait_until='load')
-        check("الرئيسية دون JavaScript تعرض المقارنة وبديل التخصيص",
-              page.locator('[data-unit-comparison]').count() == 0 and page.locator('#custom noscript a').count() == 1 and
-              page.locator('#products [data-add-current]').is_disabled() and
-              page.locator('#products noscript a[href^="https://wa.me/"]').count() >= 1)
+        check("الرئيسية الجديدة تعمل دون JavaScript وتوجّه لصفحة المنتج",
+              page.locator('.brand-logo').is_visible() and page.locator('.hero h1').count() == 1 and
+              page.locator('[data-discover-serum]').get_attribute('href') == '/serum' and
+              'الباهت' in page.locator('.hero-lead').inner_text())
         ctx.close()
 
         # فشل القياس الاختياري لا يعطّل إضافة المنتج.
