@@ -229,7 +229,7 @@ test('ثلاث عبوات مع عرض «عبوتان»: عبوتان + واحد�
   const t = api.totals();
   assert.equal(t.offer, 2);
   assert.equal(t.net, 46, '30 + 16');
-  assert.equal(t.amount, 48);
+  assert.equal(t.amount, 46, 'توصيل حماة مجاني بعد تطبيق عرض العبوات');
 });
 
 test('ثلاث عبوات مع عرض «3 بـ 66$»: 66$ لا 75$، ثم شام كاش', async () => {
