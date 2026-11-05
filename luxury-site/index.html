@@ -1,1 +1,190 @@
-PLACEHOLDER_WILL_BE_REPLACED
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAWAA | رواء — فخامة العناية بالشعر</title>
+  <meta name="description" content="رواء — علامة سورية فاخرة للعناية بالشعر. سيرومات وزيوت وماسكات مصممة لتمنحك نعومة ولمعانًا استثنائيًا.">
+  <meta name="theme-color" content="#0f0e0d">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0c0b0a; --bg-elevated: #161412; --bg-soft: #1e1b18;
+      --text: #f7f2ea; --text-muted: #9e9486; --gold: #c9a86c; --gold-light: #e2c58f;
+      --border: rgba(201, 168, 108, 0.15); --radius: 1px;
+      --font-ar: 'Noto Sans Arabic', system-ui, sans-serif;
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --header-h: 76px;
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{font-family:var(--font-ar);background:var(--bg);color:var(--text);line-height:1.75;font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    h1,h2,h3{font-family:var(--font-display);font-weight:500;letter-spacing:0.01em}
+    .eyebrow{font-size:0.68rem;letter-spacing:0.32em;text-transform:uppercase;color:var(--gold);font-weight:500}
+    .shell{max-width:1220px;margin:0 auto;padding:0 1.4rem}
+    @media(min-width:768px){.shell{padding:0 2.4rem}}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:0.9rem 1.9rem;font-family:var(--font-ar);font-size:0.84rem;font-weight:500;letter-spacing:0.07em;text-decoration:none;border:none;cursor:pointer;transition:all 0.3s cubic-bezier(0.22,1,0.36,1);border-radius:var(--radius)}
+    .btn-gold{background:var(--gold);color:#0c0b0a}
+    .btn-gold:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,108,0.25)}
+    .btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+    .btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+    .btn-sm{padding:0.6rem 1.2rem;font-size:0.78rem}
+    .site-header{position:fixed;top:0;left:0;right:0;z-index:200;height:var(--header-h);background:rgba(12,11,10,0.88);backdrop-filter:blur(18px) saturate(140%);border-bottom:1px solid var(--border)}
+    .header-inner{display:flex;align-items:center;justify-content:space-between;height:100%}
+    .brand{display:flex;flex-direction:column;text-decoration:none;color:var(--text);line-height:1.15}
+    .brand-latin{font-family:var(--font-display);font-size:1.4rem;letter-spacing:0.38em;font-weight:500}
+    .brand-ar{font-size:0.72rem;color:var(--gold);letter-spacing:0.18em}
+    .nav-desktop{display:none;list-style:none;gap:2.1rem}
+    @media(min-width:920px){.nav-desktop{display:flex}.nav-desktop a{color:var(--text-muted);text-decoration:none;font-size:0.82rem;letter-spacing:0.05em;transition:color 0.25s}.nav-desktop a:hover{color:var(--gold)}}
+    .header-cta{display:flex;align-items:center;gap:0.9rem}
+    .nav-toggle{display:flex;align-items:center;justify-content:center;width:42px;height:42px;background:none;border:1px solid var(--border);color:var(--text);cursor:pointer;border-radius:var(--radius)}
+    @media(min-width:920px){.nav-toggle{display:none}}
+    .mobile-nav{position:fixed;inset:var(--header-h) 0 0 0;z-index:190;background:var(--bg);padding:2rem 1.5rem;transform:translateY(-110%);opacity:0;visibility:hidden;transition:all 0.4s cubic-bezier(0.22,1,0.36,1)}
+    .mobile-nav.open{transform:translateY(0);opacity:1;visibility:visible}
+    .mobile-nav ul{list-style:none}
+    .mobile-nav li{border-bottom:1px solid var(--border)}
+    .mobile-nav a{display:block;padding:1.1rem 0;color:var(--text);text-decoration:none;font-size:1.1rem}
+    .hero{min-height:100vh;min-height:100dvh;display:flex;align-items:center;padding:calc(var(--header-h) + 3rem) 0 5rem;position:relative;overflow:hidden}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 75% 35%,rgba(201,168,108,0.09) 0%,transparent 55%);pointer-events:none}
+    .hero-grid{display:grid;gap:3.5rem;align-items:center}
+    @media(min-width:980px){.hero-grid{grid-template-columns:1.05fr 0.95fr;gap:4.5rem}}
+    .hero-content{max-width:540px;position:relative;z-index:1}
+    .hero .eyebrow{margin-bottom:1.35rem;display:block}
+    .hero h1{font-size:clamp(2.9rem,6.5vw,4.4rem);line-height:1.12;margin-bottom:1.4rem}
+    .hero h1 em{color:var(--gold);font-style:italic;font-weight:400}
+    .hero-lead{font-size:1.12rem;color:var(--text-muted);margin-bottom:2.2rem;font-weight:300;line-height:1.85}
+    .hero-actions{display:flex;flex-wrap:wrap;gap:0.9rem;margin-bottom:2.8rem}
+    .hero-meta{display:flex;flex-wrap:wrap;gap:1.8rem 2.4rem;font-size:0.78rem;color:var(--text-muted)}
+    .hero-meta strong{color:var(--gold);font-weight:500;display:block;font-size:0.92rem;margin-bottom:0.2rem}
+    .visual-panel{position:relative;aspect-ratio:4/5;background:linear-gradient(160deg,#1a1714 0%,#12100e 100%);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .visual-inner{text-align:center;position:relative;z-index:1;padding:2rem}
+    .visual-inner .mark{font-family:var(--font-display);font-size:2.4rem;color:var(--gold);letter-spacing:0.2em;margin-bottom:0.6rem}
+    .visual-inner p{color:var(--text-muted);font-size:0.9rem;font-weight:300}
+    section{padding:6.5rem 0}
+    .section-head{text-align:center;max-width:620px;margin:0 auto 3.8rem}
+    .section-head .eyebrow{margin-bottom:0.85rem;display:block}
+    .section-head h2{font-size:clamp(2.05rem,4.2vw,2.85rem);margin-bottom:1rem;line-height:1.2}
+    .section-head p{color:var(--text-muted);font-size:1.05rem;font-weight:300}
+    .philosophy{background:var(--bg-elevated)}
+    .philosophy-grid{display:grid;gap:1.4rem}
+    @media(min-width:768px){.philosophy-grid{grid-template-columns:repeat(3,1fr)}}
+    .philo-card{padding:2.4rem 1.9rem;border:1px solid var(--border);background:var(--bg);transition:border-color 0.35s,transform 0.35s}
+    .philo-card:hover{border-color:rgba(201,168,108,0.38);transform:translateY(-3px)}
+    .philo-card .num{font-family:var(--font-display);font-size:2.1rem;color:var(--gold);margin-bottom:1.1rem}
+    .philo-card h3{font-size:1.28rem;margin-bottom:0.7rem}
+    .philo-card p{color:var(--text-muted);font-size:0.94rem;font-weight:300}
+    .collection-grid{display:grid;gap:1.5rem}
+    @media(min-width:768px){.collection-grid{grid-template-columns:repeat(3,1fr)}}
+    .product-card{background:var(--bg-elevated);border:1px solid var(--border);overflow:hidden;transition:transform 0.4s,border-color 0.35s}
+    .product-card:hover{transform:translateY(-6px);border-color:rgba(201,168,108,0.32)}
+    .product-visual{aspect-ratio:1;background:linear-gradient(155deg,#1f1b17 0%,#141210 100%);display:flex;align-items:center;justify-content:center;position:relative}
+    .product-visual .tag{position:absolute;top:1.1rem;right:1.1rem;background:var(--gold);color:#0c0b0a;font-size:0.62rem;letter-spacing:0.14em;padding:0.38rem 0.75rem;font-weight:600}
+    .product-visual .name-mark{font-family:var(--font-display);font-size:2rem;color:var(--gold);letter-spacing:0.12em;margin-bottom:0.35rem}
+    .product-visual .sub{color:var(--text-muted);font-size:0.88rem}
+    .product-info{padding:1.85rem 1.7rem 1.9rem}
+    .product-info h3{font-size:1.32rem;margin-bottom:0.45rem}
+    .product-info .desc{color:var(--text-muted);font-size:0.9rem;margin-bottom:1.35rem;font-weight:300;line-height:1.7}
+    .product-price{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+    .price{font-family:var(--font-display);font-size:1.55rem;color:var(--gold)}
+    .price small{font-size:0.82rem;color:var(--text-muted);margin-left:0.2rem}
+    .experience{background:var(--bg-soft)}
+    .exp-grid{display:grid;gap:3.5rem;align-items:center}
+    @media(min-width:900px){.exp-grid{grid-template-columns:1fr 1fr;gap:4rem}}
+    .exp-list{list-style:none;display:flex;flex-direction:column;gap:1.9rem;margin-top:1.5rem}
+    .exp-list li{display:flex;gap:1.3rem;align-items:flex-start}
+    .exp-list .step{font-family:var(--font-display);font-size:1.55rem;color:var(--gold);min-width:1.8rem}
+    .exp-list h4{font-size:1.12rem;margin-bottom:0.3rem}
+    .exp-list p{color:var(--text-muted);font-size:0.94rem;font-weight:300}
+    .story-content{max-width:700px;margin:0 auto;text-align:center}
+    .story-content p{font-size:1.12rem;color:var(--text-muted);font-weight:300;margin-bottom:1.5rem;line-height:1.95}
+    .story-content .highlight{color:var(--text);font-style:italic;font-family:var(--font-display);font-size:1.45rem;display:block;margin:2rem 0}
+    .cta-banner{background:linear-gradient(145deg,#161412 0%,#24201b 100%);border-top:1px solid var(--border);border-bottom:1px solid var(--border);text-align:center;padding:5.5rem 0}
+    .cta-banner h2{font-size:clamp(1.9rem,4vw,2.6rem);margin-bottom:1rem}
+    .cta-banner p{color:var(--text-muted);margin-bottom:2.1rem;max-width:460px;margin-left:auto;margin-right:auto;font-weight:300}
+    .cta-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:0.9rem}
+    footer{padding:4.5rem 0 2.5rem;border-top:1px solid var(--border)}
+    .footer-grid{display:grid;gap:2.8rem;margin-bottom:3.2rem}
+    @media(min-width:768px){.footer-grid{grid-template-columns:1.6fr 1fr 1fr}}
+    .footer-brand .brand-latin{font-size:1.55rem;margin-bottom:0.35rem}
+    .footer-brand p{color:var(--text-muted);font-size:0.9rem;max-width:270px;font-weight:300;margin-top:0.9rem}
+    .footer-col h4{font-size:0.72rem;letter-spacing:0.18em;color:var(--gold);margin-bottom:1.3rem;text-transform:uppercase;font-weight:500}
+    .footer-col ul{list-style:none}
+    .footer-col li{margin-bottom:0.65rem}
+    .footer-col a{color:var(--text-muted);text-decoration:none;font-size:0.9rem;transition:color 0.2s}
+    .footer-col a:hover{color:var(--gold)}
+    .footer-bottom{padding-top:2rem;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem;font-size:0.78rem;color:var(--text-muted)}
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="shell header-inner">
+      <a href="#" class="brand"><span class="brand-latin">RAWAA</span><span class="brand-ar">رواء</span></a>
+      <nav><ul class="nav-desktop"><li><a href="#collection">المجموعة</a></li><li><a href="#philosophy">فلسفتنا</a></li><li><a href="#experience">التجربة</a></li><li><a href="#story">قصتنا</a></li></ul></nav>
+      <div class="header-cta">
+        <a href="https://wa.me/963997310856" class="btn btn-gold btn-sm" target="_blank" rel="noopener">اطلبي الآن</a>
+        <button class="nav-toggle" id="navToggle" aria-label="فتح القائمة" aria-expanded="false">☰</button>
+      </div>
+    </div>
+  </header>
+  <div class="mobile-nav" id="mobileNav" hidden><ul><li><a href="#collection">المجموعة</a></li><li><a href="#philosophy">فلسفتنا</a></li><li><a href="#experience">التجربة</a></li><li><a href="#story">قصتنا</a></li><li style="margin-top:1.5rem;border:none"><a href="https://wa.me/963997310856" class="btn btn-gold" style="width:100%" target="_blank">تواصلي عبر واتساب</a></li></ul></div>
+  <main>
+    <section class="hero">
+      <div class="shell"><div class="hero-grid">
+        <div class="hero-content">
+          <span class="eyebrow">مجموعة العناية الفاخرة</span>
+          <h1>شعركِ يستحق<br><em>لمسة استثنائية</em></h1>
+          <p class="hero-lead">رواء علامة سورية للعناية بالشعر، صُممت للنساء اللواتي يرفضن العادي. تركيبات راقية تمنح نعومة عميقة ولمعانًا يلفت الأنظار من أول استخدام.</p>
+          <div class="hero-actions"><a href="#collection" class="btn btn-gold">اكتشفي المجموعة</a><a href="https://wa.me/963997310856" class="btn btn-outline" target="_blank" rel="noopener">تحدثي معنا</a></div>
+          <div class="hero-meta"><div><strong>صنع في سوريا</strong>حرفية عالية الدقة</div><div><strong>تجهيز عند الطلب</strong>طازج خصيصًا لكِ</div><div><strong>دفع عند الاستلام</strong>في كل المحافظات</div></div>
+        </div>
+        <div class="visual-panel"><div class="visual-inner"><div class="mark">RAWAA</div><p>مجموعة العناية الفاخرة<br>من حماة إلى العالم</p></div></div>
+      </div></div>
+    </section>
+    <section class="philosophy" id="philosophy">
+      <div class="shell">
+        <div class="section-head"><span class="eyebrow">فلسفتنا</span><h2>ثلاثة مبادئ لا نتنازل عنها</h2><p>كل منتج من رواء يُبنى على هذه القيم الأساسية.</p></div>
+        <div class="philosophy-grid">
+          <article class="philo-card"><div class="num">01</div><h3>الشعور أولًا</h3><p>نركز على ما تشعرين به عند لمس شعركِ: النعومة، الانسيابية، واللمعان الذي يُرى ويُحس. النتيجة الفورية هي معيارنا الوحيد.</p></article>
+          <article class="philo-card"><div class="num">02</div><h3>حرفية سورية</h3><p>نعمل مع مختصين في بيئة احترافية دقيقة. كل دفعة تُجهَّز بعناية فائقة لتصل إليكِ في أفضل حالة ممكنة.</p></article>
+          <article class="philo-card"><div class="num">03</div><h3>تجربة خاصة</h3><p>اختاري عطركِ المفضل. المنتج يصبح جزءًا من طقوسكِ اليومية، ليس مجرد زجاجة على الرف.</p></article>
+        </div>
+      </div>
+    </section>
+    <section id="collection">
+      <div class="shell">
+        <div class="section-head"><span class="eyebrow">المجموعة</span><h2>منتجات صُممت لتُشعرِكِ بالتميز</h2><p>خط متكامل من العناية الفاخرة بالشعر. كل منتج يكمل الآخر ويخدم روتينكِ.</p></div>
+        <div class="collection-grid">
+          <article class="product-card"><div class="product-visual"><span class="tag">الأكثر طلبًا</span><div style="text-align:center"><div class="name-mark">Lustre</div><div class="sub">سيروم اللمعان</div></div></div><div class="product-info"><h3>سيروم لاستِر</h3><p class="desc">لمسة نهائية خفيفة تمنح شعركِ لمعانًا عميقًا ونعومة حريرية دون أي وزن. مثالي للاستخدام اليومي والتسريح الحراري.</p><div class="product-price"><div class="price"><small>من</small>$18</div><a href="https://wa.me/963997310856" class="btn btn-outline btn-sm" target="_blank">اطلبي</a></div></div></article>
+          <article class="product-card"><div class="product-visual"><div style="text-align:center"><div class="name-mark">Velvet</div><div class="sub">زيت العناية</div></div></div><div class="product-info"><h3>زيت فيلفيت</h3><p class="desc">تركيبة غنية تغذي الأطراف وتقلل التطاير بشكل ملحوظ. يترك شعركِ ناعمًا وسهل التصفيف مع رائحة راقية تدوم طوال اليوم.</p><div class="product-price"><div class="price"><small>من</small>$22</div><a href="https://wa.me/963997310856" class="btn btn-outline btn-sm" target="_blank">اطلبي</a></div></div></article>
+          <article class="product-card"><div class="product-visual"><div style="text-align:center"><div class="name-mark">Aura</div><div class="sub">ماسك ليلي</div></div></div><div class="product-info"><h3>ماسك أورا</h3><p class="desc">علاج ليلي مكثف يستعيد حيوية الشعر أثناء النوم. استيقظي على شعر أكثر نعومة ولمعانًا وقابلية فائقة للتصفيف.</p><div class="product-price"><div class="price"><small>من</small>$28</div><a href="https://wa.me/963997310856" class="btn btn-outline btn-sm" target="_blank">اطلبي</a></div></div></article>
+        </div>
+      </div>
+    </section>
+    <section class="experience" id="experience">
+      <div class="shell"><div class="exp-grid">
+        <div><span class="eyebrow">كيف تطلبين</span><h2 style="font-size:clamp(1.9rem,3.6vw,2.5rem);margin:0.85rem 0 1.1rem">تجربة بسيطة<br>وأنيقة</h2><p style="color:var(--text-muted);font-weight:300">لا تعقيدات. من الاختيار إلى باب منزلكِ في ثلاث خطوات واضحة.</p>
+          <ol class="exp-list"><li><span class="step">١</span><div><h4>اختاري منتجكِ</h4><p>تصفحي المجموعة وحددي ما يناسب طبيعة شعركِ.</p></div></li><li><span class="step">٢</span><div><h4>تواصلي معنا مباشرة</h4><p>أرسلي رسالة عبر واتساب. نؤكد التوفر والخيارات معكِ.</p></div></li><li><span class="step">٣</span><div><h4>استلمي وادفعي براحة</h4><p>الدفع عند الاستلام في كل المحافظات. أو شام كاش داخل حماة.</p></div></li></ol>
+        </div>
+        <div class="visual-panel" style="min-height:400px"><div class="visual-inner"><div class="mark" style="font-size:1.8rem">التجربة</div><p>من الطلب إلى الاستلام<br>بسلاسة وأناقة</p></div></div>
+      </div></div>
+    </section>
+    <section id="story"><div class="shell"><div class="story-content">
+      <span class="eyebrow">قصتنا</span><h2 style="margin:0.85rem 0 2.1rem">من حماة… إلى طقوسكِ اليومية</h2>
+      <p>بدأت رواء من قناعة بسيطة: المرأة السورية تستحق منتجات عناية بالشعر بمستوى عالمي، دون أن تدفع أسعارًا مبالغًا فيها أو تقبل بوعود فارغة.</p>
+      <span class="highlight">«نصنع ما نحب أن تستخدمه نساء نعرفهن.»</span>
+      <p>كل تركيبة تُطوَّر بعناية، وكل دفعة تُجهَّز عند الطلب لتصل إليكِ بأفضل جودة ممكنة. نحن لا نبيع زجاجات… نحن نقدم شعورًا بالاهتمام والتميز كل صباح وكل مساء.</p>
+    </div></div></section>
+    <section class="cta-banner"><div class="shell"><h2>جاهزة لتجربة رواء؟</h2><p>تواصلي معنا الآن عبر واتساب وسنساعدكِ في اختيار المنتج الأنسب لشعركِ.</p><div class="cta-actions"><a href="https://wa.me/963997310856" class="btn btn-gold" target="_blank" rel="noopener">ابدئي المحادثة</a><a href="#collection" class="btn btn-outline">عودي للمجموعة</a></div></div></section>
+  </main>
+  <footer><div class="shell"><div class="footer-grid">
+    <div class="footer-brand"><div class="brand-latin">RAWAA</div><div class="brand-ar" style="color:var(--gold)">رواء</div><p>علامة سورية فاخرة للعناية بالشعر. نعومة ولمعان يليقان بكِ.</p></div>
+    <div class="footer-col"><h4>استكشفي</h4><ul><li><a href="#collection">المجموعة</a></li><li><a href="#philosophy">فلسفتنا</a></li><li><a href="#experience">كيف تطلبين</a></li><li><a href="#story">قصتنا</a></li></ul></div>
+    <div class="footer-col"><h4>تواصلي</h4><ul><li><a href="https://wa.me/963997310856" target="_blank" rel="noopener">واتساب</a></li><li>حماة، سوريا</li></ul></div>
+  </div><div class="footer-bottom"><span>© 2026 رواء | RAWAA. جميع الحقوق محفوظة.</span><span>صُنع بحب في سوريا</span></div></div></footer>
+  <script>
+    (function(){const t=document.getElementById('navToggle'),n=document.getElementById('mobileNav');if(!t||!n)return;t.addEventListener('click',function(){const o=n.classList.toggle('open');n.hidden=!o;t.setAttribute('aria-expanded',o);document.body.style.overflow=o?'hidden':''});n.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){n.classList.remove('open');n.hidden=true;t.setAttribute('aria-expanded','false');document.body.style.overflow=''})})})();
+  </script>
+</body>
+</html>
