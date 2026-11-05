@@ -38,12 +38,17 @@ jobs:
         run: node scripts/check-site.mjs
 
       - name: Build Pages output
-        run: bash scripts/build-deploy.sh
+        run: |
+          bash scripts/build-deploy.sh
+          # ELYRA is exposed only on isolated PR previews, never in production build output.
+          mkdir -p dist/site/elyra
+          cp -R elyra/. dist/site/elyra/
 
       - name: Verify preview payload
         run: |
           test -s dist/site/index.html
           test -s dist/site/luxury.html
+          test -s dist/site/elyra/index.html
           test -s dist/site/assets/brand/logo-primary-v2.svg
           test -s dist/site/assets/img/products/editorial-v5-720.jpg
           fonts=$(find dist/site/assets/fonts -maxdepth 1 -name '*.woff2' -type f 2>/dev/null | wc -l)
@@ -72,6 +77,9 @@ jobs:
           done
           grep -q 'RAWAA | رواء' /tmp/luxury.html
           grep -qi '<meta name="robots" content="noindex,follow">' /tmp/luxury.html
+          curl -fsSL --max-time 25 "$PREVIEW_URL/elyra/" -o /tmp/elyra.html
+          grep -q 'ELYRA' /tmp/elyra.html
+          grep -qi '<meta name="robots" content="noindex,nofollow">' /tmp/elyra.html
           curl -fsSL --max-time 25 "$PREVIEW_URL/assets/brand/logo-primary-v2.svg" -o /dev/null
           curl -fsSL --max-time 25 "$PREVIEW_URL/assets/img/products/editorial-v5-720.jpg" -o /dev/null
           headers=$(curl -sSI --max-time 25 "$PREVIEW_URL/luxury.html" | tr -d '\r' || true)
@@ -87,7 +95,8 @@ jobs:
             echo "- URL: $PREVIEW_URL/luxury.html"
             echo "- PR branch alias: `pr-${{ github.event.pull_request.number }}`"
             echo "- Search indexing: blocked (X-Robots-Tag: noindex)"
-            echo "- Production site: untouched"
+            echo "- ELYRA concept preview: $PREVIEW_URL/elyra/"
+          echo "- Production site: untouched"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish or update PR preview comment
