@@ -47,6 +47,11 @@
 /js/config.js
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
 
+# ELYRA: isolated concept preview only; never index or cache it.
+ /elyra/*
+  X-Robots-Tag: noindex, nofollow, noarchive
+  Cache-Control: no-store
+
 # لوحة خاصة: بلا تخزين، فهرسة أو مصادر خارجية باستثناء Supabase للمصادقة.
 /owner/*
   Cache-Control: no-store, private
