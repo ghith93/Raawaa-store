@@ -47,11 +47,11 @@ jobs:
         run: |
           node -e "
           const fs=require('fs');
-          const html=fs.readFileSync('index.html','utf8');
+          const html=fs.readFileSync('serum.html','utf8');
           const m=html.match(/<script type=\"application\/ld\+json\">([\s\S]*?)<\/script>/);
           if(!m){console.error('لا JSON-LD');process.exit(1)}
           const d=JSON.parse(m[1]);
-          const prod=(d['@graph']||[]).find(n=>n['@type']==='Product');
+          const prod=(d['@graph']||[d]).find(n=>n['@type']==='Product');
           if(!prod){console.error('لا Product');process.exit(1)}
           const low=prod.offers.lowPrice, high=prod.offers.highPrice;
           console.log('الأسعار في JSON-LD:', low, '-', high);
