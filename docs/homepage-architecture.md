@@ -9,7 +9,7 @@ This repository uses two deliberately separate public experiences:
 
 - Product sizes, prices, delivery zones, discounts, and offer slots are maintained in `js/config.js`.
 - The current product prices in `js/config.js` are explicitly marked as reference values, not final approved prices; confirm them with the owner before enabling production sales.
-- Current delivery policy: Sham Cash receives 10% off and free delivery inside Hama; cash on delivery costs $2 inside Hama; other governorates cost $2 for either payment method.
+- Current delivery policy: delivery is always free inside Hama for both Sham Cash and cash on delivery. Other governorates cost $2 for either method. Sham Cash also receives 10% off product prices.
 - The product page carries Product JSON-LD. The brand landing page carries social metadata and PWA entry points.
 
 ## Test boundaries

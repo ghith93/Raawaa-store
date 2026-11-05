@@ -863,11 +863,13 @@
 
       var note = '';
       if (methodId === 'shamcash' && zoneId !== 'hama') {
-        note = 'مع شام كاش خارج حماة: الخصم 10% يُطبَّق، ورسوم التوصيل 2 دولار. المجاني داخل حماة فقط.';
+        note = 'مع شام كاش خارج حماة: خصم 10% على المنتجات ورسوم توصيل 2 دولار.';
       } else if (methodId === 'shamcash') {
-        note = 'داخل حماة مع شام كاش: خصم 10% وتوصيل مجاني — أفضل سعر متاح.';
+        note = 'داخل حماة مع شام كاش: خصم 10% وتوصيل مجاني.';
+      } else if (zoneId === 'hama') {
+        note = 'الدفع عند الاستلام بلا خصم، والتوصيل مجاني دائمًا داخل حماة.';
       } else {
-        note = 'الدفع عند الاستلام: بلا خصم، وتُضاف رسوم التوصيل. المبلغ يُدفع كاملًا للمندوب.';
+        note = 'الدفع عند الاستلام بلا خصم، ورسوم التوصيل 2 دولار لباقي المحافظات.';
       }
       if (sampleUnit.cutCents > 0) {
         note = 'عرض «' + sampleUnit.slot.label + '»: ' + money(sample.price) + ' ← ' +
@@ -1053,13 +1055,16 @@
     var z = activeZone();
     var zoneName = z ? z.label : 'حماة';
 
-    if ((method.discountPercent || 0) > 0) {
-      return isFreeDelivery(method, z)
+    if (isFreeDelivery(method, z)) {
+      return (method.discountPercent || 0) > 0
         ? 'خصم ' + method.discountPercent + '% على قيمة المنتجات + توصيل مجاني داخل ' + zoneName + '.'
-        : 'خصم ' + method.discountPercent + '% على قيمة المنتجات + توصيل ' +
-          money(deliveryFeeFor(method, z)) + ' إلى ' + zoneName + '.';
+        : 'بلا خصم، والتوصيل مجاني داخل ' + zoneName + '.';
     }
-    return 'بلا خصم، وتُضاف رسوم التوصيل: ' + money(deliveryFeeFor(method, z)) +
+    if ((method.discountPercent || 0) > 0) {
+      return 'خصم ' + method.discountPercent + '% على قيمة المنتجات + توصيل ' +
+        money(deliveryFeeFor(method, z)) + ' إلى ' + zoneName + '.';
+    }
+    return 'بلا خصم، ورسوم التوصيل ' + money(deliveryFeeFor(method, z)) +
       ' إلى ' + zoneName + '.';
   }
 

@@ -14,6 +14,7 @@ import { constants, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
+import { execFileSync } from 'node:child_process';
 import { findUnsafeRunnerTarget } from './workflow-runner-policy.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -137,6 +138,18 @@ function checkConfig(config, source) {
     else if (found.price !== exp.price) fail(`${exp.id}: السعر ${found.price} بدل ${exp.price}`);
     else pass(`${exp.id}: ${found.sizeMl} مل = $${found.price}`);
   }
+
+  const hamaZone = config.delivery.zones.find(zone => zone.id === 'hama');
+  const otherZone = config.delivery.zones.find(zone => zone.id === 'other');
+  const hamaAlwaysFree = hamaZone?.fee === 0 &&
+    config.payment.methods.length > 0 &&
+    config.payment.methods.every(method => method.freeDeliveryIn.includes('hama'));
+  const otherAlwaysTwo = otherZone?.fee === 2 &&
+    config.payment.methods.every(method => !method.freeDeliveryIn.includes('other'));
+  if (hamaAlwaysFree) pass('التوصيل مجاني دائمًا داخل حماة لجميع طرق الدفع');
+  else fail('سياسة حماة: يجب أن يكون التوصيل مجانيًا لجميع طرق الدفع');
+  if (otherAlwaysTwo) pass('رسوم باقي المحافظات $2 لجميع طرق الدفع');
+  else fail('سياسة باقي المحافظات: يجب أن تكون الرسوم $2 لجميع طرق الدفع');
 
   // رقم واتساب
   if (/^\d{10,15}$/.test(config.contact.whatsappNumber)) pass(`رقم واتساب بصيغة دولية صحيحة: ${config.contact.whatsappNumber}`);
@@ -1107,8 +1120,9 @@ async function checkOwnerDecisions(config) {
     offers.some(o => o.name?.includes(p.sizeMl + ' مل') && Number(o.price) === p.price)), 'أسعار JSON-LD مطابقة للإعدادات');
   expect(Number(product?.offers?.lowPrice) === Math.min(...config.products.map(p => p.price)) &&
     Number(product?.offers?.highPrice) === Math.max(...config.products.map(p => p.price)), 'حدود أسعار JSON-LD مطابقة');
-  expect(visibleHtml.includes('باقي المحافظات') && visibleHtml.includes('$2') && !visibleHtml.includes('$4'),
-    'رسوم التوصيل للمنطقتين $2 ولا توجد رسوم قديمة');
+  expect(visibleHtml.includes('باقي المحافظات') && visibleHtml.includes('$2') &&
+    visibleHtml.includes('توصيل مجاني دائمًا داخل حماة') && !visibleHtml.includes('$4'),
+    'التوصيل مجاني دائمًا داخل حماة وباقي المحافظات $2');
   expect(!product?.offers?.availability && offers.every(o => !o.availability), 'لا مخزون مختلق في بيانات البحث');
 }
 
@@ -1153,7 +1167,8 @@ async function checkProductPage(config) {
     worker.includes('const visual = url.pathname.match') && worker.includes('ritual-v5|trio-v6|size-'), 'بدائل صور المشاهد والأحجام محفوظة بلا إنترنت لكل صيغة');
   ok(landing.includes('السيروم جاهز') && landing.includes('العبوة تُجهَّز عند الطلب') && landing.includes('موعد'), 'جاهزية السيروم وتجهيز العبوة وموعدها المعلّق مذكورة في مسار الشراء');
   ok(landing.includes('class="serum-size-guide"') && landing.includes('لكل ملليلتر') && landing.includes('$2') &&
-    !landing.includes('$4') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
+    !landing.includes('$4') && landing.includes('توصيل مجاني داخل حماة') && landing.includes('$2'),
+    'مقارنة الأحجام ورسوم التوصيل قرب زر الشراء');
   for (const [label, page] of [['المنتج', visible]]) {
     ok(!page.includes('data-unit-comparison') && !page.includes('قارني تكلفة كل 10 مل'), `${label}: إزالة مقارنة تكلفة 10 مل`);
     ok(page.includes('الأسعار بلا عطر') && page.includes('إضافة العطر $2 للعبوة'), `${label}: توضيح سعر العطر`);
@@ -1181,9 +1196,15 @@ async function checkProductPage(config) {
   ok(!/\d\s*[%٪]|[٠-٩]\s*[%٪]/.test(ingredients), 'لا نسب تركيبة غير مصححة');
   ok(/ليست صورة للمنتج الفعلي/.test(visible) && /تصميم مقترح/.test(visible), 'الصورة موصوفة كتصوّر لا تصوير حقيقي');
   ok(!/الأكثر اختيارًا|الأكثر طلبًا|التصنيع حسب الطلب|كيراتين/.test(visible), 'لا شعبية أو مدة تصنيع أو تركيبة متناقضة');
-  ok(visible.includes('توصيل مجاني داخل حماة فقط') && visible.includes('$2') && !visible.includes('$4'), 'قيود ورسوم التوصيل واضحة');
+  ok(visible.includes('توصيل مجاني دائمًا داخل حماة') && visible.includes('باقي المحافظات') &&
+    visible.includes('$2') && !visible.includes('$4'), 'حماة مجانية دائمًا وباقي المحافظات $2');
   ok(/data-estimate-interface[^>]*hidden/.test(visible) && visible.includes('data-estimate-fallback') && visible.includes('تقدير عبوة واحدة مع التوصيل'), 'التقدير الرقمي مخفي دون JavaScript وله بديل ومحدّد بعبوة واحدة');
   ok(['data-estimate-zone', 'data-estimate-method', 'data-estimate-total', 'data-estimate-discount', 'data-estimate-delivery'].every(hook => visible.includes(hook)), 'خيارات وتفاصيل التقدير موجودة');
+  const hamaPage = (await read('hama.html')).replace(/<!--[\s\S]*?-->/g, ' ');
+  ok(hamaPage.includes('التوصيل مجاني دائمًا داخل حماة') &&
+    hamaPage.includes('باقي المحافظات رسومها ٢$ لأي طريقة دفع') &&
+    !/داخل حماة ٢\$/.test(hamaPage), 'صفحة حماة تطابق سياسة التوصيل الجديدة');
+
   const cartLogic = await read('js/cart.js');
   ok(cartLogic.includes('calculateAmounts(productCents + scentTotalCents, count, method, zone)') && cartLogic.includes('calculateAmounts(unitOffer(product).cents + toCents(scentFee()), 1, method, zone)'), 'السلة وتقدير المنتج يستخدمان حسابًا مشتركًا مع العروض');
   const offersLogic = await read('js/offers.js');
@@ -1236,6 +1257,30 @@ async function checkProductPage(config) {
   } catch (err) { fail('JSON-LD صفحة السيروم غير صالح', err.message); }
 }
 
+async function checkRepositoryHygiene() {
+  group('نظافة المستودع');
+  let tracked;
+  try {
+    tracked = execFileSync('git', ['ls-files', '-z'], { cwd: ROOT, encoding: 'utf8' })
+      .split('\0').filter(Boolean);
+  } catch (error) {
+    fail('تعذّر فحص الملفات المتتبعة في Git', error.message);
+    return;
+  }
+  const forbidden = tracked.filter(file =>
+    /^(?:\.local\/|\.config\/|\.wrangler\/)|(?:^|\/)__pycache__\//.test(file) ||
+    /\.(?:pyc|pyo)$/.test(file)
+  );
+  if (forbidden.length === 0) pass('لا قواعد مفاتيح أو إعدادات محلية أو سجلات Wrangler أو bytecode متتبعة');
+  else fail('ملفات بيئة محلية متتبعة في المستودع', forbidden.join(', '));
+
+  const ignore = await read('.gitignore');
+  for (const rule of ['.local/', '.config/', '.wrangler/', '**/__pycache__/', '*.py[cod]']) {
+    if (ignore.split(/\r?\n/).includes(rule)) pass(`قاعدة استبعاد ${rule}`);
+    else fail(`قاعدة .gitignore مفقودة: ${rule}`);
+  }
+}
+
 try {
   const { config } = await loadConfig();
   await checkRequiredFiles();
@@ -1255,6 +1300,7 @@ try {
   await checkWorkflow();
   await checkMarketingConsistency();
   await checkPwa();
+  await checkRepositoryHygiene();
 } catch (error) {
   fail('خطأ غير متوقع في أداة الفحص', error.message);
 }
