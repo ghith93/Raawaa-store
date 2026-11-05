@@ -186,10 +186,10 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             other_fee = page.locator('[data-zone-select="other"]').locator('..').locator('.zone-fee')
             check("بطاقتا المنطقة تتبعان رسوم شام كاش الفعلية", 'مجاني' in hama_fee.inner_text() and '$4' in other_fee.inner_text())
             page.locator('[data-zone-select="other"]').check()
-            check("50 مل + شام كاش المحافظات = $18.40", page.locator('[data-cart-total]').inner_text() == '$18.40')
+            check("50 مل + شام كاش المحافظات = $18.40", page.locator('[data-cart-total]').inner_text() == '$16.40')
             page.locator('[data-pay-select="cod"]').check()
             check("بطاقتا المنطقة تتبعان رسوم الاستلام الفعلية", '$2' in hama_fee.inner_text() and '$4' in other_fee.inner_text())
-            check("50 مل + استلام المحافظات = $20", page.locator('[data-cart-total]').inner_text() == '$20')
+            check("50 مل + استلام المحافظات = $20", page.locator('[data-cart-total]').inner_text() == '$18')
             page.locator('[data-zone-select="hama"]').check()
             check("50 مل + استلام حماة = $18", page.locator('[data-cart-total]').inner_text() == '$18')
             audit(page, 'السلة المفتوحة')
@@ -233,13 +233,13 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                   'عبوة واحدة' in (page.locator('[data-order-estimate] h2').text_content() or '') and
                   page.locator('[data-cart-total]').inner_text() == '$54')
             page.locator('[data-zone-select="other"]').check()
-            check("شام كاش المحافظات مع العطر = $58", page.locator('[data-cart-total]').inner_text() == '$58')
+            check("شام كاش المحافظات مع العطر = $58", page.locator('[data-cart-total]').inner_text() == '$56')
             page.locator('[data-cart-checkout]').click()
             calls = page.evaluate('window.__waCalls')
             url = calls[-1] if calls else ''
             msg = parse_qs(urlparse(url).query).get('text', [''])[0]
             check("رابط الطلب للرقم الصحيح، دون إرسال", url.startswith('https://wa.me/963997310856?') and bool(msg))
-            check("الرسالة تحمل الخيارات والمصدر والمجموع", all(x in msg for x in ['30 مل','50 مل','100 مل','فانيلا','أرجان','$58','— المصدر: serum-oct','— القناة: facebook','— نسخة المحتوى: moment']))
+            check("الرسالة تحمل الخيارات والمصدر والمجموع", all(x in msg for x in ['30 مل','50 مل','100 مل','فانيلا','أرجان','$56','— المصدر: serum-oct','— القناة: facebook','— نسخة المحتوى: moment']))
             check("الرسالة تطلب موعد تجهيز العبوة بدل افتراضه", 'تأكيد موعد تجهيز العبوة' in msg)
             check("الرابط البديل يظهر إذا تعذّر فتح النافذة", page.locator('[data-cart-fallback]').is_visible() and page.locator('[data-cart-fallback-link]').get_attribute('href') == url)
             events = page.evaluate("JSON.parse(sessionStorage.getItem('rawaa_events') || '[]').map(x => x.e)")
@@ -286,9 +286,9 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.locator('.serum-estimate-details summary').click()
         audit(page, 'التقدير المفتوح')
         cases = [
-            (0, '30 مل', {'hama': {'shamcash':'$11.70', 'cod':'$15'}, 'other': {'shamcash':'$15.70', 'cod':'$17'}}),
-            (1, '50 مل', {'hama': {'shamcash':'$14.40', 'cod':'$18'}, 'other': {'shamcash':'$18.40', 'cod':'$20'}}),
-            (2, '100 مل', {'hama': {'shamcash':'$22.50', 'cod':'$27'}, 'other': {'shamcash':'$26.50', 'cod':'$29'}})
+            (0, '30 مل', {'hama': {'shamcash':'$11.70', 'cod':'$15'}, 'other': {'shamcash':'$13.70', 'cod':'$15'}}),
+            (1, '50 مل', {'hama': {'shamcash':'$14.40', 'cod':'$18'}, 'other': {'shamcash':'$16.40', 'cod':'$18'}}),
+            (2, '100 مل', {'hama': {'shamcash':'$22.50', 'cod':'$27'}, 'other': {'shamcash':'$24.50', 'cod':'$27'}})
         ]
         for index, size, zones in cases:
             page.locator('#products .size-option').nth(index).click()
@@ -340,7 +340,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               selected_msg.count('— المصدر: continuity') == 1 and not page.evaluate('window.__waCalls.length'))
         page.locator('[data-add-current]').click()
         check("قبل التحديث: 100 مل مع العطر والاستلام للمحافظات = $31",
-              page.locator('[data-cart-total]').inner_text() == '$31' and
+              page.locator('[data-cart-total]').inner_text() == '$29' and
               'باقي المحافظات' in page.locator('[data-cart-context]').inner_text())
         check("اسم زر السلة المقروء يتضمن عدد العناصر الظاهر",
               '1 في السلة' in (page.locator('.cart-trigger').get_attribute('aria-label') or ''))
@@ -354,7 +354,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.reload(wait_until='load')
         check("بعد التحديث تبقى الخيارات والتقدير دون تغيير صامت",
               '$25' in page.locator('[data-price-live]').text_content() and
-              page.locator('[data-estimate-total]').inner_text() == '$31' and
+              page.locator('[data-estimate-total]').inner_text() == '$29' and
               page.locator('[data-estimate-zone]').input_value() == 'other' and
               page.locator('[data-estimate-method]').input_value() == 'cod' and
               page.locator('[data-custom-scent="vanilla"]').get_attribute('aria-pressed') == 'true' and
@@ -370,8 +370,8 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.locator('[data-cart-open]').first.click()
         draft = parse_qs(urlparse(page.locator('[data-cart-fallback-link]').get_attribute('href') or '').query).get('text', [''])[0]
         check("السلة والرسالة المعدّة تستعيدان السعر والاختيارات والمصدر",
-              page.locator('[data-cart-total]').inner_text() == '$31' and
-              all(x in draft for x in ['100 مل','$31','فانيلا','أرجان','باقي المحافظات','الدفع عند الاستلام','continuity','detail']))
+              page.locator('[data-cart-total]').inner_text() == '$29' and
+              all(x in draft for x in ['100 مل','$29','فانيلا','أرجان','باقي المحافظات','الدفع عند الاستلام','continuity','detail']))
         events = page.evaluate("JSON.parse(sessionStorage.getItem('rawaa_events') || '[]').map(x => x.e)")
         check("حفظ الاختيارات لا يفتح واتساب أو ينشئ طلبًا",
               not page.evaluate('window.__waCalls.length') and 'Contact' not in events and 'Purchase' not in events)
@@ -391,7 +391,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               page.locator('[data-custom-oil="argan"]').get_attribute('aria-pressed') == 'true')
         page.locator('[data-cart-open]').first.click()
         check("السلة في الرئيسية تحافظ على الإجمالي والمنطقة والدفع",
-              page.locator('[data-cart-total]').inner_text() == '$31' and
+              page.locator('[data-cart-total]').inner_text() == '$29' and
               page.locator('[data-zone-select="other"]').is_checked() and page.locator('[data-pay-select="cod"]').is_checked())
         page.locator('[data-zone-select="hama"]').check()
         page.locator('[data-pay-select="shamcash"]').check()
@@ -500,7 +500,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.locator('#products .size-option').nth(2).click()
         page.locator('[data-add-current]').click()
         check("عند منع التخزين تعمل السلة والاختيارات في الذاكرة",
-              page.locator('[data-cart-total]').inner_text() == '$29' and
+              page.locator('[data-cart-total]').inner_text() == '$27' and
               'فانيلا' in page.locator('[data-cart-custom-summary]').inner_text() and not errors, '; '.join(errors[:3]))
         ctx.close()
         ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
@@ -857,7 +857,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             page.reload(wait_until='load')
             page.locator('[data-cart-open]').first.click()
             check("بلا إنترنت تبقى خيارات الطلب والسلة بعد التحديث",
-                  page.locator('[data-cart-total]').inner_text() == '$31' and
+                  page.locator('[data-cart-total]').inner_text() == '$29' and
                   page.locator('[data-custom-scent="vanilla"]').get_attribute('aria-pressed') == 'true' and
                   'فانيلا' in page.locator('[data-cart-custom-summary]').inner_text())
             ctx.close()
