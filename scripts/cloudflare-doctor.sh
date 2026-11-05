@@ -73,18 +73,27 @@ live_sw=$(curl -s --max-time 15 "$SITE/sw.js" | grep -o "CACHE_VERSION = '[^']*'
 
 echo
 echo "══════ ٥) هل الموقع الحيّ مطابق للكود؟ ══════"
-miss=0
-# ⚠ درس (2026-10-28): `curl | grep -q` مع pipefail يُنتج نتيجة كاذبة.
-# grep -q يُغلق الأنبوب فور أول تطابق، فيتلقى curl إشارة SIGPIPE (رمز 23)،
-# وpipefail يعتبر الأمر فاشلًا — فيُعلن «مفقود» وهو موجود.
-# الحل: نقرأ الصفحة مرة واحدة إلى متغيّر، ثم نفحص منه بلا أنابيب.
-HOME_HTML=$(curl -s --max-time 20 "$SITE/" || true)
-for token in data-size-options marketing.js data-wa-direct; do
-  case "$HOME_HTML" in
-    *"$token"*) pass "الحى يحتوي «$token»" ;;
-    *) fail "الحى **لا** يحتوي «$token» — الموقع منشور بإصدار قديم"; miss=$((miss+1)) ;;
-  esac
+# الصفحة الرئيسية أصبحت صفحة علامة تجارية؛ الأحجام والسلة موجودة في /serum.
+# نعيد المحاولة لأن نطاق Pages قد يتأخر قليلًا بعد اكتمال رفع الإصدار.
+matched=0
+for attempt in 1 2 3 4 5 6; do
+  HOME_HTML=$(curl -fsSL --max-time 20 "$SITE/" || true)
+  PRODUCT_HTML=$(curl -fsSL --max-time 20 "$SITE/serum" || true)
+  if [[ "$HOME_HTML" == *"data-discover-serum"* &&
+        "$HOME_HTML" == *"marketing.js"* &&
+        "$PRODUCT_HTML" == *"data-size-options"* &&
+        "$PRODUCT_HTML" == *"data-wa-direct"* &&
+        "$PRODUCT_HTML" == *"data-open-cart-after-add"* ]]; then
+    pass "الرئيسية تربط بصفحة السيروم؛ صفحة المنتج تحتوي الأحجام والسلة وواتساب"
+    matched=1
+    break
+  fi
+  echo "  انتظار انتشار إصدار Pages ($attempt/6)…"
+  sleep 10
 done
+if [ "$matched" -ne 1 ]; then
+  fail "الموقع الحي لا يطابق بنية الصفحة الرئيسية/صفحة المنتج بعد 6 محاولات"
+fi
 
 echo
 echo "══════ ٦) النشر التلقائي ══════"
