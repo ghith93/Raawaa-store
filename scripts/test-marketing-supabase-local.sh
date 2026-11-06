@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Runs the candidate marketing-preferences migration only against an isolated,
-# temporary Supabase CLI stack. It never links to or contacts a hosted project.
+# Applies the full checked-in migration chain (001..006) to an isolated, temporary
+# Supabase CLI stack, then runs the marketing-preferences pgTAP suite against it.
+# It never links to or contacts a hosted project.
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -45,14 +46,25 @@ port = 54322
 major_version = 17
 TOML
 
-cat > "$TEST_DIR/supabase/migrations/20261031000000_local_rawaa_schema.sql" <<'SQL'
--- Local test bootstrap only; this is not a production migration.
-create schema rawaa_store;
-revoke all on schema rawaa_store from public, anon, authenticated;
-grant usage on schema rawaa_store to service_role;
-SQL
-cp "$ROOT_DIR/order-system/migrations/005_marketing_preference_events.sql" \
-  "$TEST_DIR/supabase/migrations/20261031000001_marketing_preference_events.sql"
+# السلسلة الكاملة لا مخطط صناعي.
+# السبب: كان الفحص يبني مخططًا صناعيًا ثم يطبّق 005 وحدها، فيمرّ بينما
+# السلسلة الحقيقية 001..006 تنكسر (004 يعتمد closed_at الذي لم تُنشئه 001).
+# 001 نفسها تُنشئ المخطط، لذا تُنسخ الهجرات بالترتيب كما هي بلا تمهيد مُختلَق.
+migration_index=0
+for migration in "$ROOT_DIR"/order-system/migrations/[0-9][0-9][0-9]_*.sql; do
+  case "$migration" in
+    *.down.sql) continue ;;
+  esac
+  base=$(basename "$migration")
+  printf -v stamp '20261031%06d' "$migration_index"
+  cp "$migration" "$TEST_DIR/supabase/migrations/${stamp}_${base}"
+  echo "queued migration: $base"
+  migration_index=$((migration_index + 1))
+done
+if [[ "$migration_index" -lt 6 ]]; then
+  echo "expected the full 001..006 chain, found $migration_index files" >&2
+  exit 1
+fi
 cp "$ROOT_DIR/order-system/marketing-preferences-supabase-test.sql" \
   "$TEST_DIR/supabase/tests/marketing_preferences.sql"
 

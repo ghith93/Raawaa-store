@@ -1,4 +1,10 @@
--- LOCAL CANDIDATE MIGRATION. Not applied to staging yet.
+-- APPLIED to staging on 2026-11-06 as ledger version 20261106104317
+-- (name `rawaa_order_closed_at`) on project oyoyozdugicmnkfhjovo, schema rawaa_store.
+-- Verified first inside a rolled-back transaction on that hosted database, then
+-- applied; six behavioural probes passed and left zero rows behind (see
+-- docs/DEV-PASS-2026-11-06-AR.md §9). Still NOT applied to any production database.
+-- The body below is unchanged from the version that was verified locally, so the
+-- fresh-chain test keeps exercising exactly what staging received.
 --
 -- Why this exists
 -- ---------------

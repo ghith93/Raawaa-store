@@ -64,14 +64,16 @@ printf '%s' "$(cat "${join(dir, 'code.txt')}")"
   }
 });
 
-test('missing scheduler secret still skips quietly without calling the function', async () => {
+test('missing scheduler secret skips without calling the function, but says so visibly', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'rawaa-sched-skip-'));
   try {
     await writeFile(join(dir, 'step.sh'), step.run);
     const output = execFileSync('bash', [join(dir, 'step.sh')], {
       env: { ...process.env, RAWAA_OUTBOX_SCHEDULER_SECRET: '' }, encoding: 'utf8', stdio: 'pipe',
     });
-    assert.match(output, /تخطٍّ/);
+    // «نجح» بلا أي أثر كانت تعني «لم تعمل أي دفعة» دون أن يظهر ذلك لأحد.
+    assert.match(output, /::notice::/, 'a skipped batch must surface as a readable annotation');
+    assert.match(output, /RAWAA_OUTBOX_SCHEDULER_SECRET/, 'the notice must name the missing secret');
     assert.ok(!output.includes('HTTP'), 'must not call the function without a secret');
   } finally {
     await rm(dir, { recursive: true, force: true });
