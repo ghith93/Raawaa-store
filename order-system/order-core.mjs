@@ -54,21 +54,21 @@ export function prepareOrder(input, config) {
   if (!zone || !method) throw new Error('INVALID_DELIVERY');
   const quantity = entries.reduce((n, item) => n + item.qty, 0);
   const scentCents = scent && scent !== 'unscented' ? cents(config.customization.scentPrice) : 0;
-  // العرض العام على قيمة المنتجات وحدها، ثم إضافة العطر، ثم خصم طريقة الدفع.
+  // العرض العام على قيمة المنتجات وحدها، ثم خصم طريقة الدفع على المنتجات، ثم إضافة العطر بلا خصم.
   const productCents = entries.reduce((n, item) => n + item.lineCents, 0);
   const generalSlot = offerEngine ? offerEngine.pick(offerState.slots, null) : null;
   const generalCut = generalSlot ? offerEngine.orderCut(generalSlot, productCents) : 0;
   const offerCents = entries.reduce((n, item) => n + item.offerCents, 0) + generalCut;
-  const subtotalCents = productCents - generalCut + scentCents * quantity;
-  const discountCents = Math.round(subtotalCents * method.discountPercent / 100);
+  // أساس خصم طريقة الدفع هو قيمة المنتجات بعد العرض وحدها؛ العطر لا يدخل الخصم.
+  const discountedProductCents = productCents - generalCut;
+  const subtotalCents = discountedProductCents + scentCents * quantity;
+  const discountCents = Math.round(discountedProductCents * method.discountPercent / 100);
   const deliveryCents = method.freeDeliveryIn.includes(zone.id) ? 0 : cents(zone.fee);
   return { name, phone, address, entries, scent, oil, zone: zone.id, method: method.id,
     subtotalCents, offerCents, discountCents, deliveryCents, totalCents: subtotalCents - discountCents + deliveryCents,
     oilPricePending: Boolean(oil), status: 'pending_review' };
 }
 
-/** The default alert intentionally excludes customer name, phone and address. */
-export function formatOwnerAlert(reference) {
-  if (typeof reference !== 'string' || !/^[A-Z0-9-]{6,40}$/.test(reference)) throw new Error('INVALID_REFERENCE');
-  return `طلب جديد بانتظار المراجعة: ${reference}\nافتحي لوحة الطلبات للاطلاع على التفاصيل.`;
-}
+// نُعيد التصدير حفاظًا على المستوردين الحاليين؛ التنفيذ في order-alert.mjs المعزول
+// عن محرك التسعير حتى لا تسحبه حزمة outbox إلى دالة تنبيه بسيطة.
+export { formatOwnerAlert } from './order-alert.mjs';

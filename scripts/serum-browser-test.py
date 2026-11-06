@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urlparse
@@ -105,7 +106,11 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("لا تمرير أفقي", page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'))
             if width < 600:
                 check("عرض شام كاش مقروء بلا اقتطاع", page.locator('.topbar-short').evaluate('(e) => e.scrollWidth <= e.clientWidth + 1'))
-            check("الصورة موصوفة كتصميم للعبوة", 'تصميم عبوة' in (page.locator('[data-size-img]').get_attribute('alt') or '') and 'تصميم عبوة' in page.locator('.serum-photo figcaption').inner_text())
+            # المطلوب إفصاح واضح bahwa الصورة تصميم لا منتج فعلي؛ الصياغة قد تتحسّن.
+            size_alt = page.locator('[data-size-img]').get_attribute('alt') or ''
+            check("الصورة موصوفة كتصميم للعبوة",
+                  'تصميم' in size_alt and 'ليست صورة للمنتج الفعلي' in size_alt and
+                  'تصميم' in page.locator('.serum-photo figcaption').inner_text())
             package_note = page.locator('.serum-packaging-note').inner_text()
             check("السيروم جاهز والعبوة تُجهّز عند الطلب والموعد بالتأكيد", all(x in package_note for x in ['السيروم جاهز','العبوة تُجهَّز عند الطلب','موعد التجهيز والتوصيل']))
             check("صورة الحجم المختار من تصميم العبوة الجديد", 'size-50-v6-' in (page.locator('[data-size-img]').get_attribute('src') or ''))
@@ -137,7 +142,8 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             sizes_view.focus(); sizes_view.press('Enter')
             check("معرض الأحجام يعمل بلوحة المفاتيح ولا يدّعي مقياسًا فعليًا",
                   page.locator('[data-serum-view="sizes"]').is_visible() and sizes_view.get_attribute('aria-pressed') == 'true' and
-                  'لا يوضّح القياسات' in page.locator('[data-serum-caption]').inner_text())
+                  'تصميم مقترح' in page.locator('[data-serum-caption]').inner_text() and
+                  'القياسات النهائية حسب العبوة المعتمدة' in page.locator('[data-serum-caption]').inner_text())
             ritual_view = page.locator('[data-serum-control="ritual"]:visible')
             ritual_view.focus(); ritual_view.press('Space')
             check("المشهد التعبيري موسوم ولا يُعرض نتيجة للمنتج",
@@ -176,7 +182,10 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             page.locator('#ritual a[href="#products"]').click()
             check("زر اللحظة يعود لاختيار الحجم", urlparse(page.url).fragment == 'products')
             page.locator('#returns summary').click()
-            check("الإرجاع للاستفسار لا سياسة مختلقة", 'الاستفسار عن الشروط' in page.locator('#returns').inner_text() and 'wa.me/963997310856' in (page.locator('#returns a').get_attribute('href') or ''))
+            returns_text = page.locator('#returns').inner_text()
+            check("سياسة الإرجاع المعتمدة منشورة مع رابط الاستفسار",
+                  all(x in returns_text for x in ['٤٨ ساعة', '٣ أيام', 'لا تُستبدل', 'الاستفسار عن الشروط']) and
+                  'wa.me/963997310856' in (page.locator('#returns a').get_attribute('href') or ''))
             page.locator('.serum-benefits-cta').click()
             check("زر الفوائد يعيد الزائرة إلى اختيار الحجم", urlparse(page.url).fragment == 'products' and page.locator('[data-add-current]').is_visible())
 
@@ -232,19 +241,23 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                   all(x in page.locator('[data-cart-custom-summary]').inner_text() for x in ['الطلب ككل','فانيلا','أرجان','نؤكد']))
             check("الأحجام الثلاثة مع العطر = $60 قبل الخصم", page.locator('[data-cart-subtotal]').inner_text() == '$60')
             page.locator('[data-pay-select="shamcash"]').check()
-            check("شام كاش حماة مع العطر = $54", page.locator('[data-cart-total]').inner_text() == '$54')
+            # قرار المالك: خصم شام كاش على المنتجات وحدها. المنتجات 54$، العطر 6$،
+            # فالخصم 5.40$ لا 6$، والإجمالي 54.60$ داخل حماة و56.60$ خارجها.
+            check("شام كاش حماة: الخصم على المنتجات وحدها = $54.60",
+                  page.locator('[data-cart-total]').inner_text() == '$54.60')
             check("تقدير العبوة لا يُعرض كمجموع للسلة متعددة الأحجام",
-                  page.locator('[data-estimate-total]').text_content() == '$24.30' and
+                  page.locator('[data-estimate-total]').text_content() == '$24.50' and
                   'عبوة واحدة' in (page.locator('[data-order-estimate] h2').text_content() or '') and
-                  page.locator('[data-cart-total]').inner_text() == '$54')
+                  page.locator('[data-cart-total]').inner_text() == '$54.60')
             page.locator('[data-zone-select="other"]').check()
-            check("شام كاش المحافظات مع العطر = $58", page.locator('[data-cart-total]').inner_text() == '$56')
+            check("شام كاش المحافظات مع العطر = $56.60",
+                  page.locator('[data-cart-total]').inner_text() == '$56.60')
             page.locator('[data-cart-checkout]').click()
             calls = page.evaluate('window.__waCalls')
             url = calls[-1] if calls else ''
             msg = parse_qs(urlparse(url).query).get('text', [''])[0]
             check("رابط الطلب للرقم الصحيح، دون إرسال", url.startswith('https://wa.me/963997310856?') and bool(msg))
-            check("الرسالة تحمل الخيارات والمصدر والمجموع", all(x in msg for x in ['30 مل','50 مل','100 مل','فانيلا','أرجان','$56','— المصدر: serum-oct','— القناة: facebook','— نسخة المحتوى: moment']))
+            check("الرسالة تحمل الخيارات والمصدر والمجموع", all(x in msg for x in ['30 مل','50 مل','100 مل','فانيلا','أرجان','$56.60','— المصدر: serum-oct','— القناة: facebook','— نسخة المحتوى: moment']))
             check("الرسالة تطلب موعد تجهيز العبوة بدل افتراضه", 'تأكيد موعد تجهيز العبوة' in msg)
             check("الرابط البديل يظهر إذا تعذّر فتح النافذة", page.locator('[data-cart-fallback]').is_visible() and page.locator('[data-cart-fallback-link]').get_attribute('href') == url)
             events = page.evaluate("JSON.parse(sessionStorage.getItem('rawaa_events') || '[]').map(x => x.e)")
@@ -415,13 +428,13 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               '$13' in page.locator('[data-price-live]').text_content() and
               page.locator('[data-custom-scent="rose"]').get_attribute('aria-pressed') == 'true' and
               page.locator('[data-custom-oil="almond"]').get_attribute('aria-pressed') == 'true' and
-              page.locator('[data-estimate-total]').inner_text() == '$13.50')
+              page.locator('[data-estimate-total]').inner_text() == '$13.70')
         open_cart_if_closed(page)
         check("العودة لا تعيد عنصرًا حُذف في الصفحة الأخرى",
               page.locator('[data-cart-count]').inner_text() == '1' and
               page.locator('[data-cart-item="serum-30"]').count() == 1 and
               page.locator('[data-cart-item="serum-100"]').count() == 0 and
-              page.locator('[data-cart-total]').inner_text() == '$13.50')
+              page.locator('[data-cart-total]').inner_text() == '$13.70')
         page.locator('[data-cart-close]').click()
         page.locator('[data-custom-scent="rose"]').click()
         page.locator('[data-custom-oil="almond"]').click()
@@ -829,7 +842,8 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               setTimeout(() => resolve(false), 12000);
             })""")
             check("معرض الأحجام يعمل لأول مرة بلا إنترنت بدقة شاشة عالية", size_scene_offline and
-                  'لا يوضّح القياسات' in page.locator('[data-serum-caption]').inner_text())
+                  'تصميم مقترح' in page.locator('[data-serum-caption]').inner_text() and
+                  'القياسات النهائية حسب العبوة المعتمدة' in page.locator('[data-serum-caption]').inner_text())
             page.locator('#products .size-option').nth(0).click()
             bottle_offline = page.locator('[data-size-img]').evaluate("""el => new Promise(resolve => {
               if (el.complete) return resolve(el.naturalWidth > 0);
@@ -926,11 +940,17 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         # تغيير الإعدادات أثناء الاختبار فقط يثبت أن الحاسبة ورابط السؤال لا يخمّنان السعر.
         ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         def mock_prices(route):
+            # يعمل مع الملف المصدر (price: 13,) ونسخة النشر المولّدة ("price": 13,).
+            # لا نرفع استثناءً داخل معالج المسار: ذلك يعلّق التنقّل بدل أن يُظهر فشلًا واضحًا.
             response = route.fetch()
             code = response.text()
-            marker = 'price: 13,'
-            if marker not in code: raise RuntimeError('اختبار الحساب: لم نجد سعر 30 مل المرجعي')
-            route.fulfill(response=response, body=code.replace(marker, 'price: 11,', 1))
+            pattern = re.compile(r'("?)price\1(\s*:\s*)13(\s*,)')
+            updated, count = pattern.subn(lambda m: f'{m.group(1)}price{m.group(1)}{m.group(2)}11{m.group(3)}', code, count=1)
+            if count == 0:
+                check('اختبار الحساب: عُثر على سعر 30 مل المرجعي في الإعدادات', False)
+                route.fulfill(response=response)
+                return
+            route.fulfill(response=response, body=updated)
         ctx.route('**/js/config.js', mock_prices)
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
         page.locator('[data-size-for="serum-30"]').click()
@@ -984,11 +1004,17 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https, service_workers='block')
         seen_meta: list[str] = []
         def mock_config(route):
+            # المصدر يكتب facebookPixelId: '' ونسخة النشر تكتب "facebookPixelId": "".
+            # الاستثناء داخل معالج المسار يعلّق التنقّل، فنُسجّل فشلًا صريحًا بدلًا منه.
             response = route.fetch()
             code = response.text()
-            marker = "facebookPixelId: ''"
-            if marker not in code: raise RuntimeError('اختبار الموافقة: لم نجد إعداد البكسل الفارغ')
-            route.fulfill(response=response, body=code.replace(marker, "facebookPixelId: 'TEST-ONLY'", 1))
+            pattern = re.compile(r'''("?facebookPixelId"?)(\s*:\s*)(?:''|"")''')
+            updated, count = pattern.subn(lambda m: f'{m.group(1)}{m.group(2)}"TEST-ONLY"', code, count=1)
+            if count == 0:
+                check('اختبار الموافقة: عُثر على إعداد البكسل الفارغ في الإعدادات', False)
+                route.fulfill(response=response)
+                return
+            route.fulfill(response=response, body=updated)
         def fake_meta(route):
             seen_meta.append(route.request.url)
             route.fulfill(status=200, content_type='application/javascript', body='/* intercepted locally */')

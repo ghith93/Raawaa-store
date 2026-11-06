@@ -116,19 +116,20 @@ test('الشارة مشتقة حين لا يكتبها المالك', () => {
 });
 
 test('تركيب التسعير كما في السلة: العرض أولًا ثم شام كاش ثم التوصيل', () => {
-  // سلة: 50 مل × 2 + 30 مل × 1 + عطر 2$ = (2600*2) + 1900 + 600 = 7700
-  // عرض 10% على 50 مل، ثم شام كاش 10%، ثم توصيل 2$ (حماة) يُلغى لأنه مجاني.
+  // سلة: 50 مل × 2 + 30 مل × 1 + عطر 2$ للعبوة — والأسعار تُقرأ من الإعدادات لا تُثبَّت هنا.
+  // عرض 10% على 50 مل، ثم شام كاش 10% على المنتجات وحدها، ثم التوصيل (مجاني داخل حماة).
   const result = state([{ id: 'half', label: 'عرض', type: 'percent', value: 10, sizeId: 'serum-50', enabled: true }]);
   const unit50 = Offers.unitPrice(Offers.pick(result.slots, 'serum-50'), 2600);
   const productCents = unit50.cents * 2 + 1900;
   const scentCents = 200 * 3;
   const subtotal = productCents + scentCents;
-  const shamcash = Math.round(subtotal * 10 / 100);
+  // خصم شام كاش على قيمة المنتجات بعد العرض وحدها؛ العطر لا يدخل أساس الخصم.
+  const shamcash = Math.round(productCents * 10 / 100);
   assert.equal(unit50.cents, 2340);
   assert.equal(productCents, 6580);
   assert.equal(subtotal, 7180);
-  assert.equal(shamcash, 718);
-  assert.equal(subtotal - shamcash, 6462); // $64.62 مع توصيل مجاني داخل حماة
+  assert.equal(shamcash, 658);
+  assert.equal(subtotal - shamcash, 6522); // $65.22 مع توصيل مجاني داخل حماة
 });
 
 test('لا تُستورد أي مكتبة ولا يُقرأ أي ملف خارجي في محرّك العروض', () => {

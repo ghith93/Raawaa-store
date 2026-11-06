@@ -16,3 +16,15 @@ order-system/edge/store-config.generated.mjs
 *.py[cod]
 *.log
 .DS_Store
+
+# Secrets and local credentials must never enter Git.
+.env
+.env.*
+*.env
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+.wrangler/

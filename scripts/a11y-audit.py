@@ -172,13 +172,18 @@ def run(base: str) -> int:
                     const r = await axe.run(document.getElementById('cart-dialog'), {
                       runOnly: { type: 'tag', values: ['wcag2a','wcag2aa','wcag21a','wcag21aa','best-practice'] }
                     });
-                    return r.violations.map(v => ({
-                      id: v.id, impact: v.impact, help: v.help, nodes: v.nodes.length,
-                      targets: v.nodes.slice(0,3).map(n => n.target.join(' '))
-                    }));
+                    return {
+                      violations: r.violations.map(v => ({
+                        id: v.id, impact: v.impact, help: v.help, nodes: v.nodes.length,
+                        targets: v.nodes.slice(0,3).map(n => n.target.join(' '))
+                      })),
+                      passes: r.passes.length,
+                      incomplete: r.incomplete.map(i => i.id)
+                    };
                 }"""
             )
-            findings[label + " — السلة مفتوحة"] = {"violations": cart_result, "passes": 0, "incomplete": []}
+            # كانت النتيجة تُسجَّل بعدد نجاح صفر دائمًا، فتبدو السلة كأنها لم تُفحص.
+            findings[label + " — السلة مفتوحة"] = cart_result
             product_page.close()
             ctx.close()
 

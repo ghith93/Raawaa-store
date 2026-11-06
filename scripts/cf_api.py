@@ -28,10 +28,18 @@ WORKER = os.environ.get("RAWAA_WORKER", "raawaa-store")
 
 
 def _auth_mode() -> str:
-    if os.environ.get("CLOUDFLARE_API_KEY") and os.environ.get("CLOUDFLARE_EMAIL"):
-        return "global"
+    # المبدأ: أقل صلاحية. المفتاح العام غير قابل للتقييد ويمنح وصولًا كاملًا للحساب،
+    # لذلك نفضّل التوكن المخصص ونحذّر بصوت عالٍ عند استخدام المفتاح العام.
     if os.environ.get("CLOUDFLARE_API_TOKEN"):
         return "token"
+    if os.environ.get("CLOUDFLARE_API_KEY") and os.environ.get("CLOUDFLARE_EMAIL"):
+        print(
+            "⚠ تحذير أمني: تستخدم Global API Key غير المقيّد.\n"
+            "  أنشئ توكنًا مخصصًا بأقل صلاحية وضعه في CLOUDFLARE_API_TOKEN.\n"
+            "  لا ترسل قيمة أي مفتاح في المحادثة أو المستودع. إن سبق مشاركتها فغيّرها فورًا.",
+            file=sys.stderr,
+        )
+        return "global"
     sys.exit(
         "✗ لا توجد مصادقة.\n"
         "  إما:  export CLOUDFLARE_API_TOKEN=...\n"

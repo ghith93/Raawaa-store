@@ -44,3 +44,25 @@ jobs:
             echo "استجابة الدالة:"; cat /tmp/outbox-resp.txt 2>/dev/null || true
             exit 1
           fi
+          # HTTP 200 يعني أن الدفعة عملت، لا أن التسليم نجح. نقرأ العدّادات حتى
+          # لا يبقى فشل التسليم صامتًا. الاستجابة عدّادات فقط بلا أي معرّفات.
+          python3 - <<'PYEOF'
+          import json, sys
+          try:
+              with open('/tmp/outbox-resp.txt', encoding='utf-8') as handle:
+                  body = json.load(handle)
+          except Exception:
+              print('::warning::تعذّرت قراءة العدّادات من استجابة الدالة.')
+              sys.exit(0)
+          if not isinstance(body, dict) or 'failed' not in body:
+              print('::warning::الدالة المنشورة تسبق إضافة العدّادات — أعد نشر rawaa-outbox لتفعيل كشف فشل التسليم.')
+              sys.exit(0)
+          def count(key):
+              value = body.get(key, 0)
+              return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else 0
+          sent, failed, unknown, recovered = (count(k) for k in ('sent', 'failed', 'unknown', 'recovered'))
+          print(f'sent={sent} failed={failed} unknown={unknown} recovered={recovered}')
+          if failed or unknown:
+              print(f'::error::تسليم غير مؤكد أو فاشل: failed={failed} unknown={unknown}. التنبيهات باقية في الطابور ولا تُعاد تلقائيًا منعًا للتكرار — راجع اللوحة.')
+              sys.exit(1)
+          PYEOF

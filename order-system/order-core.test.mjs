@@ -14,9 +14,10 @@ const base = { name: 'زبونة تجريبية', phone: '0991234567', address: 
 test('uses trusted configuration and calculates fragrance and sham cash in cents', () => {
   const order = prepareOrder({ ...base, scent: 'vanilla', oil: 'argan', totalCents: 1 }, cfg);
   assert.equal(order.subtotalCents, 1800);
-  assert.equal(order.discountCents, 180);
+  // الخصم على المنتج (1600) وحده = 160؛ العطر (200) يدخل المجموع بلا خصم.
+  assert.equal(order.discountCents, 160);
   assert.equal(order.deliveryCents, 0);
-  assert.equal(order.totalCents, 1620);
+  assert.equal(order.totalCents, 1640);
   assert.equal(order.oilPricePending, true);
   assert.equal(order.status, 'pending_review');
 });
@@ -111,4 +112,13 @@ test('bundle offer: the server charges the package price, not qty × unit', () =
   const three = prepareOrder({ ...base, items: [{ id: 'serum-50', qty: 3 }], method: 'cod' }, withBundle);
   assert.equal(three.subtotalCents, 4600);
   assert.equal(three.totalCents, 4800);
+});
+
+test('scent surcharge is never discounted by the payment method', () => {
+  const items = [{ id: 'serum-50', qty: 2 }];
+  const plain = prepareOrder({ ...base, items, scent: 'unscented', method: 'shamcash' }, cfg);
+  const scented = prepareOrder({ ...base, items, scent: 'rose', method: 'shamcash' }, cfg);
+  // نفس الخصم في الحالتين؛ الفرق في الإجمالي هو قيمة العطر كاملة فقط.
+  assert.equal(scented.discountCents, plain.discountCents);
+  assert.equal(scented.totalCents - plain.totalCents, 2 * Math.round(cfg.customization.scentPrice * 100));
 });

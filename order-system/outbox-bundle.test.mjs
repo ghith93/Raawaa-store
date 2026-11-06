@@ -28,3 +28,22 @@ assert.ok(/Bearer /.test(bundle));
 assert.ok(bundle.includes('notification_outbox'));
 
 console.log('Outbox bundle: single file, one serve, secret-free, gated and bounded passed.');
+
+// البند 66: كان telegram-notifier يستورد formatOwnerAlert من order-core، فسحب
+// ذلك محرك العروض كاملًا إلى حزمة تنبيه بسيطة (5848 → 9561 بايت) وجعل الحزمة
+// الملتزَمة غير قابلة لإعادة الإنتاج. العزل في order-alert.mjs أصلح السبب.
+const notifier = await readFile(new URL('./telegram-notifier.mjs', import.meta.url), 'utf8');
+const alertModule = await readFile(new URL('./order-alert.mjs', import.meta.url), 'utf8');
+assert.match(notifier, /from '\.\/order-alert\.mjs'/);
+assert.doesNotMatch(notifier, /from '\.\/order-core\.mjs'/);
+assert.doesNotMatch(alertModule, /^import\s/m, 'alert text must stay dependency-free');
+// لا محرك تسعير ولا أسعار داخل حزمة التنبيه.
+for (const marker of ['sizePrice', 'RawaaOffers', 'discountCents', 'maxPercent']) {
+  assert.ok(!bundle.includes(marker), `pricing engine leaked into alert bundle: ${marker}`);
+}
+
+// البند 67: الفشل الصامت. الدفعة تُبلغ عدّادات حتى يرى المُشغّل فشل التسليم.
+for (const counter of ['sent', 'failed', 'unknown', 'recovered']) {
+  assert.ok(bundle.includes(counter), `missing delivery counter: ${counter}`);
+}
+assert.ok(bundle.includes('Number.isSafeInteger'), 'counters must be validated as safe integers');

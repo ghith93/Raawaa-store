@@ -419,9 +419,14 @@
 
   function activeMethod() { return getMethod(selectedMethodId); }
 
-  /** حساب مشترك للسلة وتقدير العبوة الواحدة؛ الأرقام كلها بالسنتات. */
-  function calculateAmounts(subtotalCents, count, method, zone) {
-    var discountCents = method ? Math.round(subtotalCents * (method.discountPercent || 0) / 100) : 0;
+  /**
+   * حساب مشترك للسلة وتقدير العبوة الواحدة؛ الأرقام كلها بالسنتات.
+   * `discountBaseCents` منفصل عن `subtotalCents`: خصم طريقة الدفع يُحسب على
+   * قيمة المنتجات وحدها، بينما إضافة العطر تُضاف إلى المجموع بلا خصم.
+   * النص المعلن في CONFIG.payment يقول «على قيمة المنتجات» — وهذا يطابقه.
+   */
+  function calculateAmounts(subtotalCents, discountBaseCents, count, method, zone) {
+    var discountCents = method ? Math.round(discountBaseCents * (method.discountPercent || 0) / 100) : 0;
     var deliveryCents = (method && count > 0) ? toCents(deliveryFeeFor(method, zone)) : 0;
     return {
       subtotalCents: subtotalCents,
@@ -479,8 +484,9 @@
 
     var method = activeMethod();
     var zone = activeZone();
-    // خصم طريقة الدفع يُحسب على قيمة المنتجات بعد العرض: العرض أولًا ثم شام كاش.
-    var amounts = calculateAmounts(productCents + scentTotalCents, count, method, zone);
+    // خصم طريقة الدفع على قيمة المنتجات بعد العرض فقط: العرض أولًا ثم شام كاش.
+    // إضافة العطر تدخل المجموع لكنها لا تدخل أساس الخصم.
+    var amounts = calculateAmounts(productCents + scentTotalCents, productCents, count, method, zone);
 
     return {
       entries: entries,
@@ -557,7 +563,7 @@
     var zone = activeZone();
     var method = activeMethod();
     if (!product || !zone || !method) return;
-    var amounts = calculateAmounts(unitOffer(product).cents + toCents(scentFee()), 1, method, zone);
+    var amounts = calculateAmounts(unitOffer(product).cents + toCents(scentFee()), unitOffer(product).cents, 1, method, zone);
     box.querySelector('[data-estimate-zone]').value = zone.id;
     box.querySelector('[data-estimate-method]').value = method.id;
     box.querySelector('[data-estimate-context]').textContent = product.sizeLabel + ' · ' + zone.label + ' · ' + (method.short || method.label);
@@ -747,8 +753,9 @@
         .filter(Boolean).join(' · ');
     }
 
-    // تنبيه شفاف: تركيبة قد لا تغطي التكلفة
-    if (el.marginNote && summary.count > 0 && summary.zone && summary.method) {
+    // ملاحظة هامش داخلية: تعمل فقط عند توفر تقديرات التكلفة (تشغيل من المصدر).
+    // نسخة النشر تُنظَّف من `costing`، فلا تُحسب ملاحظة بهامش مفترض صفر.
+    if (el.marginNote && CONFIG.costing && summary.count > 0 && summary.zone && summary.method) {
       var c = CONFIG.costing;
       // التكلفة ثابتة لكل عبوة بغضّ النظر عن الحجم (من المالك) — نأخذ الحد الأعلى
       var costOfUnit = function () {
@@ -771,6 +778,8 @@
       } else {
         el.marginNote.hidden = true;
       }
+    } else if (el.marginNote) {
+      el.marginNote.hidden = true;
     }
 
     if (el.totalNote) {
@@ -852,7 +861,7 @@
       if (!method || !zone) return;
 
       var sampleUnit = unitOffer(sample);
-      var amounts = calculateAmounts(sampleUnit.cents + toCents(scentFee()), 1, method, zone);
+      var amounts = calculateAmounts(sampleUnit.cents + toCents(scentFee()), sampleUnit.cents, 1, method, zone);
 
       outSub.textContent = money(sampleUnit.cents / 100) + (sampleUnit.cutCents > 0 ? ' (بدل ' + money(sample.price) + ')' : '');
       outDisc.textContent = amounts.discountCents > 0
@@ -962,7 +971,8 @@
       // مثال محسوب من نفس معادلة السلة
       var priced = unitOffer(sample);
       var unitCents = priced.cents + toCents(scentFee());
-      var discountCents = Math.round(unitCents * (method.discountPercent || 0) / 100);
+      // الخصم على سعر المنتج وحده؛ العطر يُضاف بعدها بلا خصم.
+      var discountCents = Math.round(priced.cents * (method.discountPercent || 0) / 100);
       var deliveryCents = toCents(deliveryFeeFor(method, activeZone()));
       var finalCents = unitCents - discountCents + deliveryCents;
 
@@ -1490,14 +1500,12 @@
       opened = null;
     }
 
-    var blocked = !opened || opened.closed || typeof opened.closed === 'undefined';
-
-    if (blocked) {
-      showFallback(url);
-      announce('إن لم تُفتح محادثة واتساب، استخدمي الرابط البديل الظاهر في السلة.');
-    } else {
-      hideFallback();
-      announce('فُتح رابط واتساب في نافذة جديدة. تحققي من المحادثة وأرسلي الرسالة بنفسك؛ لا يُعد الطلب مؤكدًا قبل ردّنا عليك.');
+    // مع noopener تعيد المتصفحات الحديثة null حتى عند نجاح الفتح، فلا يمكن
+    // اعتبار null دليل حظر. نُظهر الرابط البديل دائمًا بصياغة محايدة لا تدّعي فشلًا،
+    // ونترك للزبونة تأكيد ما حدث فعليًا في واتساب.
+    showFallback(url);
+    announce('إن لم تُفتح محادثة واتساب تلقائيًا، استخدمي الرابط البديل في السلة. راجعي المحادثة وأرسلي الرسالة بنفسك؛ لا يُعد الطلب مؤكدًا قبل ردّنا عليك.');
+    if (opened) {
       try { opened.opener = null; } catch { /* تجاهل: لا شيء نفعله بالخطأ */ }
     }
   }
