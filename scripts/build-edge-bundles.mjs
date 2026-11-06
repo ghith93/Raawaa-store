@@ -20,7 +20,9 @@ import { join } from 'node:path';
 
 const root = new URL('..', import.meta.url);
 const check = process.argv.includes('--check');
-const names = ['outbox', 'owner', 'telegram-pairing', 'telegram-test'];
+// `retention` أُضيفت عند نشر الدالة فعليًا: حزمة غير مبنيّة ولا مفحوصة كانت ستصبح
+// سطح نشر بلا حارس انحراف، وهو نفس العطل الذي أصلحه هذا السكربت أصلًا.
+const names = ['outbox', 'owner', 'telegram-pairing', 'telegram-test', 'retention'];
 // رايات موحّدة لكل الحزم. أي تغيير هنا يجب أن يرافقه إعادة بناء كل الحزم.
 const flags = ['--bundle', '--format=esm', '--minify', '--charset=utf8', '--external:npm:postgres@3.4.7'];
 const temp = await mkdtemp(join(tmpdir(), 'rawaa-edge-'));
