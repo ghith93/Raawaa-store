@@ -90,7 +90,8 @@ jobs:
           curl -fsSL --max-time 25 "$PREVIEW_URL/serum" -o /tmp/serum.html
           curl -fsSL --max-time 25 "$PREVIEW_URL/elyra/" -o /tmp/elyra.html
           elyra_headers=$(curl -sSI --max-time 25 "$PREVIEW_URL/elyra/" | tr -d '\r')
-          grep -qi '^x-robots-tag: noindex, nofollow, noarchive
+          grep -qi '^x-robots-tag: noindex, nofollow, noarchive$' <<< "$elyra_headers"
+          grep -qi '^cache-control: no-store$' <<< "$elyra_headers"
           grep -q 'هوية جديدة قيد التطوير' /tmp/elyra.html
           if grep -Eq '\$[0-9]|خصم[[:space:]]*[0-9]|wa\.me/' /tmp/elyra.html; then
             echo "::error::ELYRA preview exposed unapproved commercial claims"; exit 1
