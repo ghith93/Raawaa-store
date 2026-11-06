@@ -25,7 +25,11 @@ for d in css js assets owner; do
   [ -d "$ROOT/$d" ] && cp -R "$ROOT/$d" "$OUT/"
 done
 
-# 3) تنظيف ما لا يخص الزائر
+# 3) الإعدادات: انشر نسخة عامة بلا تقديرات التكلفة أو الملاحظات الداخلية.
+# المصدر js/config.js يبقى كاملًا؛ التنظيف يجري على نسخة النشر وحدها.
+node "$ROOT/scripts/strip-internal-config.mjs" "$OUT/js/config.js"
+
+# 4) تنظيف ما لا يخص الزائر
 rm -rf "$OUT/assets/img/design-raw" "$OUT/assets/img/design-raw-reference.png" 2>/dev/null || true
 # ملفات المصدر الخام للصور لا تُنشر — فقط المشتقات المُحسَّنة
 rm -rf "$OUT/assets/img/source" 2>/dev/null || true
@@ -61,7 +65,7 @@ if len(remaining) < 5:
 print(f"  خطوط مُبقاة: {len(remaining)} · مطلوبة: {len(used)}")
 PYEOF
 
-# 4) تقرير
+# 5) تقرير
 COUNT=$(find "$OUT" -type f | wc -l)
 SIZE=$(du -sh "$OUT" | cut -f1)
 echo "✓ dist/site — $COUNT ملفًا · $SIZE"

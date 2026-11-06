@@ -1,4 +1,4 @@
-import { formatOwnerAlert } from './order-core.mjs';
+import { formatOwnerAlert } from './order-alert.mjs';
 
 /** A single attempt only. Callers must persist delivery status separately. */
 export async function sendOrderAlert({ token, chatId, reference, fetchImpl = fetch }) {

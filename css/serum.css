@@ -122,3 +122,7 @@
   .serum-intro { font-size: 1rem; max-width: 42ch; }
 }
 .serum-view-controls button { overflow-wrap: anywhere; }
+
+/* سياسة الاستبدال والإرجاع المعتمدة — نفس نص صفحة حماة حرفيًا. */
+.returns-policy { margin: .6rem 0; padding-inline-start: 1.2rem; display: grid; gap: .4rem; }
+.returns-policy li { line-height: 1.75; }

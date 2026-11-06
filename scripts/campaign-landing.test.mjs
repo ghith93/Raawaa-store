@@ -63,8 +63,9 @@ test('delivery examples and WhatsApp address use owner config without sending or
   assert.match(delivery, /شام كاش/);
   assert.match(delivery, /توصيل مجاني/);
   assert.match(delivery, /الدفع عند الاستلام/);
-  assert.match(delivery, /\$2/);
-  assert.match(delivery, /\$4/);
+  // الرسوم تُشتق من الإعدادات: لا رقم مثبّت يتقادم عند تغيير المالك للرسوم.
+  const fees = new Set(RAWAA_CONFIG.delivery.zones.map(zone => zone.fee));
+  for (const fee of fees) assert.ok(delivery.includes('$' + fee), `missing configured delivery fee $${fee}`);
 
   const wa = document.querySelector('[data-campaign-whatsapp]');
   const url = new URL(wa.href);

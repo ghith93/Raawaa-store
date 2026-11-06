@@ -33,8 +33,11 @@ test('video payment examples recalculate from the store config', () => {
     product.price + hama.fee,
     product.price + other.fee
   ];
-  assert.deepEqual(totals.map(value => Math.round(value * 100) / 100), [14.4, 18.4, 18, 20],
-    'raw calculation still matches the configured price, discount, and delivery fees');
+  // لا أرقام مثبّتة هنا: الرسوم والخصم ملك المالك في js/config.js.
+  // المطلوب أن يعرض المستند القيم المشتقة من الإعدادات الحالية كما هي.
+  assert.equal(shamDiscounted, product.price * (1 - shamCash.discountPercent / 100));
+  assert.equal(hama.freeWithShamCash, true, 'Hama stays free with Sham Cash under the current config');
+  assert.ok(shamCash.freeDeliveryIn.includes(hama.id));
   const displayedTotals = totals.map(value => {
     const fixed = value.toFixed(2);
     return `$${fixed.endsWith('.00') ? fixed.slice(0, -3) : fixed}`;

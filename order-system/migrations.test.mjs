@@ -13,6 +13,9 @@ const supabaseLocalTests = await readFile(new URL('./marketing-preferences-supab
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 const localSupabaseWorkflow = await readFile(new URL('../.github/workflows/local-supabase.yml', import.meta.url), 'utf8');
 const ownerSetupHtml = await readFile(new URL('../setup.html', import.meta.url), 'utf8');
+const lifecycle = await readFile(new URL('./migrations/006_order_closed_at.sql', import.meta.url), 'utf8');
+const lifecycleRollback = await readFile(new URL('./migrations/006_order_closed_at.down.sql', import.meta.url), 'utf8');
+const chainIntegration = await readFile(new URL('./retention-chain-pg-test.mjs', import.meta.url), 'utf8');
 
 test('retention source matches the already-applied staging migration and remains bounded/private', () => {
   assert.match(migration, /20261030134505\/rawaa_order_retention/);
@@ -87,9 +90,54 @@ test('hosted Supabase probe runs reviewed main code only with read-only access a
   assert.match(localSupabaseWorkflow, /workflow_dispatch:/);
   assert.match(localSupabaseWorkflow, /if: github\.ref == 'refs\/heads\/main'/);
   assert.match(localSupabaseWorkflow, /runs-on: ubuntu-24\.04/);
-  assert.match(localSupabaseWorkflow, /uses: supabase\/setup-cli@v3/);
+  assert.match(localSupabaseWorkflow, /uses: supabase\/setup-cli@[0-9a-f]{40} # v3/);
   assert.match(localSupabaseWorkflow, /version: 2\.122\.0/);
   assert.match(localSupabaseWorkflow, /permissions:\s*\n\s*contents: read/);
   assert.doesNotMatch(localSupabaseWorkflow, /runs-on: \[?self-hosted|pull_request:|workflow_run:|secrets\./i);
   assert.match(localSupabaseWorkflow, /npm run test:marketing:supabase-local/);
+});
+
+// 004 يعتمد closed_at الذي لا ينشئه 001، ويُفرغ عمودين NOT NULL. الأصل إصلاح
+// ذلك بهجرة لاحقة لا بتعديل 004 المطبَّقة على staging والمنصوص عليها أعلاه.
+test('lifecycle repair ships as a new forward migration and leaves the applied 004 untouched', () => {
+  assert.match(migration, /closed_at < now\(\) - interval '365 days'/);
+  assert.match(lifecycle, /add column if not exists closed_at timestamptz/);
+  assert.match(lifecycle, /create trigger orders_set_closed_at/);
+  assert.match(lifecycle, /before insert or update of order_status/);
+  // لا نخمّن وقت إغلاق قديمًا قد يقصّر نافذة الاحتفاظ قبل انقضائها فعلًا.
+  assert.match(lifecycle, /set closed_at = now\(\)/);
+  assert.doesNotMatch(lifecycle, /set closed_at = created_at/);
+  // Relaxation must stay paired with a guard, never a bare drop.
+  assert.match(lifecycle, /alter column request_hash drop not null/);
+  assert.match(lifecycle, /alter column idempotency_key drop not null/);
+  assert.match(lifecycle, /orders_identifiers_present_until_redacted/);
+  assert.match(lifecycle, /revoke all on function rawaa_store\.set_order_closed_at\(\) from public, anon, authenticated/);
+  assert.doesNotMatch(lifecycle, /drop table|truncate|delete from/i);
+});
+
+test('lifecycle rollback removes only its own objects and restores the identifier invariant', () => {
+  assert.match(lifecycleRollback, /drop trigger if exists orders_set_closed_at/);
+  assert.match(lifecycleRollback, /drop function if exists rawaa_store\.set_order_closed_at\(\)/);
+  assert.match(lifecycleRollback, /drop column if exists closed_at/);
+  assert.match(lifecycleRollback, /alter column request_hash set not null/);
+  assert.match(lifecycleRollback, /alter column idempotency_key set not null/);
+  assert.doesNotMatch(lifecycleRollback, /drop table|truncate|delete from/i);
+});
+
+test('full migration chain is exercised together so a missing column cannot pass CI again', () => {
+  // كل اختبار ميزة كان يطبّق الهجرات التي يحتاجها فقط، فلم تُجرَّب 001..005 معًا.
+  assert.match(chainIntegration, /readdir/);
+  assert.match(chainIntegration, /\.sort\(\)/);
+  assert.match(chainIntegration, /!name\.endsWith\('\.down\.sql'\)/);
+  assert.match(chainIntegration, /redact_expired_order_contacts/);
+  assert.match(chainIntegration, /PGLITE_MODULE/);
+  assert.doesNotMatch(chainIntegration, /fetch\(|https?:\/\//i);
+  // CI يكتشف الملفات بالـglob، فيلتقط هذا الاختبار دون تسجيل يدوي.
+  assert.match(ciWorkflow, /order-system\/\*-pg-test\.mjs/);
+});
+
+test('CI fails on a stale or corrupt committed intake bundle instead of silently rebuilding it', () => {
+  assert.match(ciWorkflow, /node scripts\/build-order-entry\.mjs/);
+  assert.match(ciWorkflow, /node --check order-system\/edge\/order-entry-bundle\.mjs/);
+  assert.match(ciWorkflow, /git diff --exit-code -- order-system\/edge\/order-entry-bundle\.mjs/);
 });

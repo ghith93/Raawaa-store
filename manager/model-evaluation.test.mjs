@@ -9,7 +9,8 @@ const config=sandbox.window.RAWAA_CONFIG;
 
 test('five synthetic cases draw current prices and delivery from config, with no customer data',()=>{
  const cases=createEvaluationCases(config);
- assert.equal(cases.length,5);assert.equal(cases[0].expected,'2600');assert.equal(cases[1].expected,'0');
+ const expected50Cents=String(Math.round(config.products.find(x=>x.id==='serum-50').price*100));
+ assert.equal(cases.length,5);assert.equal(cases[0].expected,expected50Cents);assert.equal(cases[1].expected,'0');
  assert.ok(!JSON.stringify(cases).includes(config.contact.whatsappNumber));
  assert.deepEqual(cases.slice(2).map(x=>x.expected),['unknown','unknown','unknown']);
  const modified=structuredClone(config);modified.products.find(x=>x.id==='serum-50').price=21;modified.payment.methods.find(x=>x.id==='shamcash').freeDeliveryIn=[];

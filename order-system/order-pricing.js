@@ -72,8 +72,11 @@
     const generalSlot = offers ? offers.pick(offerState.slots, null) : null;
     const generalCut = generalSlot ? offers.orderCut(generalSlot, productCents) : 0;
     const offerCents = entries.reduce((total, item) => total + item.offerCents, 0) + generalCut;
-    const subtotalCents = productCents - generalCut + scentCents * quantity;
-    const discountCents = Math.round(subtotalCents * method.discountPercent / 100);
+    // Payment discount applies to the discounted product value only; the scent
+    // surcharge is added to the total but never discounted. Matches js/cart.js.
+    const discountedProductCents = productCents - generalCut;
+    const subtotalCents = discountedProductCents + scentCents * quantity;
+    const discountCents = Math.round(discountedProductCents * method.discountPercent / 100);
     const deliveryCents = method.freeDeliveryIn.includes(zone.id) ? 0 : cents(zone.fee);
 
     return {
@@ -83,7 +86,7 @@
       zone: zone.id,
       method: method.id,
       quantity,
-      productCents: productCents - generalCut,
+      productCents: discountedProductCents,
       scentCents: scentCents * quantity,
       subtotalCents,
       offerCents,

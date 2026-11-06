@@ -88,3 +88,37 @@ test('test message request uses owner token, no body, and distinguishes unknown 
     if(url.includes('/token?'))return response({access_token:'valid.jwt',expires_in:60});assert.equal(init.body,undefined);assert.equal(init.headers.authorization,'Bearer valid.jwt');return fail?{ok:false,status:503,json:async()=>({error:'unknown'})}:response({ok:true});
   }});await client.login('a@b.com','dummy');await client.sendTest();fail=true;await assert.rejects(client.sendTest(),/TEST_UNKNOWN/);
 });
+
+// كانت نسختان من العميل تتباعدان بصمت: دالة الانسحاب التسويقي موجودة في
+// order-system/ وغائبة عن owner/ المنشورة. الآن مصدر واحد وإعادة تصدير فقط.
+test('owner client has one implementation so the published and staging copies cannot drift', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const published = await readFile(new URL('../owner/owner-client.mjs', import.meta.url), 'utf8');
+  const staging = await readFile(new URL('./owner-client.mjs', import.meta.url), 'utf8');
+  const app = await readFile(new URL('../owner/app.mjs', import.meta.url), 'utf8');
+
+  // نسخة staging إعادة تصدير بلا منطق خاص بها.
+  assert.match(staging, /export\s*\{\s*createOwnerClient\s*\}\s*from\s*'\.\.\/owner\/owner-client\.mjs'/);
+  assert.doesNotMatch(staging, /function\s|fetch\(|const\s+\w+\s*=/);
+
+  // التطبيق المنشور يستورد نفس التنفيذ، والميزة الاختيارية مغلقة افتراضيًا.
+  assert.match(app, /from '\.\/owner-client\.mjs'/);
+  assert.match(published, /export function createOwnerClient/);
+  assert.match(published, /withdrawMarketing/);
+  assert.match(published, /PREFERENCE_UNAVAILABLE/);
+
+  const { createOwnerClient: fromStaging } = await import('./owner-client.mjs');
+  const { createOwnerClient: fromPublished } = await import('../owner/owner-client.mjs');
+  assert.equal(fromStaging, fromPublished, 'both paths must resolve to the same function object');
+
+  // بلا مسار مهيّأ لا يرسل الطلب شيئًا ويفشل مغلقًا.
+  let called = false;
+  const client = fromPublished({
+    supabaseUrl: 'https://example.supabase.co',
+    ownerEndpoint: 'https://example.functions.supabase.co/orders',
+    publishableKey: 'public-test-key',
+    fetchImpl: async () => { called = true; return { ok: true, status: 200, json: async () => ({}) }; },
+  });
+  await assert.rejects(client.withdrawMarketing('RAWAA-REF'), /PREFERENCE_UNAVAILABLE/);
+  assert.equal(called, false, 'must not call the network without a configured endpoint');
+});

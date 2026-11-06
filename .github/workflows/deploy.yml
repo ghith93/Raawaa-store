@@ -3,15 +3,17 @@ name: Deploy to Cloudflare Pages
 # لماذا هذا الملف؟
 # كل إصدار كان يحتاج تشغيلًا يدويًا من جهاز يملك توكن Cloudflare. هذا هشّ:
 # التوكن يُفقد، ولا أحد يعرف أي إصدار منشور. بعد هذا الملف:
-#   push إلى main  ⇒  فحص  ⇒  بناء  ⇒  نشر تلقائي.
+#   push إلى main  ⇒  Site checks  ⇒  (نجاح فقط)  ⇒  بناء  ⇒  نشر.
 # ولا توكن في الكود: يُقرأ من GitHub Secret اسمه CLOUDFLARE_API_TOKEN.
 
+# بوابة النشر: لا يُنشر إلا بعد نجاح «Site checks» على نفس الالتزام.
+# السبب: كان النشر يعمل على push بالتوازي مع الفحوص، فيُنشر الموقع ثم يصل
+# تنبيه Deploy gate بعد فوات الأوان. الآن النجاح شرط سابق للنشر لا لاحق له.
 on:
-  push:
+  workflow_run:
+    workflows: ['Site checks']
+    types: [completed]
     branches: [main]
-    # Workflow-only changes must not redeploy the production site.
-    paths-ignore:
-      - '.github/workflows/**'
   workflow_dispatch:
 
 permissions:
@@ -27,45 +29,72 @@ jobs:
     name: بناء ونشر
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    # فشل الفحوص أو إلغاؤها أو تخطيها = لا نشر. التشغيل اليدوي يبقى متاحًا للمالك.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main')
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          # انشر الالتزام الذي اجتاز الفحوص بالضبط، لا أحدث رأس قد تغيّر بعده.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 2
 
-      - uses: actions/setup-node@v5
+      - name: تخطي تغييرات ملفات سير العمل فقط
+        id: scope
+        if: github.event_name == 'workflow_run'
+        run: |
+          changed=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+          if [ -n "$changed" ] && ! printf '%s\n' "$changed" | grep -qv '^\.github/workflows/'; then
+            echo "تغيير يقتصر على سير العمل — لا حاجة لإعادة نشر الموقع."
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: '22'
           check-latest: true
           cache: 'npm'
 
       - name: تثبيت الاعتماديات
+        if: steps.scope.outputs.deploy != 'false'
         run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: فحص الموقع قبل النشر
+        if: steps.scope.outputs.deploy != 'false'
         run: node scripts/check-site.mjs
 
       - name: بناء مجلد النشر
+        if: steps.scope.outputs.deploy != 'false'
         run: bash scripts/build-deploy.sh
 
       - name: التحقق أن الخطوط نُشرت (عطل سابق)
+        if: steps.scope.outputs.deploy != 'false'
         run: |
           n=$(ls dist/site/assets/fonts/*.woff2 2>/dev/null | wc -l)
           echo "خطوط في مجلد النشر: $n"
           if [ "$n" -lt 5 ]; then echo "✗ الخطوط لم تُنشر — إيقاف"; exit 1; fi
 
       - name: نشر إلى Cloudflare Pages
-        uses: cloudflare/wrangler-action@v4.1.3
+        if: steps.scope.outputs.deploy != 'false'
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist/site --project-name=raawaa-store --branch=main
 
       - name: تشخيص Cloudflare (بصلاحيات التوكن الحقيقية)
-        if: always()
+        if: always() && steps.scope.outputs.deploy != 'false'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: bash scripts/cloudflare-doctor.sh
 
       - name: التحقق من الموقع الحيّ بعد النشر
+        if: steps.scope.outputs.deploy != 'false'
         run: |
           sleep 20
           for i in 1 2 3 4 5; do

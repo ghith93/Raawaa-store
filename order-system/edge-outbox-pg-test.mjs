@@ -12,7 +12,9 @@ await repo.insertPending({idempotencyKey:crypto.randomUUID(),order});await db.qu
 const secret='a'.repeat(48), config={SUPABASE_DB_URL:'postgres://private',RAWAA_TELEGRAM_BOT_TOKEN:'123456:'+'x'.repeat(25),RAWAA_OUTBOX_SCHEDULER_SECRET:secret};let sent=0;
 const handle=createEdgeOutbox({getEnv:k=>config[k],postgresFactory:()=>({unsafe:async(text,args)=>(await db.query(text,args)).rows}),fetchImpl:async(_url,init)=>{sent++;const body=JSON.parse(init.body);assert.equal(body.chat_id,'12345');assert.ok(!body.text.includes('Synthetic'));return {ok:true,json:async()=>({ok:true,result:{message_id:1,chat:{id:12345}}})};}});
 const req=token=>new Request('https://edge.example/scheduler',{method:'POST',headers:{authorization:`Bearer ${token}`}});
-assert.equal((await handle(req('b'.repeat(48)))).status,401);assert.equal(sent,0);const result=await handle(req(secret));assert.equal(result.status,200);assert.deepEqual(await result.json(),{ok:true});assert.equal(sent,1);
+assert.equal((await handle(req('b'.repeat(48)))).status,401);assert.equal(sent,0);const result=await handle(req(secret));assert.equal(result.status,200);assert.deepEqual(await result.json(),{ok:true,sent:1,failed:0,unknown:0,recovered:0});assert.equal(sent,1);
 assert.equal((await db.query("select count(*)::int n from rawaa_store.notification_outbox where state='sent'")).rows[0].n,1);
-assert.equal((await handle(req(secret))).status,200);assert.equal(sent,1);
+const idle=await handle(req(secret));assert.equal(idle.status,200);assert.equal(sent,1);
+// لا شيء معلّق: العدّادات صفر، ولا يُعاد إرسال ما سبق تسليمه.
+assert.deepEqual(await idle.json(),{ok:true,sent:0,failed:0,unknown:0,recovered:0});
 await db.close();console.log('Outbox scheduler: authenticated worker and mock delivery to private recipient passed.');

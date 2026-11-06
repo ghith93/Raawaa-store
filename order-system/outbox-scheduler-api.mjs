@@ -26,8 +26,12 @@ export function createOutboxSchedulerHandler({ secret, runBatch }) {
     try {
       const result=await runBatch();
       if(result?.ok!==true)return respond(503,{error:'unavailable'});
-      // Never return chat identifiers, order references, or customer data.
-      return respond(200,{ok:true});
+      // كانت الدفعة تُبلغ 200 {ok:true} حتى لو فشل كل تسليم، فيبدو الفشل نجاحًا.
+      // HTTP 200 يعني «الدفعة عملت»، لا «التسليم نجح»؛ قرار التنبيه للمُشغّل.
+      // عدّادات صحيحة فقط: لا معرّفات شات ولا مراجع طلبات ولا أي بيانات عميلة.
+      const count=value=>Number.isSafeInteger(value)&&value>=0?value:0;
+      return respond(200,{ok:true,sent:count(result.sent),failed:count(result.failed),
+        unknown:count(result.unknown),recovered:count(result.recovered)});
     }catch{return respond(503,{error:'unavailable'});}
   };
 }

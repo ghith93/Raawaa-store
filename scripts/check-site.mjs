@@ -1163,7 +1163,16 @@ async function checkProductPage(config) {
     landing.includes('data-wa-selected') && landing.includes('data-wa-context') &&
     (await read('js/marketing.js')).includes(':not([data-wa-selected])'),
     'اختصارات قرار الشراء واستفسار الحجم موضّحة، دون تكرار مصدر الحملة');
-  ok(visible.includes('id="returns"') && visible.includes('الاستفسار عن الشروط على واتساب'), 'سؤال الشروط دون اختلاق سياسة إرجاع');
+  ok(visible.includes('id="returns"') && visible.includes('الاستفسار عن الشروط على واتساب'), 'سياسة الإرجاع منشورة مع رابط الاستفسار');
+  // سياسة واحدة معتمدة من المالك: نفس النص في صفحة المنتج وصفحة حماة بلا توسيع.
+  const approvedReturns = [
+    'عبوة متضررة أو خاطئة: استبدال مجاني خلال ٤٨ ساعة من الاستلام، بشرط صورة.',
+    'عبوة مغلقة غير مفتوحة: إرجاع خلال ٣ أيام بشرط سلامة الملصق والختم.',
+    'العبوة المفتوحة والمستخدمة لا تُستبدل — وهذا عدل للطرفين.'
+  ];
+  const hamaPage = await read('hama.html');
+  ok(approvedReturns.every(line => visible.includes(line) && hamaPage.includes(line)),
+    'سياسة الاستبدال والإرجاع موحّدة بين المنتج وحماة');
   ok((await read('js/marketing.js')).includes('window.rawaaSourceNote = sourceNote') &&
     (await read('js/cart.js')).includes('window.rawaaSourceNote()') &&
     (await read('privacy.html')).includes('نسخة المحتوى'), 'نسخة الحملة تنتقل لواتساب وتُذكر في الخصوصية');
@@ -1185,7 +1194,15 @@ async function checkProductPage(config) {
   ok(/data-estimate-interface[^>]*hidden/.test(visible) && visible.includes('data-estimate-fallback') && visible.includes('تقدير عبوة واحدة مع التوصيل'), 'التقدير الرقمي مخفي دون JavaScript وله بديل ومحدّد بعبوة واحدة');
   ok(['data-estimate-zone', 'data-estimate-method', 'data-estimate-total', 'data-estimate-discount', 'data-estimate-delivery'].every(hook => visible.includes(hook)), 'خيارات وتفاصيل التقدير موجودة');
   const cartLogic = await read('js/cart.js');
-  ok(cartLogic.includes('calculateAmounts(productCents + scentTotalCents, count, method, zone)') && cartLogic.includes('calculateAmounts(unitOffer(product).cents + toCents(scentFee()), 1, method, zone)'), 'السلة وتقدير المنتج يستخدمان حسابًا مشتركًا مع العروض');
+  // نتحقق من القاعدة لا من نص حرفي: أساس الخصم منفصل عن المجموع، وكل المستدعين
+  // يمرّرون قيمة المنتجات وحدها كأساس للخصم. أي إعادة صياغة لا تكسر الفحص.
+  const sharedAmounts = /function\s+calculateAmounts\(\s*subtotalCents\s*,\s*discountBaseCents\s*,\s*count\s*,\s*method\s*,\s*zone\s*\)/.test(cartLogic) &&
+    /discountBaseCents\s*\*\s*\(method\.discountPercent \|\| 0\)\s*\/\s*100/.test(cartLogic);
+  const callers = [...cartLogic.matchAll(/calculateAmounts\(([^;]*?)\);/g)].map(m => m[1].replace(/\s+/g, ' '));
+  const productOnlyBases = ['productCents', 'unitOffer(product).cents', 'sampleUnit.cents'];
+  ok(sharedAmounts && callers.length >= 3 &&
+    callers.every(args => productOnlyBases.some(base => args.includes(', ' + base + ','))),
+    'السلة والتقدير يشتركان في حساب واحد وخصم الدفع على المنتجات وحدها');
   const offersLogic = await read('js/offers.js');
   ok(config.offers && Array.isArray(config.offers.slots), 'خانات العروض معرَّفة في الإعدادات');
   ok(config.offers.slots.every(slot => slot.enabled !== true), 'لا يوجد عرض مفعّل بلا قرار صريح من المالك');

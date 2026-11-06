@@ -30,6 +30,26 @@ ROOT = Path(__file__).resolve().parent.parent
 if not TOKEN:
     sys.exit("GH_TOKEN غير مضبوط")
 
+# حارس مسار المراجعة: هذا السكربت يكتب الفرع مباشرة عبر API ويتجاوز PR والفحوص.
+# لذلك يُمنع الدفع إلى main إلا بإقرار صريح، ويُمنع رفع أي ملف يبدو سرًا.
+if BRANCH in ("main", "master") and os.environ.get("RAWAA_ALLOW_DIRECT_MAIN_PUSH") != "1":
+    sys.exit(
+        "✗ الدفع المباشر إلى main متوقف افتراضيًا لأنه يتجاوز مراجعة PR وفحوص CI.\n"
+        "  استخدم فرعًا وPull Request: GH_BRANCH=fix/... python3 scripts/push-to-github.py \"...\"\n"
+        "  عند ضرورة قصوى وبموافقة المالك: RAWAA_ALLOW_DIRECT_MAIN_PUSH=1"
+    )
+
+SECRET_NAMES = (".env", ".env.", ".pem", ".key", ".p12", ".pfx", "id_rsa", "credentials.json")
+
+
+def looks_like_secret(path: str) -> bool:
+    name = path.lower()
+    base = name.rsplit("/", 1)[-1]
+    if base == ".env.example":
+        return False
+    return base.startswith(".env") or any(base.endswith(ext) for ext in SECRET_NAMES if ext.startswith(".")) \
+        or base in ("id_rsa", "credentials.json")
+
 EXCLUDE_PREFIXES = ("dist/",)
 
 
@@ -86,10 +106,16 @@ def main():
     message = sys.argv[1] if len(sys.argv) > 1 else "chore: تحديث"
 
     # 1) كل ملف متتبَّع — لا استثناءات صامتة
-    tracked = subprocess.run(["git", "ls-files"], cwd=ROOT,
-                             capture_output=True, text=True).stdout.split()
+    # ‎-z يفصل ببايت صفري: ‎.split() كان يمزّق أي مسار فيه مسافة إلى ملفين وهميين،
+    # فيسقط الملف الحقيقي من الرفع بصمت.
+    tracked = [p for p in subprocess.run(["git", "ls-files", "-z"], cwd=ROOT,
+                                        capture_output=True, text=True).stdout.split("\0") if p]
     files = [f for f in tracked
              if not f.startswith(EXCLUDE_PREFIXES) and (ROOT / f).is_file()]
+
+    leaked = [f for f in files if looks_like_secret(f)]
+    if leaked:
+        sys.exit("✗ ملفات تبدو أسرارًا ضمن المتتبَّع — أزلها من Git قبل الرفع:\n  " + "\n  ".join(leaked))
 
     # GitHub يرفض أي ملف > 100 MB عبر الواجهة — نتحقق محليًا قبل إهدار الحصة
     too_big = [(f, (ROOT / f).stat().st_size) for f in files

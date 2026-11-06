@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { loadStoreConfig } from './store-config.mjs';
 
 // The intake bundle is the future deployment surface: single-file, secret-free,
@@ -8,6 +10,10 @@ import { loadStoreConfig } from './store-config.mjs';
 // js/config.js changes without re-running scripts/build-order-entry.mjs.
 const bundle = await readFile(new URL('./edge/order-entry-bundle.mjs', import.meta.url), 'utf8');
 const entry = await readFile(new URL('./edge/order-entry.mjs', import.meta.url), 'utf8');
+
+// الحزمة الملتزَمة كانت تحتوي قوسًا زائدًا فتنكسر عند النشر؛ بصمة الإعدادات وحدها
+// لا تكشف ذلك لأن البصمة تبقى موجودة. نفحص الصياغة فعليًا قبل أي assert آخر.
+execFileSync(process.execPath, ['--check', fileURLToPath(new URL('./edge/order-entry-bundle.mjs', import.meta.url))], { stdio: 'pipe' });
 
 // Single Deno.serve binding; npm:postgres is the only surviving import.
 assert.equal((bundle.match(/Deno\.serve\(/g) || []).length, 1);
