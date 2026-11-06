@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://www.facebook.com https://connect.facebook.net; font-src 'self'; connect-src 'self' https://www.facebook.com https://connect.facebook.net https://oyoyozdugicmnkfhjovo.supabase.co; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://connect.facebook.net; style-src 'self'; img-src 'self' data: https://www.facebook.com https://connect.facebook.net; font-src 'self'; connect-src 'self' https://www.facebook.com https://connect.facebook.net https://oyoyozdugicmnkfhjovo.supabase.co; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests">
   <title>رواء | RAWAA — سيروم فاخر للشعر</title>
   <meta name="description" content="رواء — سيروم عناية للشعر الباهت والمتطاير، لمظهر أكثر نعومة ولمعان. اكتشفي المنتج والأحجام واطلبي عبر واتساب.">
   <meta name="theme-color" content="#0c0b0a">
@@ -74,6 +74,15 @@
     .process-list{list-style:none;display:flex;flex-direction:column;gap:1.6rem;max-width:620px;margin:0 auto}.process-list li{display:flex;gap:1.2rem}.process-list h3{font-size:1rem;font-weight:600;margin:0}.process-list .step{font-family:var(--font-display);font-size:1.45rem;color:var(--gold)}
     .cta{background:linear-gradient(145deg,#141210,#221e19);border-top:1px solid var(--border);text-align:center;padding:4.8rem 0}.cta h2{font-size:clamp(1.8rem,3.6vw,2.4rem);margin-bottom:.85rem}
     footer{padding:3.8rem 0 2rem;border-top:1px solid var(--border)}.footer-grid{display:grid;gap:2.3rem}@media(min-width:768px){.footer-grid{grid-template-columns:1.5fr 1fr 1fr}}.footer-bottom{padding-top:1.6rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:.74rem;color:var(--text-muted)}
+
+    /* أدوات صغيرة — حلّت محل أنماط سطرية كانت تفرض style-src 'unsafe-inline' */
+    .u-full{width:100%}.u-gold{color:var(--gold)}.u-muted{color:var(--text-muted)}
+    .u-bare{list-style:none}.u-tight{margin-bottom:.5rem}
+    .u-note{color:var(--text-muted);margin:1rem auto 1.8rem;max-width:420px}
+    .u-footnote{color:var(--text-muted);margin-top:.75rem;max-width:250px}
+    .u-center-row{display:flex;justify-content:center;gap:.8rem;flex-wrap:wrap}
+    .u-eyebrow{color:var(--gold);font-size:.68rem;letter-spacing:.16em;margin:0 0 1.1rem}
+    .u-footer-note{margin-top:1.3rem;border:none}
   </style>
 </head>
 <body>
@@ -83,7 +92,7 @@
     <nav><ul class="nav-desktop"><li><a href="#products">الأحجام</a></li><li><a href="#why">لماذا رواء</a></li><li><a href="#order">كيف تطلبين</a></li></ul></nav>
     <div class="header-cta"><a href="/serum" class="btn btn-gold btn-sm" data-discover-serum>اكتشفي السيروم</a><button type="button" class="nav-toggle" id="navToggle" aria-label="فتح القائمة" aria-expanded="false">☰</button></div>
   </div></header>
-  <div class="mobile-nav" id="mobileNav" hidden><ul><li><a href="#products">الأحجام</a></li><li><a href="#why">لماذا رواء</a></li><li><a href="#order">كيف تطلبين</a></li><li style="margin-top:1.3rem;border:none"><a href="https://wa.me/963997310856" class="btn btn-gold" style="width:100%" target="_blank" rel="noopener noreferrer">واتساب</a></li></ul></div>
+  <div class="mobile-nav" id="mobileNav" hidden><ul><li><a href="#products">الأحجام</a></li><li><a href="#why">لماذا رواء</a></li><li><a href="#order">كيف تطلبين</a></li><li class="u-footer-note"><a href="https://wa.me/963997310856" class="btn btn-gold" class="u-full" target="_blank" rel="noopener noreferrer">واتساب</a></li></ul></div>
   <main>
     <section class="hero"><div class="shell"><div class="hero-grid">
       <div class="hero-content"><span class="eyebrow">لمعان يُرى، ونعومة تُلمَس</span>
@@ -119,14 +128,14 @@
         <li><span class="step">٢</span><div><h3>تواصلي معنا</h3><p>أرسلي واتساب. نؤكد خلال دقائق.</p></div></li>
         <li><span class="step">٣</span><div><h3>استلمي وادفعي</h3><p>الدفع عند الاستلام أو شام كاش بخصم 10%.</p></div></li>
       </ol></div></section>
-    <section class="cta"><div class="shell"><h2>جاهزة لتجربة رواء؟</h2><p style="color:var(--text-muted);margin:1rem auto 1.8rem;max-width:420px">تواصلي عبر واتساب وسنساعدكِ في اختيار الحجم الأنسب.</p>
-      <div style="display:flex;justify-content:center;gap:.8rem;flex-wrap:wrap"><a href="/serum" class="btn btn-gold" data-discover-serum>اختاري حجمك واطلبي</a><a href="#products" class="btn btn-outline">عودي للأحجام</a></div></div></section>
+    <section class="cta"><div class="shell"><h2>جاهزة لتجربة رواء؟</h2><p class="u-note">تواصلي عبر واتساب وسنساعدكِ في اختيار الحجم الأنسب.</p>
+      <div class="u-center-row"><a href="/serum" class="btn btn-gold" data-discover-serum>اختاري حجمك واطلبي</a><a href="#products" class="btn btn-outline">عودي للأحجام</a></div></div></section>
   </main>
   <footer><div class="shell"><div class="footer-grid">
-    <div><div class="brand-latin">RAWAA</div><div class="brand-ar" style="color:var(--gold)">رواء</div><p style="color:var(--text-muted);margin-top:.75rem;max-width:250px">سيروم شعر سوري فاخر.</p></div>
-    <div><h3 style="color:var(--gold);font-size:.68rem;letter-spacing:.16em;margin:0 0 1.1rem">استكشفي</h3><ul style="list-style:none"><li style="margin-bottom:.5rem"><a href="#products" style="color:var(--text-muted)">الأحجام</a></li><li style="margin-bottom:.5rem"><a href="#why" style="color:var(--text-muted)">لماذا رواء</a></li></ul></div>
-    <div><h3 style="color:var(--gold);font-size:.68rem;letter-spacing:.16em;margin:0 0 1.1rem">تواصلي</h3><ul style="list-style:none"><li style="margin-bottom:.5rem"><a href="https://wa.me/963997310856" style="color:var(--text-muted)" target="_blank" rel="noopener noreferrer">واتساب</a></li><li style="color:var(--text-muted)">حماة، سوريا</li></ul></div>
+    <div><div class="brand-latin">RAWAA</div><div class="brand-ar" class="u-gold">رواء</div><p class="u-footnote">سيروم شعر سوري فاخر.</p></div>
+    <div><h3 class="u-eyebrow">استكشفي</h3><ul class="u-bare"><li class="u-tight"><a href="#products" class="u-muted">الأحجام</a></li><li class="u-tight"><a href="#why" class="u-muted">لماذا رواء</a></li></ul></div>
+    <div><h3 class="u-eyebrow">تواصلي</h3><ul class="u-bare"><li class="u-tight"><a href="https://wa.me/963997310856" class="u-muted" target="_blank" rel="noopener noreferrer">واتساب</a></li><li class="u-muted">حماة، سوريا</li></ul></div>
   </div><div class="footer-bottom"><span>© 2026 رواء | RAWAA</span><span>صُنع بحب في سوريا</span></div></div></footer>
-  <script>(function(){const t=document.getElementById('navToggle'),n=document.getElementById('mobileNav');if(!t||!n)return;t.setAttribute('aria-expanded','false');t.setAttribute('aria-label','فتح القائمة');t.type='button';t.onclick=function(){const o=n.classList.toggle('open');n.hidden=!o;t.setAttribute('aria-expanded',String(o));t.setAttribute('aria-label',o?'إغلاق القائمة':'فتح القائمة');document.body.style.overflow=o?'hidden':''};n.querySelectorAll('a').forEach(a=>a.onclick=function(){n.classList.remove('open');n.hidden=true;t.setAttribute('aria-expanded','false');document.body.style.overflow=''})})();if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}</script>
+  <script src="js/nav.js" defer></script>
 </body>
 </html>

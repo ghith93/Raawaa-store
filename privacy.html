@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>سياسة الخصوصية — RAWAA | رواء</title>
 <meta name="description" content="سياسة خصوصية رواء: السلة ومصدر الزيارة يُحفظان في جلسة المتصفح، وتُفتح محادثة واتساب عند اختيارك ذلك. لا بكسل إعلاني مفعّل حاليًا.">
@@ -37,15 +37,15 @@
 </header>
 
 <main id="main" class="section">
-  <div class="shell" style="max-width: 78ch;">
+  <div class="shell" class="u-read">
     <p class="eyebrow">الخصوصية</p>
-    <h1 style="font-size: clamp(1.8rem, 4.5vw, 2.6rem);">سياسة الخصوصية</h1>
+    <h1 class="u-hero">سياسة الخصوصية</h1>
     <p class="section-lead">
       هذه سياسة خصوصية أولية لمتجر RAWAA | رواء. تصف ما يفعله الموقع فعليًا وقت إعداد هذه النسخة،
       ولا تصف خدمات لم تُفعَّل. آخر تحديث: أكتوبر 2026.
     </p>
 
-    <div class="notice" style="margin-block: var(--space-6);">
+    <div class="notice" class="u-block">
       <strong>مسودة:</strong> هذه الصفحة أُعِدّت كنص أولي واضح، وتحتاج إلى مراجعة قانونية أو تنظيمية
       تناسب السوق السوري قبل الإطلاق التجاري، وأيضًا عند إضافة أدوات قياس أو إعلانات أو خدمات دفع.
     </div>
@@ -154,7 +154,7 @@
       <a href="https://wa.me/963997310856">0997310856</a>.
     </p>
 
-    <p style="margin-top: var(--space-6);">
+    <p class="u-top">
       <a class="btn btn-ghost" href="index.html">العودة إلى المتجر</a>
     </p>
   </div>
@@ -167,10 +167,6 @@
   </div>
 </footer>
 
-<script>
-  Array.prototype.forEach.call(document.querySelectorAll('[data-current-year]'), function (node) {
-    node.textContent = String(new Date().getFullYear());
-  });
-</script>
+<script src="js/page-meta.js" defer></script>
 </body>
 </html>

@@ -16,7 +16,10 @@ rm -rf "$OUT"
 mkdir -p "$OUT"
 
 # 1) ملفات الجذر التي يطلبها المتصفح
-for f in index.html serum.html campaign.html hama.html privacy.html check.html setup.html 404.html manifest.webmanifest sw.js robots.txt sitemap.xml _headers _redirects .nojekyll; do
+# ملاحظة: check.html و setup.html صفحات تشخيص/إعداد للمالك، لا تُنشر.
+# كانتا تُنشران وتكشفان مسارات لوحة Supabase وإعداد الأسرار على نطاق عام،
+# وتفرضان 'unsafe-inline' على CSP. تبقى في المستودع للتشغيل المحلي فقط.
+for f in index.html serum.html campaign.html hama.html privacy.html 404.html manifest.webmanifest sw.js robots.txt sitemap.xml _headers _redirects .nojekyll; do
   [ -f "$ROOT/$f" ] && cp "$ROOT/$f" "$OUT/"
 done
 
@@ -29,9 +32,32 @@ done
 # المصدر js/config.js يبقى كاملًا؛ التنظيف يجري على نسخة النشر وحدها.
 node "$ROOT/scripts/strip-internal-config.mjs" "$OUT/js/config.js"
 
+# 3ب) تحقق من العقد: الملف المنشور يُقرأ بالدالة نفسها التي تقرأ بها المراقبة
+# الحيّة، وقيمه الحرجة مطابقة للمصدر. هذا الفحص كان غائبًا فسمح لعطل أن يعيش
+# ٧ دورات مراقبة (٤–٦ نوفمبر ٢٠٢٦) بينما كل الفحوص الأخرى خضراء.
+node --input-type=module - "$ROOT" <<'CONFIGCHECK'
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { readOrderConfig, diffOrderConfig } from './scripts/order-config-monitor.mjs';
+const root = process.argv[2];
+const source = await readFile(path.join(root, 'js/config.js'), 'utf8');
+const published = await readFile(path.join(root, 'dist/site/js/config.js'), 'utf8');
+const mismatch = diffOrderConfig(readOrderConfig(source, { label: 'source' }), readOrderConfig(published, { label: 'published' }));
+if (mismatch.length) {
+  console.error(`✗ نسخة النشر تنحرف عن المصدر في: ${mismatch.join(', ')} — أُوقف البناء`);
+  process.exit(1);
+}
+if (/costing|apiNote|unitCost/.test(published)) {
+  console.error('✗ حقل داخلي تسرّب إلى نسخة النشر — أُوقف البناء');
+  process.exit(1);
+}
+console.log('  عقد الإعدادات: نسخة النشر مقروءة ومطابقة للمصدر (0 انحرافًا)');
+CONFIGCHECK
+
 # 4) تنظيف ما لا يخص الزائر
 rm -rf "$OUT/assets/img/design-raw" "$OUT/assets/img/design-raw-reference.png" 2>/dev/null || true
-# ملفات المصدر الخام للصور لا تُنشر — فقط المشتقات المُحسَّنة
+# ملفات المصدر الخام للصور: أُزيلت من المستودع في ٦ نوفمبر ٢٠٢٦ (١٧ MB بلا مستهلك).
+# يبقى السطر كحماية إن أعاد أحدهم إنشاء المجلد محليًا: المشتقات وحدها تُنشر.
 rm -rf "$OUT/assets/img/source" 2>/dev/null || true
 # موسيقى البناء (تُستخدم لتوليد الفيديو فقط) لا تُنشر
 rm -rf "$OUT/assets/audio" 2>/dev/null || true

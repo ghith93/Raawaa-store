@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://connect.facebook.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://www.facebook.com https://connect.facebook.net; font-src 'self'; connect-src 'self' https://www.facebook.com https://connect.facebook.net; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' https://connect.facebook.net; style-src 'self'; img-src 'self' data: https://www.facebook.com https://connect.facebook.net; font-src 'self'; connect-src 'self' https://www.facebook.com https://connect.facebook.net https://oyoyozdugicmnkfhjovo.supabase.co; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>سيروم رواء للشعر | لمسة نعومة ولمعان</title>
 <meta name="description" content="لأيام الشعر الباهت أو المتطاير، سيروم رواء لمسة تشطيب لمظهر أنعم ولمعان لطيف. اختاري حجمك من 13 دولارًا واستفسري عبر واتساب.">
@@ -37,6 +37,7 @@
 <link rel="stylesheet" href="css/serum.css">
 <script src="js/config.js" defer></script>
 <script src="js/marketing.js" defer></script>
+  <script src="js/consent.js" defer></script>
 <script src="js/offers.js" defer></script>
 <script src="js/cart.js" defer></script>
 <script src="js/serum-views.js" defer></script>
@@ -407,8 +408,8 @@
   <h2 id="consent-title" class="sr-only">إذن القياس</h2>
   <p>إن وافقتِ، نستخدم قياسًا اختياريًا للتفاعل مع الموقع وروابط واتساب. لا يثبت هذا القياس استلام الرسالة أو إتمام الطلب.</p>
   <div class="consent-actions">
-    <button type="button" class="btn btn-primary btn-sm" onclick="rawaaConsent(true)">موافقة</button>
-    <button type="button" class="btn btn-ghost btn-sm" onclick="rawaaConsent(false)">بلا شكرًا</button>
+    <button type="button" class="btn btn-primary btn-sm" data-consent-grant>موافقة</button>
+    <button type="button" class="btn btn-ghost btn-sm" data-consent-deny>بلا شكرًا</button>
   </div>
 </div>
 
@@ -555,14 +556,6 @@
 
 <div class="toast-region" role="status" aria-live="polite" aria-atomic="true" data-toast-region></div>
 
-<script>
-// تسجيل عامل الخدمة: يجعل الموقع يعمل بلا إنترنت ويُثبَّت على الشاشة الرئيسية.
-// إن لم يكن مدعومًا (أو كان الملف مفتوحًا من القرص) لا يحدث شيء ولا تتأثر الوظائف.
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('sw.js').catch(function () { /* اختياري تمامًا */ });
-  });
-}
-</script>
+<script src="js/sw-register.js" defer></script>
 </body>
 </html>

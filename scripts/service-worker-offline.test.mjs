@@ -84,7 +84,7 @@ test('install precaches only the compact offline shell and required small image 
   const imagePaths = paths.filter((path) => /\.(?:avif|webp|jpe?g)$/i.test(path));
   const allPaths = paths.join('\n');
 
-  assert.equal(paths.length, 43, '43 shell resources include the canonical root route, Hama landing page, and active logo');
+  assert.equal(paths.length, 47, '47 shell resources include the canonical root route, Hama landing page, active logo, and the three page-level scripts that replaced inline code');
   assert.ok(paths.includes('/'), 'canonical root is cached for offline reload after Pages redirects /index.html');
   assert.ok(paths.includes('/privacy'), 'canonical clean privacy route is cached for Pages .html redirects');
   assert.ok(!paths.includes('/privacy.html'), 'the redirected privacy alias is not relied on as a cache key');

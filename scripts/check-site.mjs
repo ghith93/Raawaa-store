@@ -1049,13 +1049,35 @@ async function checkPwa() {
   const declared = [
     ['rel="manifest"', 'ربط المانيفست'],
     ['apple-touch-icon', 'أيقونة آيفون'],
-    ['apple-mobile-web-app-capable', 'دعم التثبيت على iOS'],
-    ['serviceWorker.register', 'تسجيل عامل الخدمة']
+    ['apple-mobile-web-app-capable', 'دعم التثبيت على iOS']
   ];
   for (const [needle, label] of declared) {
     if (index.includes(needle)) pass(label);
     else fail(`مفقود في index.html: ${label}`);
   }
+
+  // تسجيل عامل الخدمة انتقل إلى ملف خارجي (js/nav.js) لإزالة 'unsafe-inline'
+  // من CSP. نفحص أن الصفحة تحمّل الملف وأن الملف يسجّل العامل فعلًا — لا وجود
+  // نصّي داخل HTML، لأن ذلك يقيّد التنظيم بلا أن يضيف ضمانة.
+  if (index.includes('js/nav.js')) {
+    const navScript = await read('js/nav.js');
+    if (navScript && /serviceWorker\.register/.test(navScript)) pass('تسجيل عامل الخدمة');
+    else fail('js/nav.js لا يسجّل عامل الخدمة');
+  } else {
+    fail('مفقود في index.html: تحميل js/nav.js');
+  }
+
+  // لا سكربتات مضمّنة في صفحات الموقع: CSP بلا 'unsafe-inline' يجب أن يظل صادقًا.
+  const inlineViolations = [];
+  for (const page of ['index.html', 'serum.html', 'campaign.html', 'privacy.html', '404.html', 'hama.html']) {
+    const html = await read(page);
+    if (!html) continue;
+    const inline = [...html.matchAll(/<script(?![^>]*\bsrc=)(?![^>]*application\/ld\+json)[^>]*>[\s\S]*?<\/script>/g)];
+    if (inline.length) inlineViolations.push(`${page} (${inline.length})`);
+    if (/(?:^|\s)on(?:click|load|error|change|submit|input)\s*=/i.test(html)) inlineViolations.push(`${page} (on*=)`);
+  }
+  if (inlineViolations.length) fail(`سكربتات مضمّنة تفرض 'unsafe-inline': ${inlineViolations.join(', ')}`);
+  else pass('لا سكربتات أو معالجات مضمّنة في صفحات الموقع');
 
   // عامل الخدمة يجب ألا يخزّن نطاقات خارجية (لا تتبّع، لا تسريب)
   if (await exists('sw.js')) {
@@ -1129,7 +1151,8 @@ async function checkProductPage(config) {
   ok(home.includes('js/config.js') && home.includes('js/marketing.js'),
     'مصدر الحملة يُحفظ عند الانتقال من الرئيسية إلى صفحة المنتج');
   ok(home.includes('rel="manifest"') && home.includes('apple-touch-icon') &&
-    home.includes('serviceWorker.register') && !/fonts\.googleapis|fonts\.gstatic/.test(home),
+    (home.includes('serviceWorker.register') || home.includes('js/nav.js')) &&
+    !/fonts\.googleapis|fonts\.gstatic/.test(home),
     'الرئيسية تستخدم خطوطًا محلية وتدعم PWA دون خطوط خارجية');
   // يحتوي قسم الشراء أقسامًا متداخلة؛ نصل إلى إغلاقه الذي يسبق الفوائد، لا أول إغلاق داخلي.
   const landing = visible.match(/<section[^>]*class="serum-landing"[\s\S]*?<\/section>\s*(?=<section[^>]*id="benefits")/)?.[0] || '';

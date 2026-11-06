@@ -78,6 +78,9 @@
   .hama-footer a { color: var(--ink-soft); text-decoration: none; font-size: 0.92rem; }
   .hama-footer a:hover { color: var(--ink); text-decoration: underline; }
   .hama-footer .note { width: 100%; margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--ink-soft); }
+
+  .h-row{display:flex;flex-wrap:wrap;gap:1rem}.h-flush{margin:0}
+  .h-figure{width:100%;max-width:560px;height:auto;border-radius:18px;display:block}
 </style>
 </head>
 <body>
@@ -121,7 +124,7 @@
         </div>
         <p class="hama-note">١٠٠ مل ٢٥$ · توصيل داخل حماة ٢$، ومجاني مع شام كاش.</p>
       </div>
-      <figure style="margin:0">
+      <figure class="h-flush">
         <img src="assets/img/hama/duo-sizes.jpg" width="928" height="1152"
              alt="عبوتا رواء ٣٠ مل و٥٠ مل على حجر ترافرتين" fetchpriority="high">
       </figure>
@@ -173,7 +176,7 @@
         <p class="section-lead">فرق ٣ دولارات، وكمية تكفي ضعف المدة تقريبًا. نفس التركيبة ونفس العبوة — والفرق الحقيقي في السعر لكل مل: ٠.٤٣$ مقابل ٠.٣٢$.</p>
       </div>
       <img src="assets/img/hama/card-compare.jpg" width="1080" height="1350" loading="lazy"
-           alt="بطاقة مقارنة بين ٣٠ مل بـ١٣ دولارًا و٥٠ مل بـ١٦ دولارًا" style="width:100%;max-width:560px;height:auto;border-radius:18px;display:block">
+           alt="بطاقة مقارنة بين ٣٠ مل بـ١٣ دولارًا و٥٠ مل بـ١٦ دولارًا" class="h-figure">
       <p class="hama-note">مدة الاستخدام تقديرية وتعتمد على كمية الاستخدام وطول الشعر.</p>
     </div>
   </section>
@@ -300,8 +303,8 @@
 <footer class="hama-footer">
   <div class="shell">
     <div class="inner">
-      <p class="brand" style="margin:0"><span class="brand-latin">RAWAA</span> <span class="brand-arabic">رواء</span></p>
-      <nav aria-label="روابط التذييل" style="display:flex;flex-wrap:wrap;gap:1rem">
+      <p class="brand" class="h-flush"><span class="brand-latin">RAWAA</span> <span class="brand-arabic">رواء</span></p>
+      <nav aria-label="روابط التذييل" class="h-row">
         <a href="/">الرئيسية</a>
         <a href="/serum">صفحة السيروم</a>
         <a href="/privacy">الخصوصية</a>
