@@ -107,7 +107,6 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                 check("عرض شام كاش مقروء بلا اقتطاع", page.locator('.topbar-short').evaluate('(e) => e.scrollWidth <= e.clientWidth + 1'))
             image_alt = page.locator('[data-size-img]').get_attribute('alt') or ''
             image_caption = page.locator('.serum-photo figcaption').text_content() or ''
-            print(f"IMAGE_COPY_DEBUG alt={image_alt!r} caption={image_caption!r}")
             check("الصورة موصوفة كتصميم للعبوة", 'تصميم عبوة' in image_alt and 'تصميم عبوة' in image_caption)
             package_note = page.locator('.serum-packaging-note').inner_text()
             check("السيروم جاهز والعبوة تُجهّز عند الطلب والموعد بالتأكيد", all(x in package_note for x in ['السيروم جاهز','العبوة تُجهَّز عند الطلب','موعد التجهيز والتوصيل']))
