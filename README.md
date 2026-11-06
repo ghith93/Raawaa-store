@@ -30,7 +30,9 @@ python3 -m http.server 8080 --bind 0.0.0.0
 
 ## وثائق البدء
 
-- [`PROJECT-ROADMAP-AR.md`](PROJECT-ROADMAP-AR.md) — الحقيقة الحالية، ما اكتمل، وما يعتمد على المالك أو السوق.
+- [`PROJECT-ROADMAP-AR.md`](PROJECT-ROADMAP-AR.md) — سجل تقدم تقني وتاريخي؛ تحقق من SHA والفرع قبل اعتبار أي بند منشورًا.
+- [`docs/OPERATING-BASELINE-AR.md`](docs/OPERATING-BASELINE-AR.md) — خط الأساس التشغيلي، مصادر الحقيقة، القيم المهيأة، رحلة الطلب، وضوابط المحتوى والخصوصية.
+- [`docs/WORK-COORDINATION-AR.md`](docs/WORK-COORDINATION-AR.md) — ملكية المهام والفروع وبروتوكول التنسيق مع Arena.
 - [`docs/GROWTH-OPERATING-SYSTEM-AR.md`](docs/GROWTH-OPERATING-SYSTEM-AR.md) — توزيع المسؤوليات من العلامة والمحتوى إلى الإعلانات والتسعير والتصنيع.
 - [`IMPROVEMENT_BACKLOG.md`](IMPROVEMENT_BACKLOG.md) — قائمة الأفكار والحالات.
 - [`DECISIONS.md`](DECISIONS.md) — القرارات وحدودها.
