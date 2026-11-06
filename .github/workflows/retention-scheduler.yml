@@ -1,10 +1,13 @@
 name: Customer-data retention (staging)
 
-# Manual-only by design: merging this workflow cannot trigger customer-data
-# cleanup on a schedule. Keep both variables unset until policy approval, isolated
-# staging E2E, and migration/endpoint verification are complete. The endpoint
-# calls bounded cleanup for orders and marketing events; it reveals no row counts.
+# Owner-approved on 2026-11-06: daily cleanup is now scheduled. Merging this file
+# still cannot start cleanup by itself — both repository variables must be 'true'
+# and the scheduler secret must exist, so the owner keeps an immediate kill switch.
+# The endpoint calls bounded cleanup for orders and marketing events; it reveals
+# no row counts.
 on:
+  schedule:
+    - cron: '17 3 * * *'
   workflow_dispatch:
     inputs:
       confirm_reviewed_run:
@@ -26,9 +29,10 @@ concurrency:
 jobs:
   redact-expired-contacts:
     name: تنظيف بيانات التواصل المنتهية
-    # Explicit repository-side opt-in plus a separate review latch. Manual runs
-    # require a confirmation choice; the default is disabled.
-    if: ${{ github.event_name == 'workflow_dispatch' && vars.RAWAA_RETENTION_ENABLED == 'true' && vars.RAWAA_RETENTION_REVIEWED == 'true' && inputs.confirm_reviewed_run == 'run_after_review' }}
+    # المفتاحان يبقيان شرطًا في كل تشغيل، مجدولًا كان أو يدويًا: إسقاط أي منهما
+    # إلى غير 'true' يوقف التنظيف فورًا بلا تعديل كود. التشغيل اليدوي ما زال
+    # يحتاج اختيار التأكيد صراحةً، وقيمته الافتراضية 'disabled'.
+    if: ${{ vars.RAWAA_RETENTION_ENABLED == 'true' && vars.RAWAA_RETENTION_REVIEWED == 'true' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.confirm_reviewed_run == 'run_after_review')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -38,7 +42,9 @@ jobs:
           RETENTION_URL: https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-retention
         run: |
           if [ -z "$RAWAA_RETENTION_SCHEDULER_SECRET" ]; then
-            echo "لم يُضبط سرّ مهمة الاحتفاظ بعد — تخطٍّ آمن."
+            # مع الجدولة اليومية كان التخطّي الصامت سيُنتج «نجاحًا» كل يوم بلا عمل.
+            # notice يجعل سبب عدم التشغيل مقروءًا من واجهة GitHub لا من السجل فقط.
+            echo "::notice::لم تُشغَّل مهمة الاحتفاظ: السرّ RAWAA_RETENTION_SCHEDULER_SECRET غير مضبوط في أسرار GitHub."
             exit 0
           fi
           code=$(curl -sS -o /dev/null -w '%{http_code}' -X POST \

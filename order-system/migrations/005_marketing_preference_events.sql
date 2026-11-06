@@ -1,7 +1,9 @@
--- LOCAL CANDIDATE ONLY — NOT APPLIED TO STAGING.
--- The migration ledger was read-only checked on 2026-10-31; the most recent applied
--- migration was 20261030134505/rawaa_order_retention. Apply only after policy/retention
--- review and a fresh ledger check. Never treat a local SQL file as an applied migration.
+-- APPLIED to staging on 2026-11-06 as ledger version 20261106111321
+-- (name `rawaa_marketing_preference_events`) on project oyoyozdugicmnkfhjovo,
+-- schema rawaa_store, after explicit owner approval. Verified first inside a
+-- rolled-back transaction on that hosted database. Still NOT applied to any
+-- production database. Never treat a local SQL file as an applied migration:
+-- check the ledger, not this comment.
 --
 -- Store only a domain-separated HMAC of the normalized phone, never a raw phone.
 -- This table is append-only for the service role except for the bounded expiry worker.
