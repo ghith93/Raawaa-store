@@ -3,6 +3,11 @@ name: Deploy gate
 # الحماية الوحيدة الممكنة بلا مفاتيح إضافية:
 # إذا فشل الفحص أو انتهى بمهلة/يتطلب إجراءً على main، ننشئ تنبيهًا.
 # لا يُعد الإلغاء أو التخطي دليلًا على فشل، لذلك لا ينشئ تنبيهًا.
+#
+# 🔁 الإغلاق التلقائي (أُضيف ٦ نوفمبر ٢٠٢٦): عندما ينجح «Site checks» على main
+# نُغلق أي تنبيه مفتوح بوسم deploy-gate. سابقًا كان التنبيه يُفتح ولا يُغلق أبدًا،
+# فتراكم issue #133 على التزام 48b0902 بعد أن صار قديمًا، ومع الوقت يفقد التنبيه
+# معناه: المالك يرى تنبيهات مفتوحة دائمًا فيتجاهلها، فيضيع التنبيه الحقيقي.
 
 on:
   workflow_run:
@@ -24,9 +29,42 @@ jobs:
     name: بوابة النشر
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    if: github.event_name == 'workflow_dispatch' || contains(fromJSON('["failure","timed_out","startup_failure","action_required"]'), github.event.workflow_run.conclusion)
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      contains(fromJSON('["failure","timed_out","startup_failure","action_required"]'), github.event.workflow_run.conclusion) ||
+      github.event.workflow_run.conclusion == 'success'
     steps:
+      - name: إغلاق تنبيه سابق عند نجاح الفحوصات
+        if: github.event.workflow_run.conclusion == 'success'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const open = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open', labels: 'deploy-gate', per_page: 100
+            });
+            if (!open.length) {
+              core.info('لا تنبيه مفتوح لإغلاقه.');
+              return;
+            }
+            for (const issue of open) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: issue.number,
+                body: [
+                  'أُغلق تلقائيًا: نجحت فحوص `Site checks` على `main` بعد آخر إخفاق.',
+                  '',
+                  `- **الالتزام الناجح:** \`${context.payload.workflow_run.head_sha.slice(0, 7)}\``,
+                  `- **التشغيل:** ${context.payload.workflow_run.html_url}`,
+                  '',
+                  'إن كان التنبيه يشير إلى عطل تشغيلي حقيقي (مراقبة الموقع الحيّ مثلًا) فتأكد من إصلاحه قبل الاعتماد على هذا الإغلاق: نجاح فحوص المستودع لا يثبت سلامة الإنتاج.'
+                ].join('\n')
+              });
+              await github.rest.issues.update({ owner, repo, issue_number: issue.number, state: 'closed' });
+              core.info(`أُغلق التنبيه #${issue.number}.`);
+            }
+
       - name: إنشاء تنبيه عند فشل الفحوصات أو تعذرها
+        if: github.event.workflow_run.conclusion != 'success'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |

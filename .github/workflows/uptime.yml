@@ -108,10 +108,28 @@ jobs:
         with:
           node-version: '22'
           check-latest: true
-      - name: اختبار مراقب إعدادات الطلب
+      # العقد بين البناء والمراقبة: يشغّل قارئ المراقبة على مخرَج البناء نفسه.
+      # هذا الاختبار كان غائبًا ففشلت المراقبة ٧ مرات (٤–٦ نوفمبر ٢٠٢٦) بينما
+      # كل الفحوص الأخرى خضراء. يجب أن يعمل قبل أي مطابقة حيّة.
+      - name: اختبار عقد الإعدادات المنشورة
+        run: node --test scripts/published-config-contract.test.mjs
+      - name: اختبار مراقب إعدادات الطلب على نص المصدر
         run: node --test scripts/order-config-monitor.test.mjs
       - name: مطابقة الأسعار والتوصيل والدفع ورقم واتساب مع المصدر
         run: node scripts/order-config-monitor.mjs
+      - name: تراجع سريع عند كسر صياغة الملف المنشور
+        run: |
+          # سبب وجود هذه الخطوة: لو أعاد أحدهم نشر config.js بصياغة لا يقرأها
+          # المراقب، نريد خطأً صريحًا يسمّي الصياغة لا رسالة عامة.
+          node --input-type=module -e "
+            const { readOrderConfig } = await import('./scripts/order-config-monitor.mjs');
+            const res = await fetch('https://raawaa-store.pages.dev/js/config.js', { cache: 'no-store' });
+            if (!res.ok) { console.error('live config HTTP ' + res.status); process.exit(1); }
+            const text = await res.text();
+            try { const c = readOrderConfig(text, { label: 'live' });
+                  console.log('live config readable: ' + c.products.length + ' products, ' + c.methods.length + ' methods'); }
+            catch (e) { console.error('::error::صياغة config.js المنشورة غير قابلة للقراءة: ' + e.message); process.exit(1); }
+          "
       - name: الخط الجديد منشور فعلًا
         run: |
           CODE=$(curl -s -o /dev/null -w "%{http_code}" https://raawaa-store.pages.dev/assets/fonts/plexar-400.subset.woff2)
