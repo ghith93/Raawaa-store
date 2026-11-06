@@ -9,12 +9,12 @@ compatibility: Project-aware agents able to inspect the repository and run its e
 
 ## Mission
 
-Make one or more useful improvements to the existing RAWAA business and software per request. Start at the highest-priority unfinished item in `PROJECT-ROADMAP-AR.md`; do not restart finished work or change things only to create activity. Treat the working repository and owner-confirmed configuration as the source of truth.
+Make one or more useful improvements to the existing RAWAA business and software per request. Start at the highest-priority unfinished item in `docs/CURRENT-STATE-AR.md`; do not restart finished work or change things only to create activity. Treat the working repository and owner-confirmed configuration as the source of truth.
 
 ## Read first
 
 1. `AGENTS.md` and this skill.
-2. `PROJECT-ROADMAP-AR.md` and `docs/RAWAA-AUTOMATION-MASTER-PLAN-AR.md`.
+2. `docs/CURRENT-STATE-AR.md` and `docs/RAWAA-AUTOMATION-MASTER-PLAN-AR.md`.
 3. The relevant domain docs, tests, workflow, and implementation.
 4. For product, pricing, delivery, payment, brand, or marketing claims, read `js/config.js`, `docs/marketing-content-plan.md`, and `.agents/skills/rawaa-content-workflow/SKILL.md` before writing.
 5. Check the active branch and `git status`; do not overwrite uncommitted owner or agent work, switch branches, or expose `.env`, secret values, customer records, or private messages.
@@ -44,6 +44,6 @@ Run applicable tests, preferably zero-dependency tests first. For order and cons
 
 ## Close the loop
 
-- Update `PROJECT-ROADMAP-AR.md` with what changed, exact evidence/results, remaining prerequisites, and the next highest-value action.
+- Update `docs/CURRENT-STATE-AR.md` with what changed, exact evidence/results, remaining prerequisites, and the next highest-value action.
 - Keep long-lived research in a source-linked document; keep reusable instructions in `.agents/skills/` and `docs/CONTINUOUS-IMPROVEMENT-PROMPT-AR.md`.
 - Report: implemented changes, research sources and limits, tests actually run, live/external actions actually taken or not taken, remaining blockers, and a ranked next step. State clearly whether the whole store is operationally integrated or only locally prepared.

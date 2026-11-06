@@ -102,7 +102,8 @@ console.log('\n▸ عامل الخدمة');
   const broken = entries.filter((e) => e && !routeEntries.has(e) && !exists(e));
   if (broken.length) broken.forEach((b) => fail(`CORE يشير إلى ملف مفقود: ${b}`));
   else ok(`${entries.length} أصلًا في CORE كلها موجودة`);
-  if (/v\d{6,}/.test(sw)) ok('CACHE_VERSION بصيغة إصدار');
+  // الإصدار يُشتق الآن من بصمة محتوى (hex) في نسخة النشر؛ المصدر يحمل قيمة احتياطية رقمية.
+  if (/CACHE_VERSION = 'v(?:[0-9]{6,}|[0-9a-f]{16})'/.test(sw)) ok('CACHE_VERSION بصيغة إصدار');
   else fail('CACHE_VERSION ليس بصيغة إصدار صالحة');
 }
 

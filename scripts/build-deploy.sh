@@ -5,10 +5,6 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-# ارفع إصدار كاش الـ Service Worker تلقائيًا مع كل بناء.
-# السبب: نسيان رفعه يعني بقاء الزوار على نسخة قديمة لأيام — حدث فعلًا في هذا المشروع.
-SW_BUMP=$(date +%s)
-sed -i "s/const CACHE_VERSION = 'v[0-9]*';/const CACHE_VERSION = 'v${SW_BUMP}';/" "$ROOT/sw.js"
 
 OUT="$ROOT/dist/site"
 
@@ -91,7 +87,41 @@ if len(remaining) < 5:
 print(f"  خطوط مُبقاة: {len(remaining)} · مطلوبة: {len(used)}")
 PYEOF
 
-# 5) تقرير
+# 5) إصدار كاش عامل الخدمة — من بصمة محتوى، وفي نسخة النشر وحدها.
+#
+# التاريخ: كان البناء يعدّل `sw.js` في **المصدر** بأمر sed بطابع زمني، فترك شجرة
+# العمل متسخة بعد كل بناء، وجعل نفس الشفرة تُنتج ملفًا مختلفًا في كل مرة، وأجبر
+# الزوار على إعادة تنزيل كل شيء حتى عندما لم يتغيّر أي أصل.
+# الآن: البصمة تُحسب من المحتوى المنشور فعليًا، فالتغيير يقع فقط عند تغيير حقيقي،
+# والبناءان من نفس المصدر ينتجان نفس الناتج.
+python3 - "$OUT" <<'SWVEREOF'
+import hashlib, re, sys
+from pathlib import Path
+
+out = Path(sys.argv[1])
+sw = out / "sw.js"
+
+tracked = sorted(
+    p for p in out.rglob("*")
+    if p.is_file() and p != sw and p.suffix in {".html", ".css", ".js", ".json", ".webmanifest", ".svg"}
+)
+digest = hashlib.sha256()
+for path in tracked:
+    digest.update(path.relative_to(out).as_posix().encode())
+    digest.update(b"\0")
+    digest.update(path.read_bytes())
+    digest.update(b"\0")
+version = "v" + digest.hexdigest()[:16]
+
+text = sw.read_text(encoding="utf-8")
+new, n = re.subn(r"const CACHE_VERSION = 'v[0-9a-f]*';", f"const CACHE_VERSION = '{version}';", text)
+if n != 1:
+    raise SystemExit(f"✗ تعذّر ضبط CACHE_VERSION (عدد المطابقات: {n}) — أُوقف البناء")
+sw.write_text(new, encoding="utf-8")
+print(f"  كاش عامل الخدمة: {version} · من {len(tracked)} ملفًا منشورًا")
+SWVEREOF
+
+# 6) تقرير
 COUNT=$(find "$OUT" -type f | wc -l)
 SIZE=$(du -sh "$OUT" | cut -f1)
 echo "✓ dist/site — $COUNT ملفًا · $SIZE"

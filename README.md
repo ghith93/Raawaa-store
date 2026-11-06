@@ -2,8 +2,7 @@
 
 متجر عربي ثابت كتطبيق ويب تقدّمي (PWA)، مستضاف على Cloudflare Pages. يتيح اختيار الحجم ومراجعة سلة مرجعية ثم تجهيز استفسار يرسله العميل يدويًا عبر واتساب.
 
-> **الحالة:** الموقع منشور على <https://raawaa-store.pages.dev/>؛ آخر تغيير سلوكي للموقع PR #99. دُمج PR #119 في [commit f1329f3](https://github.com/ghith93/Raawaa-store/commit/f1329f3463bc4caae2bd5a2f37a6e2a3a63c8aed) لتحسين تأكيد ميزانية Lighthouse وحذف workflow ذاتي تجريبي قديم؛ لم تتغير الأسعار أو مسارات الطلب. نجح Site checks في [run 41525811574](https://github.com/ghith93/Raawaa-store/actions/runs/41525811574)، وتخطّى Deploy gate [run 41526412325](https://github.com/ghith93/Raawaa-store/actions/runs/41526412325) كما هو متوقع. نجح أول uptime مجدول بعد الدمج على SHA نفسه في [run 41642426066](https://github.com/ghith93/Raawaa-store/actions/runs/41642426066)، بما فيه ميزانيات Lighthouse والاختبار الوظيفي للموقع المنشور. للحالة التشغيلية الحالية راجع [`PROJECT-ROADMAP-AR.md`](PROJECT-ROADMAP-AR.md).
-> **الحالة التشغيلية والتوجه:** ابدأ من [`PROJECT-ROADMAP-AR.md`](PROJECT-ROADMAP-AR.md)، لا من ملخصات التاريخ القديمة.
+> **الحالة:** الموقع منشور على <https://raawaa-store.pages.dev/>. الحالة التشغيلية الحقيقية — بما فيها ما لا يعمل والخطوة التالية — في [`docs/CURRENT-STATE-AR.md`](docs/CURRENT-STATE-AR.md). لا تعتمد على أرقام PR أو أرقام فحوص قديمة؛ السجل التاريخي في [`docs/archive/`](docs/archive/).
 
 ## ما يفعله الموقع — وما لا يفعله
 
@@ -21,7 +20,9 @@ npm run gates:offline
 npm run build
 ```
 
-`npm run gates:offline` يفحص المراجع، الميزانية الساكنة، الموقع، اختبارات Node، ESLint وHTML. الفحص الكامل `npm run gates` يتضمن اختبارات Chromium/WebKit وaxe وقياسات الأداء والأصول، ويتطلب أدوات المتصفح والشبكة المحددة في المشروع.
+`npm run gates:offline` يفحص تنظيم الوثائق، المراجع، الميزانية الساكنة، الموقع، **249 اختبار Node**، ESLint وHTML. الفحص الكامل `npm run gates` يتضمن اختبارات Chromium/WebKit وaxe وقياسات الأداء والأصول، ويتطلب أدوات المتصفح والشبكة المحددة في المشروع.
+
+`npm run build` يتحقق أيضًا من **عقد الإعدادات المنشورة**: أن `dist/site/js/config.js` مقروء بالدالة نفسها التي تقرأ بها المراقبة الحيّة، ومطابق للمصدر، وخالٍ من الحقول الداخلية.
 
 للتشغيل المحلي فقط:
 
@@ -31,7 +32,8 @@ python3 -m http.server 8080 --bind 0.0.0.0
 
 ## وثائق البدء
 
-- [`PROJECT-ROADMAP-AR.md`](PROJECT-ROADMAP-AR.md) — الحقيقة الحالية، ما اكتمل، وما يعتمد على المالك أو السوق.
+- [`docs/CURRENT-STATE-AR.md`](docs/CURRENT-STATE-AR.md) — **ابدأ من هنا.** الحالة الحالية، الأسعار، ما يعمل وما لا يعمل، والخطوة التالية.
+- [`PROJECT-ROADMAP-AR.md`](PROJECT-ROADMAP-AR.md) — فهرس نقطة الدخول وقواعد المشروع الثابتة.
 - [`docs/GROWTH-OPERATING-SYSTEM-AR.md`](docs/GROWTH-OPERATING-SYSTEM-AR.md) — توزيع المسؤوليات من العلامة والمحتوى إلى الإعلانات والتسعير والتصنيع.
 - [`IMPROVEMENT_BACKLOG.md`](IMPROVEMENT_BACKLOG.md) — قائمة الأفكار والحالات.
 - [`DECISIONS.md`](DECISIONS.md) — القرارات وحدودها.
@@ -43,6 +45,18 @@ python3 -m http.server 8080 --bind 0.0.0.0
 - [`docs/HAMA-SALES-KIT-AR.md`](docs/HAMA-SALES-KIT-AR.md) — نصوص المنشورات والردود والسكريبتات واتفاق البائعة وإعلان التوظيف.
 - [`docs/HAMA-VISUALS-AR.md`](docs/HAMA-VISUALS-AR.md) — حزمة الصور والفيديوهات التصوّرية لحماة: ما هو مولّد، وقواعد استخدامه، وبرومبتات إعادة التوليد.
 - `PROMPT-WORLD-CLASS-AR.md`, `PROMPT-MARKETING-AR.md`, `LAUNCH-KIT-AR.md` — مواد تاريخية موسومة بأنها متقادمة؛ لا تنشر منها أسعارًا أو أرقامًا دون مراجعة.
+
+## تنظيم الوثائق
+
+الوثائق مصنّفة بثلاث طبقات، ولا تُخلط:
+
+| الطبقة | المكان | القاعدة |
+|---|---|---|
+| الحالة الحالية | `docs/CURRENT-STATE-AR.md` | الملف الوحيد الذي يصف «الآن». يُحدَّث عند كل تغيير سلوكي. |
+| مراجع حيّة | `DECISIONS.md` · `IMPROVEMENT_BACKLOG.md` · `BENCHMARKS.md` · `AGENTS.md` · `order-system/README.md` | تُحدَّث في مكانها، بلا تواريخ في الاسم. |
+| تاريخ | `docs/archive/YYYY-MM/` | لا تُحدَّث. أرقامها تصف يوم كتابتها فقط. |
+
+`npm run gates:offline` يشغّل `scripts/docs-organize.mjs --check` ويفشل إذا بقيت وثيقة مؤرخة أقدم من ٣٠ يومًا خارج الأرشيف.
 
 ## قواعد النشر والعمل
 
