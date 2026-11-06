@@ -105,7 +105,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("لا تمرير أفقي", page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'))
             if width < 600:
                 check("عرض شام كاش مقروء بلا اقتطاع", page.locator('.topbar-short').evaluate('(e) => e.scrollWidth <= e.clientWidth + 1'))
-            check("الصورة موصوفة كتصميم للعبوة", 'تصميم عبوة' in (page.locator('[data-size-img]').get_attribute('alt') or '') and 'تصميم عبوة' in page.locator('.serum-photo figcaption').text_content() or '')
+            check("الصورة موصوفة كتصميم للعبوة", 'تصميم عبوة' in (page.locator('[data-size-img]').get_attribute('alt') or '') and 'تصميم عبوة' in (page.locator('.serum-photo figcaption').text_content() or ''))
             package_note = page.locator('.serum-packaging-note').inner_text()
             check("السيروم جاهز والعبوة تُجهّز عند الطلب والموعد بالتأكيد", all(x in package_note for x in ['السيروم جاهز','العبوة تُجهَّز عند الطلب','موعد التجهيز والتوصيل']))
             check("صورة الحجم المختار من تصميم العبوة الجديد", 'size-50-v6-' in (page.locator('[data-size-img]').get_attribute('src') or ''))
@@ -137,12 +137,12 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             sizes_view.focus(); sizes_view.press('Enter')
             check("معرض الأحجام يعمل بلوحة المفاتيح ولا يدّعي مقياسًا فعليًا",
                   page.locator('[data-serum-view="sizes"]').is_visible() and sizes_view.get_attribute('aria-pressed') == 'true' and
-                  'لا يوضّح القياسات' in page.locator('[data-serum-caption]').text_content() or '')
+                  'لا يوضّح القياسات' in (page.locator('[data-serum-caption]').text_content() or ''))
             ritual_view = page.locator('[data-serum-control="ritual"]:visible')
             ritual_view.focus(); ritual_view.press('Space')
             check("المشهد التعبيري موسوم ولا يُعرض نتيجة للمنتج",
                   page.locator('[data-serum-view="ritual"]').is_visible() and ritual_view.get_attribute('aria-pressed') == 'true' and
-                  'مولّد' in page.locator('[data-serum-caption]').inner_text() and 'لا يعرض المنتج' in page.locator('[data-serum-caption]').inner_text())
+                  'مولّد' in (page.locator('[data-serum-caption]').text_content() or '') and 'لا يعرض المنتج' in (page.locator('[data-serum-caption]').text_content() or ''))
             if width == 390:
                 audit(page, 'المشهد المفتوح')
                 sizes_view.tap()
@@ -829,7 +829,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               setTimeout(() => resolve(false), 12000);
             })""")
             check("معرض الأحجام يعمل لأول مرة بلا إنترنت بدقة شاشة عالية", size_scene_offline and
-                  'لا يوضّح القياسات' in page.locator('[data-serum-caption]').inner_text())
+                  'لا يوضّح القياسات' in (page.locator('[data-serum-caption]').text_content() or ''))
             page.locator('#products .size-option').nth(0).click()
             bottle_offline = page.locator('[data-size-img]').evaluate("""el => new Promise(resolve => {
               if (el.complete) return resolve(el.naturalWidth > 0);
@@ -955,7 +955,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               urlparse(page.url).fragment == 'returns' and 'الاستفسار عن الشروط على واتساب' in page.locator('#returns').inner_text())
         check("بدون JavaScript: صورة العبوة والبيان ظاهران وأزرار المعرض مخفية",
               page.locator('[data-serum-view="bottle"]').is_visible() and
-              'تصميم عبوة' in page.locator('[data-serum-caption]').inner_text() and
+              'تصميم عبوة' in (page.locator('[data-serum-caption]').text_content() or '') and
               page.locator('[data-serum-controls]:visible').count() == 0)
         check("دون JavaScript: لا مبلغ تقديري وهمي ويوجد بديل للاستفسار",
               page.locator('[data-estimate-interface]').is_hidden() and
