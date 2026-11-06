@@ -39,7 +39,7 @@ function note(msg) { notes.push(msg); if (!QUIET) console.log(`  · ${msg}`); }
 
 const PAGES = ['index.html', 'serum.html', 'campaign.html', 'hama.html', 'privacy.html', '404.html', 'check.html', 'setup.html'];
 const SCRIPTS = ['js/config.js', 'js/cart.js', 'js/marketing.js', 'js/campaign.js', 'js/serum-views.js', 'js/pwa-install.js'];
-const STYLES = ['css/styles.css', 'css/serum.css', 'css/campaign.css'];
+const STYLES = ['css/styles.css', 'css/serum.css', 'css/campaign.css', 'css/home.css', 'css/hama.css'];
 const EXTERNAL = /^(?:[a-z]+:|\/\/|#|data:|mailto:|tel:)/i;
 
 /** مسارات تُخدم عبر توجيه وليست ملفات على القرص */
@@ -303,6 +303,10 @@ console.log('\n▸ أصول غير مستخدمة');
     'hero-wide-v3-v4-1080.avif',    // غلاف عريض للأرشيف الإعلاني
     'og-image-v4-1200.jpg',          // صور مشاركة سابقة ما زالت في نتائج البحث والروابط المنشورة
     'og-image-v5-1200.jpg',
+    // أغلفة الفيديو (poster) في hama.html: تُطلب فعليًا عند بناء المشغّل
+    // لكنها لا تظهر في <img>، فتُدرج هنا صراحةً بدل تركها «يتيمة» زورًا.
+    'card-reel-cover-720.avif', 'card-reel-cover-720.webp', 'card-reel-cover.jpg',
+    'outro-720.avif', 'outro-720.webp', 'outro.jpg',
   ]);
   const legacyKept = new Set(
     (() => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/legacy-assets.json'), 'utf8')); } catch { return []; } })()
@@ -314,7 +318,10 @@ console.log('\n▸ أصول غير مستخدمة');
     for (const name of entries) {
       if (name === 'manifest.json') continue;
       const rel = `${dir}/${name}`;
-      if (corpus.includes(name) || redirectTargets.has(`/${rel}`)) continue;
+      // البحث عن الاسم الخام لا يكفي: الملف يُذكر داخل srcset كـ
+      // assets/img/hama/x-720.avif بينما name هو x-720.avif، وهذا يطابق
+      // عادةً. لكن بعض المراجع تُبنى نسبيًا (اسم الملف وحده) فنفحص الشكلين.
+      if (corpus.includes(name) || corpus.includes(rel) || redirectTargets.has(`/${rel}`)) continue;
       if (EXTERNAL_USE.has(name) || legacyKept.has(rel)) continue;
       orphans.push(rel);
     }

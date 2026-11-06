@@ -27,61 +27,13 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
 <link rel="preload" href="assets/fonts/plexar-400.subset.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/img/hama/card-50-hero-720.avif" as="image" type="image/avif"
+        imagesrcset="assets/img/hama/card-50-hero-720.avif" imagesizes="(min-width: 900px) 45vw, 92vw" fetchpriority="high">
+  <link rel="preload" href="assets/img/hama/card-50-hero-720.webp" as="image" type="image/webp"
+        imagesrcset="assets/img/hama/card-50-hero-720.webp" imagesizes="(min-width: 900px) 45vw, 92vw">
 <link rel="preload" href="assets/fonts/plexar-700.subset.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/styles.css">
-<style>
-  .hama-hero { padding-block: clamp(2.4rem, 6vw, 4rem) clamp(1.4rem, 4vw, 2.4rem); }
-  .hama-hero-grid { display: grid; gap: clamp(1.4rem, 4vw, 3rem); align-items: center; grid-template-columns: 1fr; }
-  @media (min-width: 860px) { .hama-hero-grid { grid-template-columns: 1.05fr 0.95fr; } }
-  .hama-hero h1 { font-size: clamp(2rem, 5.4vw, 3.4rem); line-height: 1.25; margin: 0.4rem 0 0.8rem; }
-  .hama-hero .lead { color: var(--ink-soft); max-width: 44ch; margin: 0 0 1.2rem; }
-  .hama-price { display: flex; align-items: baseline; gap: 0.6rem; margin: 0 0 1.2rem; }
-  .hama-price b { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 700; }
-  .hama-price span { color: var(--ink-soft); }
-  .hama-actions { display: flex; flex-wrap: wrap; gap: 0.7rem; }
-  .hama-hero img { width: 100%; height: auto; border-radius: 18px; display: block; }
-  .hama-qr { margin: 1.1rem 0 0; }
-  .hama-qr img { width: 100%; max-width: 230px; height: auto; border-radius: 14px; background: #fff; padding: 8px; display: block; }
-  .hama-qr figcaption { font-size: 0.82rem; color: var(--ink-soft); margin-top: 0.45rem; }
-  .hama-note { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.9rem; }
-  .sizes { display: grid; gap: 1rem; grid-template-columns: 1fr; }
-  @media (min-width: 760px) { .sizes { grid-template-columns: repeat(3, 1fr); } }
-  .size-card { border: 1px solid var(--line-soft); border-radius: 18px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
-  .size-card.is-hero { border-color: var(--gold); box-shadow: 0 10px 30px rgba(84, 64, 40, 0.08); }
-  .size-card img { width: 100%; height: 220px; object-fit: cover; display: block; }
-  .size-card .body { padding: 1rem 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.35rem; }
-  .size-card .tag { align-self: flex-start; background: var(--gold); color: #fff; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 999px; }
-  .size-card h3 { margin: 0.2rem 0 0; font-size: 1.25rem; }
-  .size-card .p { font-weight: 700; font-size: 1.5rem; color: var(--gold); }
-  .size-card p { margin: 0; color: var(--ink-soft); font-size: 0.92rem; }
-  .hama-media { display: grid; gap: 1.2rem; grid-template-columns: 1fr; }
-  @media (min-width: 820px) { .hama-media { grid-template-columns: 1fr 1fr; } }
-  .hama-media figure { margin: 0; }
-  .hama-media video { width: 100%; max-width: 360px; aspect-ratio: 9 / 16; border-radius: 18px; background: #1b1510; display: block; }
-  .hama-media figcaption { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.5rem; }
-  .hama-gallery { display: grid; gap: 0.8rem; grid-template-columns: repeat(2, 1fr); }
-  @media (min-width: 820px) { .hama-gallery { grid-template-columns: repeat(4, 1fr); } }
-  .hama-gallery img { width: 100%; height: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 14px; display: block; }
-  .hama-pay { display: grid; gap: 1.4rem; grid-template-columns: 1fr; align-items: start; }
-  @media (min-width: 820px) { .hama-pay { grid-template-columns: 0.8fr 1.2fr; } }
-  .hama-pay img { width: 100%; max-width: 340px; height: auto; border-radius: 18px; border: 1px solid var(--line-soft); }
-  .hama-steps { margin: 0; padding-inline-start: 1.2rem; color: var(--ink-soft); display: grid; gap: 0.5rem; }
-  .hama-faq details { border-top: 1px solid var(--line-soft); padding: 0.9rem 0; }
-  .hama-faq summary { cursor: pointer; font-weight: 600; }
-  .hama-faq details p { margin: 0.6rem 0 0; color: var(--ink-soft); }
-  .hama-cta { background: var(--ink); color: var(--ivory, #FBF8F3); border-radius: 20px; padding: clamp(1.4rem, 4vw, 2.4rem); text-align: center; }
-  .hama-cta h2 { color: inherit; margin-top: 0; }
-  .hama-cta p { color: rgba(251, 248, 243, 0.82); max-width: 46ch; margin: 0.6rem auto 1.2rem; }
-  .hama-cta .btn-primary { background: var(--ivory, #FBF8F3); color: var(--ink); border-color: var(--ivory, #FBF8F3); }
-  .hama-footer { border-top: 1px solid var(--line-soft); background: var(--ivory); padding: 2rem 0 2.4rem; margin-top: 2rem; }
-  .hama-footer .inner { display: flex; flex-wrap: wrap; gap: 0.8rem 1.4rem; align-items: center; justify-content: space-between; }
-  .hama-footer a { color: var(--ink-soft); text-decoration: none; font-size: 0.92rem; }
-  .hama-footer a:hover { color: var(--ink); text-decoration: underline; }
-  .hama-footer .note { width: 100%; margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--ink-soft); }
-
-  .h-row{display:flex;flex-wrap:wrap;gap:1rem}.h-flush{margin:0}
-  .h-figure{width:100%;max-width:560px;height:auto;border-radius:18px;display:block}
-</style>
+  <link rel="stylesheet" href="css/hama.css">
 </head>
 <body>
 <a class="skip-link" href="#main">تجاوز إلى المحتوى</a>
@@ -157,7 +109,7 @@
           </div>
         </article>
         <article class="size-card">
-          <img src="assets/img/hama/card-30-entry.jpg" width="1080" height="1350" loading="lazy" alt="عبوة رواء مع بطاقة السعر">
+          <picture><source type="image/avif" srcset="assets/img/hama/card-30-entry-720.avif"><source type="image/webp" srcset="assets/img/hama/card-30-entry-720.webp"><img src="assets/img/hama/card-30-entry.jpg" width="1080" height="1350" loading="lazy" alt="عبوة رواء مع بطاقة السعر"></picture>
           <div class="body">
             <span class="tag">لمن جرّبت</span>
             <h3>١٠٠ مل</h3>
@@ -175,8 +127,8 @@
         <h2 id="why-title">لماذا ٥٠ مل؟</h2>
         <p class="section-lead">فرق ٣ دولارات، وكمية تكفي ضعف المدة تقريبًا. نفس التركيبة ونفس العبوة — والفرق الحقيقي في السعر لكل مل: ٠.٤٣$ مقابل ٠.٣٢$.</p>
       </div>
-      <img src="assets/img/hama/card-compare.jpg" width="1080" height="1350" loading="lazy"
-           alt="بطاقة مقارنة بين ٣٠ مل بـ١٣ دولارًا و٥٠ مل بـ١٦ دولارًا" class="h-figure">
+      <picture><source type="image/avif" srcset="assets/img/hama/card-compare-720.avif"><source type="image/webp" srcset="assets/img/hama/card-compare-720.webp"><img src="assets/img/hama/card-compare.jpg" width="1080" height="1350" loading="lazy"
+           alt="بطاقة مقارنة بين ٣٠ مل بـ١٣ دولارًا و٥٠ مل بـ١٦ دولارًا" class="h-figure"></picture>
       <p class="hama-note">مدة الاستخدام تقديرية وتعتمد على كمية الاستخدام وطول الشعر.</p>
     </div>
   </section>
@@ -190,7 +142,7 @@
       <div class="hama-media">
         <figure>
           <video controls preload="none" playsinline width="1080" height="1920"
-                 poster="assets/img/hama/card-reel-cover.jpg" aria-label="ريل: لماذا ٥٠ مل — ١٥ ثانية">
+                 poster="assets/img/hama/card-reel-cover-720.webp" aria-label="ريل: لماذا ٥٠ مل — ١٥ ثانية">
             <source src="assets/img/hama/reel-50ml.mp4" type="video/mp4">
             <track kind="captions" src="assets/img/hama/reel-50ml.ar.vtt" srclang="ar" label="العربية">
             متصفحك لا يعرض الفيديو. <a href="assets/img/hama/reel-50ml.mp4">حمّليه هنا</a>.
@@ -199,7 +151,7 @@
         </figure>
         <figure>
           <video controls preload="none" playsinline width="1080" height="1920"
-                 poster="assets/img/hama/outro.jpg" aria-label="ريل: من حماة لحماة — ١٥ ثانية">
+                 poster="assets/img/hama/outro-720.webp" aria-label="ريل: من حماة لحماة — ١٥ ثانية">
             <source src="assets/img/hama/reel-hama.mp4" type="video/mp4">
             <track kind="captions" src="assets/img/hama/reel-hama.ar.vtt" srclang="ar" label="العربية">
             متصفحك لا يعرض الفيديو. <a href="assets/img/hama/reel-hama.mp4">حمّليه هنا</a>.
@@ -221,10 +173,10 @@
         <p class="section-lead">مشاهد تصميمية للعلامة — ليست صورًا للمنتج النهائي.</p>
       </div>
       <div class="hama-gallery">
-        <img src="assets/img/hama/hama-window.jpg" width="928" height="1152" loading="lazy" alt="عبوة رواء على نافذة بيت حموي قديم والناعورة في الخلفية">
+        <picture><source type="image/avif" srcset="assets/img/hama/hama-window-720.avif"><source type="image/webp" srcset="assets/img/hama/hama-window-720.webp"><img src="assets/img/hama/hama-window.jpg" width="928" height="1152" loading="lazy" alt="عبوة رواء على نافذة بيت حموي قديم والناعورة في الخلفية"></picture>
         <img src="assets/img/hama/lifestyle-hands.jpg" width="928" height="1152" loading="lazy" alt="يد تمسك عبوة رواء وشعر لامع">
         <img src="assets/img/hama/salon-shelf.jpg" width="928" height="1152" loading="lazy" alt="عبوة رواء على رفّ صالون">
-        <img src="assets/img/hama/story-bg.jpg" width="768" height="1376" loading="lazy" alt="عبوة رواء ٥٠ مل على حجر حموي قديم وضوء العصر">
+        <picture><source type="image/avif" srcset="assets/img/hama/story-bg-720.avif"><source type="image/webp" srcset="assets/img/hama/story-bg-720.webp"><img src="assets/img/hama/story-bg.jpg" width="768" height="1376" loading="lazy" alt="عبوة رواء ٥٠ مل على حجر حموي قديم وضوء العصر"></picture>
       </div>
     </div>
   </section>

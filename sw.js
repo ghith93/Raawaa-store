@@ -30,6 +30,8 @@ const CORE = [
   './404.html',
   './manifest.webmanifest',
   './css/styles.css',
+  './css/home.css',
+  './css/hama.css',
   './css/serum.css',
   './css/campaign.css',
   './js/config.js',

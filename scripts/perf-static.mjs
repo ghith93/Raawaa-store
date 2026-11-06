@@ -40,7 +40,7 @@ const BUDGET = {
 
 const PAGES = {
   'index.html': {
-    css: ['css/styles.css'],
+    css: ['css/styles.css', 'css/home.css'],
     js: ['js/config.js', 'js/marketing.js', 'js/cart.js', 'js/pwa-install.js'],
     hero: ['assets/img/products/trio-v6-480.avif']
   },
@@ -53,25 +53,44 @@ const PAGES = {
     css: ['css/styles.css', 'css/campaign.css'],
     js: ['js/config.js', 'js/marketing.js', 'js/campaign.js'],
     hero: ['assets/img/products/trio-v6-480.avif']
+  },
+  'hama.html': {
+    css: ['css/hama.css'],
+    js: [],
+    // صورة الغلاف تُقدَّم الآن بصيغة AVIF عبر <picture>؛ احتساب الأصل JPEG
+    // كان يقيس ملفًا لا ينزّله أي متصفح حديث.
+    hero: ['assets/img/hama/card-50-hero-720.avif']
   }
 };
 
+// الخطوط تُجمع من كل CSS تستعمله الصفحات فعليًا. القائمة الثابتة قديمة:
+// بعد نقل تنسيق الرئيسية إلى css/home.css صار الخط يُعرَّف هناك، فقائمة
+// hardcoded كانت ستُسقط ٦٦ KB من حساب الوزن وتُظهر ميزانية متفائلة زورًا.
+const fontCss = [...new Set(Object.values(PAGES).flatMap((cfg) => cfg.css))];
 const fonts = [...new Set(
-  ['css/styles.css', 'css/serum.css', 'css/campaign.css']
-    .map((f) => read(f).toString('utf8')).join('\n')
+  fontCss.map((f) => { try { return read(f).toString('utf8'); } catch { return ''; } }).join('\n')
     .match(/fonts\/[A-Za-z0-9._-]+\.woff2/g) || []
 )].map((f) => `assets/${f}`);
 
 const fontBytes = fonts.reduce((sum, f) => sum + size(f), 0);
 
-/** أكبر صورة يشير إليها HTML فعليًا */
+/**
+ * أكبر صورة يشير إليها HTML فعليًا.
+ * نستثني <video><source src> لأن الفيديوهات هنا preload="none": لا تُحمَّل حتى
+ * يضغط الزائر، فاحتسابها «صورة أول شاشة» كان خطأً منهجيًا (٣.٩ MB + ٣.٦ MB).
+ * ما يُحتسب: <img src>, srcset, imagesrcset, وposter (صورة الغلاف تُطلب فعليًا).
+ */
+const IMAGE_EXT = /\.(?:avif|webp|jpe?g|png)$/i;
 const htmlImages = new Set();
 for (const page of Object.keys(PAGES)) {
   const html = read(page).toString('utf8');
-  for (const m of html.matchAll(/(?:src|srcset|imagesrcset)="([^"]+)"/g)) {
+  const withoutVideos = html.replace(/<video[\s\S]*?<\/video>/gi, (block) =>
+    block.replace(/<source[^>]*>/gi, '') // أبقِ poster، احذف مصدر الفيديو
+  );
+  for (const m of withoutVideos.matchAll(/(?:src|srcset|imagesrcset|poster)="([^"]+)"/g)) {
     for (const part of m[1].split(',')) {
       const p = part.trim().split(/\s+/)[0];
-      if (p.startsWith('assets/')) htmlImages.add(p);
+      if (p.startsWith('assets/') && IMAGE_EXT.test(p)) htmlImages.add(p);
     }
   }
 }
