@@ -28,6 +28,17 @@ test('سلّم الأسعار في عدّة التشغيل يطابق js/config.
   }
 });
 
+test('رسوم التوصيل في عدّة التشغيل تطابق إعدادات المتجر', () => {
+  const otherZone = config.match(/id:\s*'other',[^}]*fee:\s*(\d+(?:\.\d+)?)/s);
+  const hamaZone = config.match(/id:\s*'hama',[^}]*fee:\s*(\d+(?:\.\d+)?)/s);
+  assert.ok(hamaZone, 'تعرفة حماة موجودة في config.js');
+  assert.ok(otherZone, 'تعرفة باقي المحافظات موجودة في config.js');
+  assert.equal(Number(hamaZone[1]), 2);
+  assert.equal(Number(otherZone[1]), 2);
+  assert.match(doc, /توصيل ٢\$ داخل حماة \(٢\$ لباقي المحافظات/);
+  assert.doesNotMatch(doc, /باقي المحافظات ٤\$/);
+});
+
 test('لا رقم من السلّم القديم في عدّة التشغيل', () => {
   const forbidden = new Set([19, 26, 29, 17, 18, 24, 22, 30, 34, 46, 48, 23.4]);
   const seen = pricesIn(doc);
