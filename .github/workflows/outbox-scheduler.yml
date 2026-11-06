@@ -33,7 +33,9 @@ jobs:
           OUTBOX_URL: https://oyoyozdugicmnkfhjovo.supabase.co/functions/v1/rawaa-outbox
         run: |
           if [ -z "$RAWAA_OUTBOX_SCHEDULER_SECRET" ]; then
-            echo "لا سرّ مجدول بعد — تخطٍّ (أنشئه بتعليمات COPY-PASTE.md)."
+            # التخطّي الصامت كان يجعل «نجح» تعني «لم يعمل شيء» بلا أي أثر مرئي.
+            # notice يجعل سبب عدم التشغيل مقروءًا من واجهة GitHub لا من السجل فقط.
+            echo "::notice::لم تُشغَّل أي دفعة: السرّ RAWAA_OUTBOX_SCHEDULER_SECRET غير مضبوط في أسرار GitHub (التعليمات في COPY-PASTE.md)."
             exit 0
           fi
           code=$(curl -sS -o /tmp/outbox-resp.txt -w '%{http_code}' -X POST \

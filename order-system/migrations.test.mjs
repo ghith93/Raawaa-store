@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { readdirSync } from 'node:fs';
 
 const migration = await readFile(new URL('./migrations/004_order_retention.sql', import.meta.url), 'utf8');
 const rollback = await readFile(new URL('./migrations/004_order_retention.down.sql', import.meta.url), 'utf8');
@@ -71,7 +72,15 @@ test('local Supabase CLI harness is temporary, explicitly local, and never links
   assert.match(supabaseLocalScript, /supabase stop/);
   assert.match(supabaseLocalScript, /docker info/);
   assert.doesNotMatch(supabaseLocalScript, /supabase link|supabase (?:db reset|test db) --linked|\.supabase\.co|RAWAA_.*TOKEN/i);
-  assert.match(supabaseLocalScript, /005_marketing_preference_events\.sql/);
+  // السلوك لا اسم ملف: الفحص كان يطبّق 005 وحدها على مخطط صناعي فيمرّ بينما
+  // السلسلة الحقيقية تنكسر. الآن يجب أن يُصطفّ كل ملف هجرة بالترتيب.
+  assert.match(supabaseLocalScript, /order-system\/migrations\/\[0-9\]\[0-9\]\[0-9\]_\*\.sql/);
+  assert.match(supabaseLocalScript, /\*\.down\.sql\) continue/);
+  assert.doesNotMatch(supabaseLocalScript, /create schema rawaa_store/, 'no synthetic bootstrap schema: 001 creates it');
+  const chainCount = Number(/-lt (\d+)/.exec(supabaseLocalScript)?.[1]);
+  const migrationFiles = readdirSync(new URL('./migrations/', import.meta.url))
+    .filter((name) => /^\d{3}_.*\.sql$/.test(name) && !name.endsWith('.down.sql'));
+  assert.equal(chainCount, migrationFiles.length, 'the harness must require every checked-in migration');
   assert.match(supabaseLocalTests, /select plan\(18\)/);
   assert.match(supabaseLocalTests, /select \* from finish\(\)/);
   assert.match(supabaseLocalTests, /rollback;/i);
