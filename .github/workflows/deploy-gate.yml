@@ -29,10 +29,12 @@ jobs:
     name: بوابة النشر
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    # قائمة سماح صريحة لا نفي: الإلغاء والتخطي ليسا فشلًا، و'conclusion != success'
+    # كان سيعاملهما كحادثة. النجاح مذكور صراحةً لأنه المسار الذي يُغلق التنبيه.
     if: >-
       github.event_name == 'workflow_dispatch' ||
       contains(fromJSON('["failure","timed_out","startup_failure","action_required"]'), github.event.workflow_run.conclusion) ||
-      github.event.workflow_run.conclusion == 'success'
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     steps:
       - name: إغلاق تنبيه سابق عند نجاح الفحوصات
         if: github.event.workflow_run.conclusion == 'success'
@@ -64,7 +66,9 @@ jobs:
             }
 
       - name: إنشاء تنبيه عند فشل الفحوصات أو تعذرها
-        if: github.event.workflow_run.conclusion != 'success'
+        if: >-
+          github.event_name == 'workflow_dispatch' ||
+          contains(fromJSON('["failure","timed_out","startup_failure","action_required"]'), github.event.workflow_run.conclusion)
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
         with:
           script: |

@@ -890,10 +890,26 @@ async function checkWorkflow() {
   else fail('لا تحديد للأذونات');
 
   const gate = await read('.github/workflows/deploy-gate.yml');
-  const gateCondition = gate.match(/^\s+if:\s+(.+)$/m)?.[1] ?? '';
+  // شرط المهمة يظهر في ملف YAML قبل أول `steps:`؛ البحث عن أول `if:` في الملف
+  // يلتقط `inputs.*.if` داخل `on.workflow_dispatch`. نقصر البحث على رأس المهمة.
+  const jobHeader = gate.split(/^\s+steps:/m)[0];
+  // الشرط قد يُكتب ملفوفًا (`if: >-` ثم أسطر متابعة). نأخذ الكتلة كاملة،
+  // لا السطر الأول فقط — وإلا صار الشرط '>-' وفشل الفحص زورًا.
+  const ifBlock = jobHeader.match(/^\s+if:\s*(>-?|\|-?)?\s*\n((?:\s{6,}\S.*\n)+)/m);
+  const gateCondition = ifBlock
+    ? ifBlock[2]
+    : (jobHeader.match(/^\s+if:\s*(.+)$/m)?.[1] ?? '');
+  // نقيس **محتوى** القائمة لا وجود السلاسل: `includes` على النص كان يمرّ حتى لو
+  // أُضيف 'cancelled' إلى القائمة، وهو بالضبط ما يجب أن يفشل. الإلغاء والتخطي
+  // ليسا حادثة، وإدراجهما يحوّل البوابة إلى ضجيج.
   const actionableConclusions = ['failure', 'timed_out', 'startup_failure', 'action_required'];
-  const usesExplicitFailureAllowlist = gateCondition.includes('contains(fromJSON(') &&
-    actionableConclusions.every((conclusion) => gateCondition.includes(`"${conclusion}"`)) &&
+  const allowlists = [...gateCondition.matchAll(/contains\(fromJSON\('(\[[^']*\])'\)/g)]
+    .map((m) => { try { return JSON.parse(m[1]); } catch { return null; } })
+    .filter(Boolean);
+  const [primary] = allowlists;
+  const sorted = (arr) => [...arr].sort().join(',');
+  const usesExplicitFailureAllowlist = Boolean(primary) &&
+    sorted(primary) === sorted(actionableConclusions) &&
     gateCondition.includes("github.event_name == 'workflow_dispatch'") &&
     !gateCondition.includes("conclusion != 'success'");
   if (usesExplicitFailureAllowlist) pass('بوابة النشر تحصر التنبيه بنتائج الفشل/المهلة، لا الإلغاء أو التخطي');
