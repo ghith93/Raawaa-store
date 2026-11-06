@@ -181,7 +181,16 @@ jobs:
           sleep 2
           curl -sfL -o /dev/null http://127.0.0.1:8080/index.html
       - name: اختبار السلة وواتساب والتجاوب
-        run: python scripts/browser-test.py --base http://127.0.0.1:8080
+        run: python scripts/browser-test.py --base http://127.0.0.1:8080 | tee /tmp/chromium-browser.log
+      # عند الإخفاق نحتاج أسماء الفحوص الفاشلة لا مجرد «exit 1». الرفع يعمل
+      # حتى مع فشل الخطوة السابقة، فيبقى التشخيص متاحًا عبر تحميل الـartifact.
+      - name: حفظ سجل فشل المتصفح
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: browser-failure-log
+          path: /tmp/chromium-browser.log
+          if-no-files-found: warn
       - name: اختبار صفحة السيروم ومسار الإعلان
         run: python scripts/serum-browser-test.py --base http://127.0.0.1:8080 --path /serum.html
       - name: اختبار صفحة الهبوط للحملات
