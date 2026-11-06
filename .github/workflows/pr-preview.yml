@@ -37,13 +37,24 @@ jobs:
         run: node scripts/check-site.mjs
 
       - name: Build Pages output
-        run: bash scripts/build-deploy.sh
+        run: |
+          bash scripts/build-deploy.sh
+          # ELYRA is a concept preview only; the production build must not contain it.
+          test ! -e dist/site/elyra/index.html
+          mkdir -p dist/site/elyra
+          cp -R elyra/. dist/site/elyra/
 
       - name: Verify preview payload and isolate indexing
         run: |
           set -euo pipefail
           test -s dist/site/index.html
           test -s dist/site/serum.html
+          test -s dist/site/elyra/index.html
+          grep -qi '<meta name="robots" content="noindex,nofollow">' dist/site/elyra/index.html
+          grep -q 'هوية جديدة قيد التطوير' dist/site/elyra/index.html
+          if grep -Eq '\$[0-9]|خصم[[:space:]]*[0-9]|wa\.me/' dist/site/elyra/index.html; then
+            echo "::error::ELYRA preview must not expose unapproved prices, discounts, or order links"; exit 1
+          fi
           grep -q 'لمعان يُرى، ونعومة تُلمَس' dist/site/index.html
           grep -q 'canonical" href="https://raawaa-store.pages.dev/serum"' dist/site/serum.html
           test -s dist/site/assets/brand/logo-primary-v2.svg
@@ -76,6 +87,13 @@ jobs:
             sleep 10
           done
           curl -fsSL --max-time 25 "$PREVIEW_URL/serum" -o /tmp/serum.html
+          curl -fsSL --max-time 25 "$PREVIEW_URL/elyra/" -o /tmp/elyra.html
+          grep -q 'ELYRA' /tmp/elyra.html
+          grep -qi '<meta name="robots" content="noindex,nofollow">' /tmp/elyra.html
+          grep -q 'هوية جديدة قيد التطوير' /tmp/elyra.html
+          if grep -Eq '\$[0-9]|خصم[[:space:]]*[0-9]|wa\.me/' /tmp/elyra.html; then
+            echo "::error::ELYRA preview exposed unapproved commercial claims"; exit 1
+          fi
           grep -q 'RAWAA | رواء' /tmp/home.html
           grep -q 'لمعان يُرى، ونعومة تُلمَس' /tmp/home.html
           grep -q 'canonical" href="https://raawaa-store.pages.dev/serum"' /tmp/serum.html
@@ -90,6 +108,7 @@ jobs:
             echo ""
             echo "- Homepage: $PREVIEW_URL/"
             echo "- Product page: $PREVIEW_URL/serum"
+            echo "- ELYRA concept preview: $PREVIEW_URL/elyra/ (noindex, no pricing or order links)"
             echo "- Search indexing: blocked on preview only (X-Robots-Tag: noindex)"
             echo "- Production site: untouched"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -107,7 +126,9 @@ jobs:
               '',
               `[Open the isolated PR #${context.issue.number} homepage preview](${process.env.PREVIEW_URL})`,
               '',
-              '_This is a review-only Cloudflare Pages preview. The production site has not been changed._'
+              `[Open the isolated ELYRA concept preview](https://pr-${context.issue.number}.raawaa-store.pages.dev/elyra/)`,
+              '',
+              '_This is a review-only Cloudflare Pages preview. ELYRA remains noindex and is excluded from production builds._'
             ].join('\n');
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;

@@ -336,7 +336,7 @@
       if (srcAvif) srcAvif.setAttribute('srcset', setOf('avif'));
       if (srcWebp) srcWebp.setAttribute('srcset', setOf('webp'));
       img.setAttribute('src', product.image.src);
-      img.setAttribute('alt', 'عبوة سيروم زيوت رواء ' + product.sizeLabel + ' — تصميم مقترح، ليست صورة للمنتج الفعلي');
+      img.setAttribute('alt', product.image.alt || ('تصميم عبوة سيروم زيوت رواء ' + product.sizeLabel));
     }
 
     // زر الإضافة يتبع الحجم المختار — الـ id لا يُكتب في HTML
