@@ -75,7 +75,7 @@ jobs:
 
       - name: تثبيت Playwright
         run: |
-          python -m pip install --quiet "playwright==1.57.0"
+          python -m pip install --quiet "playwright==1.64.1"
           python -m playwright install --with-deps chromium
 
       - name: تشخيص PWA offline المركّز (تشغيل يدوي فقط)
@@ -142,7 +142,7 @@ jobs:
           python-version: '3.12'
       - name: تثبيت المتطلبات
         run: |
-          python -m pip install --quiet "playwright==1.57.0"
+          python -m pip install --quiet "playwright==1.64.1"
           python -m playwright install --with-deps chromium
       - name: تثبيت أدوات Lighthouse بالإصدارات المقفلة
         run: npm ci --ignore-scripts --no-audit --no-fund
