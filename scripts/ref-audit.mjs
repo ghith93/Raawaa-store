@@ -53,9 +53,16 @@ console.log('\n▸ مراجع الملفات');
     if (!exists(file)) { fail(`ملف مصدر مفقود: ${file}`); continue; }
     const src = read(file);
     const refs = new Set();
-    // مراجع مباشرة لملفات داخل المشروع
-    for (const m of src.matchAll(/['"(]\s*((?:\.{0,2}\/)?(?:assets|css|js|owner)\/[A-Za-z0-9._\/-]+\.(?:avif|webp|jpg|jpeg|png|svg|ico|woff2|css|js|mjs|json|html))/g)) {
-      refs.add(m[1]);
+    // مراجع مباشرة لملفات داخل المشروع.
+    // ملاحظة: srcset بنمط "img 480w, img2 720w" يجعل كل مسار يتبعه " 480w"
+    // فلا يطابق الحدّ النهائي. لذلك نلتقط تاكيد الملف بأي فاصل (مسافة/اقتباس/فاصلة)
+    // ثم نتحقق من الامتداد لاحقًا. الثغرة السابقة (٦ نوفمبر ٢٠٢٦) سمحت بحذف
+    // ritual-v5-720.avif من القرص بينما serum.html وsw.js يشيران إليه، ولم
+    // يكتشفها ref-audit لأنه كان يفحص ما يلتقطه النمط فقط.
+    for (const m of src.matchAll(/(?:['"(\s,])((?:\.{0,2}\/)?(?:assets|css|js|owner)\/[A-Za-z0-9._\/-]+)/g)) {
+      const candidate = m[1].replace(/[),'"]+$/, '');
+      if (!/\.(?:avif|webp|jpg|jpeg|png|svg|ico|woff2|css|js|mjs|json|html)$/.test(candidate)) continue;
+      refs.add(candidate);
     }
     // مراجع CSS النسبية من داخل مجلد css
     for (const m of src.matchAll(/url\(['"]?((?:\.\.\/)+[A-Za-z0-9._\/-]+\.(?:woff2|png|svg|jpg|webp|avif))['"]?\)/g)) {
@@ -269,6 +276,54 @@ console.log('\n▸ ثوابت الأسعار والدفع (من js/config.js)');
     if (!/^\d{11,15}$/.test(wa)) fail(`رقم واتساب غير صالح: "${wa}"`);
     else if (!wa.startsWith('963')) fail(`رقم واتساب لا يبدأ بمقدمة سوريا: ${wa}`);
     else ok(`رقم واتساب صالح الصيغة (${wa.length} رقمًا)`);
+  }
+}
+
+console.log('\n▸ أصول غير مستخدمة');
+{
+  // كل ملف داخل assets/img/products يجب أن يكون مطلوبًا فعليًا.
+  // سبب وجود هذا الفحص: مجلدات الإصدارات القديمة (v3/v4/v5) تراكمت إلى 54 ملفًا
+  // غير مستخدم و1.7 MB تُنشر ولا يراها أحد. الصور لا «تضرّ» لكنها تُدفع في كل
+  // نشر وتُخزَّن في Git وتزيد زمن رفع Cloudflare بلا مقابل.
+  const corpus = [
+    ...PAGES, ...SCRIPTS, ...STYLES, 'sw.js', 'manifest.webmanifest',
+    'owner/index.html', 'owner/app.mjs', 'owner/owner-client.mjs',
+    'assets/img/products/manifest.json'
+  ].map((f) => (exists(f) ? read(f) : '')).join('\n');
+  const redirectTargets = new Set(
+    read('_redirects').replace(/\r/g, '').split('\n')
+      .map((line) => line.trim()).filter((line) => line && !line.startsWith('#'))
+      .map((line) => line.split(/\s+/)[1]).filter(Boolean)
+  );
+  // أصول تُستهلك خارج الموقع (فيسبوك/إنستغرام) أو محفوظة عمدًا للتوافق.
+  // القائمة صريحة لا تخمينية: أي إضافة تحتاج سببًا مكتوبًا هنا.
+  const EXTERNAL_USE = new Set([
+    'social-square-v4-1080.avif',   // مربّع ١:١ لمنشورات إنستغرام
+    'social-vertical-v4-1080.avif', // عمودي ٤:٥ للستوري
+    'hero-wide-v3-v4-1080.avif',    // غلاف عريض للأرشيف الإعلاني
+    'og-image-v4-1200.jpg',          // صور مشاركة سابقة ما زالت في نتائج البحث والروابط المنشورة
+    'og-image-v5-1200.jpg',
+  ]);
+  const legacyKept = new Set(
+    (() => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, 'scripts/legacy-assets.json'), 'utf8')); } catch { return []; } })()
+  );
+  const orphans = [];
+  for (const dir of ['assets/img/products', 'assets/img/campaign', 'assets/img/hama']) {
+    let entries = [];
+    try { entries = fs.readdirSync(path.join(ROOT, dir)); } catch { continue; }
+    for (const name of entries) {
+      if (name === 'manifest.json') continue;
+      const rel = `${dir}/${name}`;
+      if (corpus.includes(name) || redirectTargets.has(`/${rel}`)) continue;
+      if (EXTERNAL_USE.has(name) || legacyKept.has(rel)) continue;
+      orphans.push(rel);
+    }
+  }
+  if (orphans.length) {
+    orphans.slice(0, 10).forEach((o) => fail(`أصل غير مستخدم يُنشر بلا داعٍ: ${o}`));
+    if (orphans.length > 10) fail(`… و${orphans.length - 10} أصلًا غير مستخدم آخر`);
+  } else {
+    ok('كل ملفات الصور المنشورة مطلوبة فعلًا أو هدف تحويل');
   }
 }
 
