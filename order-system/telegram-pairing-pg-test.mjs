@@ -25,7 +25,7 @@ await db.exec('reset role');
 // Fail recipient storage: transaction must roll back consumption as well.
 const third=await pairing.start(), thirdCode=third.message.split(' ')[1];
 await db.exec("create function rawaa_store.fail_pair() returns trigger language plpgsql as $$ begin raise exception 'test'; end $$; create trigger fail_pair before update or insert on rawaa_store.telegram_recipient for each row execute function rawaa_store.fail_pair();");
-message.message.text=third.message;
+message.message.text=third.message; message.message.date=Math.floor(Date.now()/1000);
 assert.equal((await pairing.finish({id:third.id,code:thirdCode})).error,'unavailable');
 assert.equal((await repository.find(third.id)).consumed,false);
 await db.close();
