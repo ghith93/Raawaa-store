@@ -89,6 +89,119 @@ jobs:
           done
           curl -fsSL --max-time 25 "$PREVIEW_URL/serum" -o /tmp/serum.html
           curl -fsSL --max-time 25 "$PREVIEW_URL/elyra/" -o /tmp/elyra.html
+          elyra_headers=$(curl -sSI --max-time 25 "$PREVIEW_URL/elyra/" | tr -d '\r')
+          grep -qi '^x-robots-tag: noindex, nofollow, noarchive
+          grep -qi '<meta name="robots" content="noindex,nofollow">' /tmp/elyra.html
+          grep -q 'هوية جديدة قيد التطوير' /tmp/elyra.html
+          if grep -Eq '\$[0-9]|خصم[[:space:]]*[0-9]|wa\.me/' /tmp/elyra.html; then
+            echo "::error::ELYRA preview exposed unapproved commercial claims"; exit 1
+          fi
+          grep -q 'RAWAA | رواء' /tmp/home.html
+          grep -q 'لمعان يُرى، ونعومة تُلمَس' /tmp/home.html
+          grep -q 'canonical" href="https://raawaa-store.pages.dev/serum"' /tmp/serum.html
+          curl -fsSL --max-time 25 "$PREVIEW_URL/assets/brand/logo-primary-v2.svg" -o /dev/null
+          curl -fsSL --max-time 25 "$PREVIEW_URL/assets/brand/logo-primary-v2-dark.svg" -o /dev/null
+          curl -fsSL --max-time 25 "$PREVIEW_URL/assets/img/products/size-50-v6-720.avif" -o /dev/null
+          headers=$(curl -sSI --max-time 25 "$PREVIEW_URL/" | tr -d '\r')
+          grep -qi '^x-robots-tag:.*noindex' <<< "$headers"
+          echo "Verified preview homepage, product checkout, brand assets and preview-only noindex: $PREVIEW_URL"
+          {
+            echo "## Cloudflare Pages preview"
+            echo ""
+            echo "- Homepage: $PREVIEW_URL/"
+            echo "- Product page: $PREVIEW_URL/serum"
+            echo "- ELYRA concept preview: $PREVIEW_URL/elyra/ (noindex, no pricing or order links)"
+            echo "- Search indexing: blocked on preview only (X-Robots-Tag: noindex)"
+            echo "- Production site: untouched"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish or update PR preview comment
+        uses: actions/github-script@v8
+        env:
+          PREVIEW_URL: https://pr-${{ github.event.pull_request.number }}.raawaa-store.pages.dev/
+        with:
+          script: |
+            const marker = '<!-- raawaa-pages-preview -->';
+            const body = [
+              marker,
+              '### Raawaa visual preview',
+              '',
+              `[Open the isolated PR #${context.issue.number} homepage preview](${process.env.PREVIEW_URL})`,
+              '',
+              `[Open the isolated ELYRA concept preview](https://pr-${context.issue.number}.raawaa-store.pages.dev/elyra/)`,
+              '',
+              '_This is a review-only Cloudflare Pages preview. ELYRA remains noindex and is excluded from production builds._'
+            ].join('\n');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number, per_page: 100
+            });
+            const existing = comments.find(comment => comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner, repo, comment_id: existing.id, body
+              });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+ <<< "$elyra_headers"
+          grep -qi '^cache-control: no-store
+          grep -qi '<meta name="robots" content="noindex,nofollow">' /tmp/elyra.html
+          grep -q 'هوية جديدة قيد التطوير' /tmp/elyra.html
+          if grep -Eq '\$[0-9]|خصم[[:space:]]*[0-9]|wa\.me/' /tmp/elyra.html; then
+            echo "::error::ELYRA preview exposed unapproved commercial claims"; exit 1
+          fi
+          grep -q 'RAWAA | رواء' /tmp/home.html
+          grep -q 'لمعان يُرى، ونعومة تُلمَس' /tmp/home.html
+          grep -q 'canonical" href="https://raawaa-store.pages.dev/serum"' /tmp/serum.html
+          curl -fsSL --max-time 25 "$PREVIEW_URL/assets/brand/logo-primary-v2.svg" -o /dev/null
+          curl -fsSL --max-time 25 "$PREVIEW_URL/assets/brand/logo-primary-v2-dark.svg" -o /dev/null
+          curl -fsSL --max-time 25 "$PREVIEW_URL/assets/img/products/size-50-v6-720.avif" -o /dev/null
+          headers=$(curl -sSI --max-time 25 "$PREVIEW_URL/" | tr -d '\r')
+          grep -qi '^x-robots-tag:.*noindex' <<< "$headers"
+          echo "Verified preview homepage, product checkout, brand assets and preview-only noindex: $PREVIEW_URL"
+          {
+            echo "## Cloudflare Pages preview"
+            echo ""
+            echo "- Homepage: $PREVIEW_URL/"
+            echo "- Product page: $PREVIEW_URL/serum"
+            echo "- ELYRA concept preview: $PREVIEW_URL/elyra/ (noindex, no pricing or order links)"
+            echo "- Search indexing: blocked on preview only (X-Robots-Tag: noindex)"
+            echo "- Production site: untouched"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish or update PR preview comment
+        uses: actions/github-script@v8
+        env:
+          PREVIEW_URL: https://pr-${{ github.event.pull_request.number }}.raawaa-store.pages.dev/
+        with:
+          script: |
+            const marker = '<!-- raawaa-pages-preview -->';
+            const body = [
+              marker,
+              '### Raawaa visual preview',
+              '',
+              `[Open the isolated PR #${context.issue.number} homepage preview](${process.env.PREVIEW_URL})`,
+              '',
+              `[Open the isolated ELYRA concept preview](https://pr-${context.issue.number}.raawaa-store.pages.dev/elyra/)`,
+              '',
+              '_This is a review-only Cloudflare Pages preview. ELYRA remains noindex and is excluded from production builds._'
+            ].join('\n');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number, per_page: 100
+            });
+            const existing = comments.find(comment => comment.body?.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner, repo, comment_id: existing.id, body
+              });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+ <<< "$elyra_headers"
           grep -q 'ELYRA' /tmp/elyra.html
           grep -qi '<meta name="robots" content="noindex,nofollow">' /tmp/elyra.html
           grep -q 'هوية جديدة قيد التطوير' /tmp/elyra.html
