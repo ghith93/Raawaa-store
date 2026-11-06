@@ -76,7 +76,10 @@ jobs:
           // هذان المولّدان يقرآن SVG الهوية المصدرية لتوليد أيقونات PWA المنشورة.
           for(const f of ['scripts/make_icons.py','scripts/make_identity.py'])
             src+=fs.readFileSync(f,'utf8');
-          src+=fs.readFileSync('css/styles.css','utf8');   // الخطوط تُشار إليها من CSS
+          // كل ملفات CSS: بعد نقل تنسيق الرئيسية وحماة إلى css/home.css وcss/hama.css
+          // صار قراءة styles.css وحدها تُنتج «ملفات ميتة» زورًا.
+          for(const f of fs.readdirSync('css').filter(x=>x.endsWith('.css')))
+            src+=fs.readFileSync(path.join('css',f),'utf8');
           const dead=[];
           // الصور المنشورة سابقًا محفوظة عمدًا كي لا تنكسر روابط الزبائن القديمة.
           const legacy=new Set(JSON.parse(fs.readFileSync('scripts/legacy-assets.json','utf8')));
@@ -85,7 +88,8 @@ jobs:
             const p=path.join(d,e.name);
             if(e.isDirectory()){if(!['source'].includes(e.name))walk(p);continue}
             if(!/\.(svg|png|jpg|webp|avif|woff2)$/.test(e.name))continue;
-            if(/^(social-|og-image)/.test(e.name))continue;  // تُستخدم خارج الموقع
+            // تُستخدم خارج الموقع أو كأغلفة فيديو (poster) فلا تظهر في <img>.
+            if(/^(social-|og-image|card-reel-cover|outro)/.test(e.name))continue;
             if(!src.includes(e.name) && !legacy.has(p))dead.push(p);
           }};
           walk('assets');
