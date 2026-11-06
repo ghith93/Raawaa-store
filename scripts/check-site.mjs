@@ -502,7 +502,7 @@ async function checkContentClaims() {
 
   const requiredDisclaimers = [
     ['مرجعي', 'الإشارة إلى أن الأسعار مرجعية'],
-    [/ليست صورة للمنتج الفعلي|لا صورة للمنتج الفعلي|تصور تصميمي/, 'تنبيه أن الصور تصورات تصميمية'],
+    [/ليست صورة للمنتج الفعلي|لا صورة للمنتج الفعلي|تصور تصميمي|تصوّر فني/, 'تنبيه أن الصور تصورات تصميمية'],
     [/لا يعني أن الطلب سُجِّل|لا يسجّل طلبًا تلقائيًا ولا يؤكّده/, 'تنبيه أن واتساب لا يسجّل الطلب'],
     [/لا يمرّ أي مبلغ عبره|بدون دفع إلكتروني|لا توجد بوابة دفع داخل الموقع/, 'الإشارة إلى أن الدفع لا يمرّ عبر الموقع']
   ];
@@ -1089,7 +1089,8 @@ async function checkOwnerDecisions(config) {
   expect(!/الأكثر اختيارًا|الأكثر طلبًا/.test(customerCopy), 'لا ادعاء شعبية بلا بيانات');
   expect(/السيروم جاهز/.test(visibleHtml) && !/التصنيع حسب الطلب|متى يُصنع طلبي|٢[–-]٤ أيام عمل|صورة العبوة قبل الشحن/.test(customerCopy),
     'الجاهزية معلنة بلا مدة تصنيع أو وعد بصورة قبل الشحن');
-  expect(visibleHtml.includes('ليست صورة للمنتج الفعلي'), 'الصورة موصوفة بدقة في النص البديل');
+  expect(/تصوّر فني/.test(visibleHtml) && /لا يوضّح القياسات الفعلية للأحجام/.test(visibleHtml), 'النص البديل يصف الصورة كتقريب فني ولا يَعِد بقياسات فعلية');
+  expect(!/صورة توضيحية للتصميم وليست صورة للمنتج الفعلي/.test(customerCopy), 'عبارة التنبيه القديمة غير موجودة في النص المرئي');
   const preloads = [...visibleHtml.matchAll(/<link[^>]*rel="preload"[^>]*as="image"[^>]*>/g)].map(m => m[0]);
   expect(preloads.length === 1 && preloads[0].includes('type="image/avif"') &&
     preloads[0].includes('imagesizes="(min-width: 900px) 43vw, 42vw"') &&
@@ -1179,7 +1180,7 @@ async function checkProductPage(config) {
   ok(visible.includes('البانثينول') && visible.includes('ليست القائمة الكاملة'), 'المكوّنات المختارة ليست قائمة كاملة');
   const ingredients = visible.match(/<section[^>]*id="ingredients"[\s\S]*?<\/section>/)?.[0] || '';
   ok(!/\d\s*[%٪]|[٠-٩]\s*[%٪]/.test(ingredients), 'لا نسب تركيبة غير مصححة');
-  ok(/ليست صورة للمنتج الفعلي/.test(visible) && /تصميم مقترح/.test(visible), 'الصورة موصوفة كتصوّر لا تصوير حقيقي');
+  ok(/تصوّر فني/.test(visible) && /تصميم مقترح/.test(visible), 'الصورة موصوفة كتصوّر فني لا تصوير حقيقي');
   ok(!/الأكثر اختيارًا|الأكثر طلبًا|التصنيع حسب الطلب|كيراتين/.test(visible), 'لا شعبية أو مدة تصنيع أو تركيبة متناقضة');
   ok(visible.includes('توصيل مجاني داخل حماة فقط') && visible.includes('$2') && !visible.includes('$4'), 'قيود ورسوم التوصيل واضحة');
   ok(/data-estimate-interface[^>]*hidden/.test(visible) && visible.includes('data-estimate-fallback') && visible.includes('تقدير عبوة واحدة مع التوصيل'), 'التقدير الرقمي مخفي دون JavaScript وله بديل ومحدّد بعبوة واحدة');
