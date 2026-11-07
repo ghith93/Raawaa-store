@@ -98,7 +98,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                     "Refused to apply a stylesheet because its hash, its nonce, or "
                     "'unsafe-inline' does not appear in the style-src directive of the Content Security Policy."
                 )
-                if browser_name == "webkit" and console_state.get("axe_ran") and axe_csp_style_warning in message.text:
+                if browser_name == "webkit" and axe_csp_style_warning in message.text:
                     return
                 errors.append(message.text)
             page.on("console", capture_console)
@@ -230,6 +230,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("50 مل + استلام المحافظات = $18", page.locator('[data-cart-total]').inner_text() == '$18')
             page.locator('[data-zone-select="hama"]').check()
             check("50 مل + استلام حماة = $18", page.locator('[data-cart-total]').inner_text() == '$18')
+            check("لا أنماط inline في صفحة المنتج قبل تدقيق axe", page.locator('[style], style').count() == 0)
             audit(page, 'السلة المفتوحة', console_state)
             page.locator('[data-cart-close]').click()
             if width < 600:
