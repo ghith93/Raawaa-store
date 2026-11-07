@@ -146,7 +146,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("استفسار واتساب يوضح الحجم الافتراضي والسعر المرجعي وموعد التجهيز",
                   all(x in direct_msg for x in ['50 مل','$16','قبل الخصم والتوصيل','موعد تجهيز العبوة']) and
                   page.locator('[data-wa-context]').is_visible() and 'راجعي الرسالة' in page.locator('[data-wa-context]').inner_text())
-            check("رسوم التوصيل وشروطها قرب الشراء", all(x in page.locator('.serum-trust').inner_text() for x in ['حماة فقط','$2','بلا خصم']) and '$4' not in page.locator('.serum-trust').inner_text())
+            check("رسوم التوصيل وشروطها قرب الشراء", all(x in page.locator('.serum-trust').inner_text() for x in ['حماة','$2','بلا خصم','جميع طرق الدفع']) and '$4' not in page.locator('.serum-trust').inner_text())
             estimate = page.locator('[data-order-estimate]')
             check("تقدير العبوة الواحدة يظهر بافتراضاته قبل فتح السلة",
                   estimate.is_visible() and 'عبوة واحدة' in estimate.inner_text() and
