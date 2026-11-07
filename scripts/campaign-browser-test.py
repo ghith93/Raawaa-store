@@ -47,6 +47,7 @@ def run(base: str, browser_name: str, ignore_https: bool) -> int:
                                       is_mobile=width < 600, has_touch=width < 600,
                                       locale='ar', reduced_motion='reduce',
                                       ignore_https_errors=ignore_https)
+            ctx.add_init_script(script=AXE)
             page = ctx.new_page()
             errors: list[str] = []
             failures: list[str] = []
@@ -82,7 +83,7 @@ def run(base: str, browser_name: str, ignore_https: bool) -> int:
             check('رابط واتساب يحمل مصدر الحملة ولا يرسل تلقائيًا', 'wa.me/' in wa and 'المصدر: pilot_14day' in message and 'نسخة المحتوى: reference_prices' in message and not page.evaluate('window.__waCalls?.length'))
             check('لا بكسل أو اتصال بخدمة تحليل خارجية', not page.evaluate('!!window.fbq') and not any('facebook.net' in u for u in external))
             check('لا تمرير أفقي على هذا العرض', page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), str(page.evaluate('({scroll:document.documentElement.scrollWidth,width:innerWidth})')))
-            page.add_script_tag(content=AXE)
+            # axe-core is installed before navigation as an init script to honor strict CSP.
             violations = page.evaluate("""async () => (await axe.run(document, {
               runOnly: {type:'tag', values:['wcag2a','wcag2aa','wcag21a','wcag21aa','best-practice']}
             })).violations.map(v => `${v.impact}:${v.id}:${v.nodes.length}`)""")
