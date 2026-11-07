@@ -1108,7 +1108,7 @@ async function checkOwnerDecisions(config) {
   expect(Number(product?.offers?.lowPrice) === Math.min(...config.products.map(p => p.price)) &&
     Number(product?.offers?.highPrice) === Math.max(...config.products.map(p => p.price)), 'حدود أسعار JSON-LD مطابقة');
   expect(visibleHtml.includes('باقي المحافظات') && visibleHtml.includes('$2') && !visibleHtml.includes('$4'),
-    'رسوم التوصيل للمنطقتين $2 ولا توجد رسوم قديمة');
+    'توصيل حماة مجاني ورسوم باقي المحافظات $2 ولا توجد رسوم قديمة');
   expect(!product?.offers?.availability && offers.every(o => !o.availability), 'لا مخزون مختلق في بيانات البحث');
 }
 
@@ -1153,7 +1153,7 @@ async function checkProductPage(config) {
     worker.includes('const visual = url.pathname.match') && worker.includes('ritual-v5|trio-v6|size-'), 'بدائل صور المشاهد والأحجام محفوظة بلا إنترنت لكل صيغة');
   ok(landing.includes('السيروم جاهز') && landing.includes('العبوة تُجهَّز عند الطلب') && landing.includes('موعد'), 'جاهزية السيروم وتجهيز العبوة وموعدها المعلّق مذكورة في مسار الشراء');
   ok(landing.includes('class="serum-size-guide"') && landing.includes('لكل ملليلتر') && landing.includes('$2') &&
-    !landing.includes('$4') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
+    !landing.includes('$4') && landing.includes('حماة'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
   for (const [label, page] of [['المنتج', visible]]) {
     ok(!page.includes('data-unit-comparison') && !page.includes('قارني تكلفة كل 10 مل'), `${label}: إزالة مقارنة تكلفة 10 مل`);
     ok(page.includes('الأسعار بلا عطر') && page.includes('إضافة العطر $2 للعبوة'), `${label}: توضيح سعر العطر`);
@@ -1190,7 +1190,7 @@ async function checkProductPage(config) {
   ok(!/\d\s*[%٪]|[٠-٩]\s*[%٪]/.test(ingredients), 'لا نسب تركيبة غير مصححة');
   ok(/تصميم عبوة/.test(visible) && /تصميم مقترح/.test(visible), 'الصورة موصوفة كتصميم للعبوة لا كصورة فوتوغرافية');
   ok(!/الأكثر اختيارًا|الأكثر طلبًا|التصنيع حسب الطلب|كيراتين/.test(visible), 'لا شعبية أو مدة تصنيع أو تركيبة متناقضة');
-  ok(visible.includes('توصيل مجاني داخل حماة فقط') && visible.includes('$2') && !visible.includes('$4'), 'قيود ورسوم التوصيل واضحة');
+  ok(visible.includes('توصيل مجاني داخل حماة') && visible.includes('$2') && !visible.includes('$4'), 'قيود ورسوم التوصيل واضحة');
   ok(/data-estimate-interface[^>]*hidden/.test(visible) && visible.includes('data-estimate-fallback') && visible.includes('تقدير عبوة واحدة مع التوصيل'), 'التقدير الرقمي مخفي دون JavaScript وله بديل ومحدّد بعبوة واحدة');
   ok(['data-estimate-zone', 'data-estimate-method', 'data-estimate-total', 'data-estimate-discount', 'data-estimate-delivery'].every(hook => visible.includes(hook)), 'خيارات وتفاصيل التقدير موجودة');
   const cartLogic = await read('js/cart.js');
