@@ -19,6 +19,13 @@ AXE = (ROOT / "scripts/vendor/axe.min.js").read_text(encoding="utf-8")
 checks: list[tuple[str, bool, str]] = []
 
 
+def new_test_context(browser, **kwargs):
+    """حمّل axe كـ Playwright init script قبل المستند؛ لا نضعف CSP ولا نحقن inline بعد التحميل."""
+    context = browser.new_context(**kwargs)
+    context.add_init_script(script=AXE)
+    return context
+
+
 def report_exception(exc_type, value, traceback):
     if os.environ.get('GITHUB_ACTIONS') == 'true':
         frame = traceback
@@ -48,7 +55,6 @@ def open_cart_if_closed(page):
 
 
 def audit(page, label: str) -> None:
-    page.add_script_tag(content=AXE)
     violations = page.evaluate("""async () => {
       const r = await axe.run(document, {runOnly: {type: 'tag',
         values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']}});
@@ -64,7 +70,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         browser = getattr(p, browser_name).launch()
         for width, height in [(320, 640), (390, 844), (430, 932), (1440, 900)]:
             print(f"\n{browser_name} · {width}×{height}")
-            ctx = browser.new_context(viewport={"width": width, "height": height},
+            ctx = new_test_context(browser,viewport={"width": width, "height": height},
                                       is_mobile=width < 600, has_touch=width < 600,
                                       locale="ar", reduced_motion="reduce",
                                       ignore_https_errors=ignore_https)
@@ -270,7 +276,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
 
         # رحلة من الرئيسية إلى صفحة المنتج، مع الحفاظ على مصدر الحملة والسلة.
         # خادم الملفات البسيط في CI لا يعرف رابط Cloudflare النظيف؛ نحاكي التحويل محليًا فقط.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, locale="ar",
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, locale="ar",
                                   ignore_https_errors=ignore_https, service_workers='block')
         ctx.add_init_script("window.__waCalls = []; window.open = function(url) { window.__waCalls.push(url); return null; };")
         if path.endswith('.html') and urlparse(base).hostname in ('127.0.0.1', 'localhost'):
@@ -293,7 +299,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
 
         # اختبر كل الأحجام والمنطقتين وطريقتي الدفع ضد الإجمالي الفعلي للسلة.
         # سياق جديد حتى لا تغيّر هذه التجارب سلة الاختبارات الأخرى.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, locale="ar",
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, locale="ar",
                                   reduced_motion="reduce", ignore_https_errors=ignore_https)
         page = ctx.new_page()
         page.goto(base + path + '?utm_campaign=estimate_test&utm_content=proof', wait_until='load')
@@ -327,7 +333,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.locator('.serum-estimate-details summary').click()
         check("كل تقديرات الحجم الفردي لا تضيف منتجات تلقائيًا", page.locator('[data-cart-count]').is_hidden())
         ctx.close()
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         page = ctx.new_page(); page.goto(base + path + '?offer=cod', wait_until='load')
         check("رابط عرض الاستلام يضبط التقدير الافتراضي بوضوح",
               page.locator('[data-estimate-method]').input_value() == 'cod' and
@@ -336,7 +342,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.close()
 
         # استعادة الاختيارات بين التحديث والتنقل، دون إرسال بيانات أو مشاركتها تلقائيًا.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, locale="ar",
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, locale="ar",
                                   reduced_motion="reduce", ignore_https_errors=ignore_https)
         ctx.add_init_script("window.__waCalls = []; window.open = url => { window.__waCalls.push(url); return null; };")
         page = ctx.new_page()
@@ -453,7 +459,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.close()
 
         # الرابط المشترك يدمج دون استبدال كميات سابقة، ولا يعيد صنفًا حُذف عند التحديث.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, locale="ar", ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, locale="ar", ignore_https_errors=ignore_https)
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
         page.evaluate("sessionStorage.setItem('rawaa:cart:v1', JSON.stringify({'serum-50':3}))")
         shared_path = base + path + '?cart=serum-50x1,serum-100x2&offer=cod'
@@ -489,7 +495,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.close()
 
         # روابط العرض تُطبّق عند الوصول، ولا تعيد فرضها بعد تغيير الاختيار ثم التحديث.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         page = ctx.new_page(); page.goto(base + path + '?offer=cod', wait_until='load')
         page.locator('.serum-estimate-details summary').click()
         page.locator('[data-estimate-method]').select_option('shamcash')
@@ -505,7 +511,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.close()
 
         # إذا مُنع التخزين، يبقى الطلب قابلًا للاستعمال في الذاكرة دون أخطاء.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         ctx.add_init_script("Object.defineProperty(window, 'sessionStorage', {get(){throw new DOMException('blocked','SecurityError')}})")
         page = ctx.new_page(); errors = []
         page.on('pageerror', lambda e: errors.append(str(e)))
@@ -521,7 +527,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               blocked_total == '$29' and 'فانيلا' in blocked_summary and not errors,
               f'الإجمالي={blocked_total}؛ الملخص={blocked_summary}؛ الأخطاء={errors[:3]}')
         ctx.close()
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         ctx.add_init_script("Object.defineProperty(window, 'sessionStorage', {get(){throw new DOMException('blocked','SecurityError')}})")
         page = ctx.new_page(); page.goto(base + path + '?cart=serum-30x1', wait_until='load')
         open_cart_if_closed(page)
@@ -531,7 +537,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
 
         # اختبر عجلة المستخدم الفعلية لا النقر الآلي الذي يمرّر overflow:hidden برمجيًا.
         for width, height in [(320,568), (320,640), (390,844), (844,390)]:
-            ctx = browser.new_context(viewport={"width":width,"height":height}, locale="ar",
+            ctx = new_test_context(browser,viewport={"width":width,"height":height}, locale="ar",
                                       reduced_motion="reduce", ignore_https_errors=ignore_https)
             ctx.add_init_script('window.open = () => null;')
             page = ctx.new_page(); page.goto(base + path, wait_until='load')
@@ -575,7 +581,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
 
         # عند منع واتساب أو الحافظة يمكن استعادة نص الاستفسار دون إرسال.
         for target_path in [path]:
-            ctx = browser.new_context(viewport={"width":320,"height":568}, locale="ar",
+            ctx = new_test_context(browser,viewport={"width":320,"height":568}, locale="ar",
                                       reduced_motion="reduce", ignore_https_errors=ignore_https,
                                       service_workers='block')
             ctx.add_init_script("""window.__waCalls = []; window.__copied = []; window.__clipboardFail = true;
@@ -618,7 +624,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
 
         # تمرير لمس أصلي لمحرك Chromium؛ لا ندّعي أنه اختبار جهاز فعلي.
         if browser_name == 'chromium':
-            ctx = browser.new_context(viewport={"width":320,"height":568}, is_mobile=True, has_touch=True,
+            ctx = new_test_context(browser,viewport={"width":320,"height":568}, is_mobile=True, has_touch=True,
                                       locale="ar", reduced_motion="reduce", ignore_https_errors=ignore_https)
             page = ctx.new_page(); page.goto(base + path, wait_until='load')
             page.locator('[data-add-current]').click()
@@ -635,7 +641,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             ctx.close()
 
         # لا تضيع بؤرة لوحة المفاتيح عند إعادة بناء الكمية أو المنطقة أو الدفع.
-        ctx = browser.new_context(viewport={"width":320,"height":568}, locale="ar",
+        ctx = new_test_context(browser,viewport={"width":320,"height":568}, locale="ar",
                                   reduced_motion="reduce", ignore_https_errors=ignore_https)
         ctx.add_init_script('window.open = () => null;')
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
@@ -669,7 +675,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         # إعادة تدفق السلة وتركيز Tab المرئي عند ضيق الشاشة أو تكبير النص.
         for width, height, text_zoom in [(320,225,False), (320,568,False), (320,568,True),
                                          (844,390,False), (1440,900,False)]:
-            ctx = browser.new_context(viewport={"width":width,"height":height}, locale="ar",
+            ctx = new_test_context(browser,viewport={"width":width,"height":height}, locale="ar",
                                       reduced_motion="reduce", ignore_https_errors=ignore_https)
             page = ctx.new_page(); page.goto(base + path, wait_until='load')
             page.locator('[data-add-current]').click()
@@ -707,25 +713,25 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             ctx.close()
 
         # القيم لا تُنشئ أسطرًا مزوّرة في الرسالة، وتبقى محدودة الطول.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         page = ctx.new_page()
         page.goto(base + path + '?utm_campaign=launch%0Aforged&utm_content=scene%0Dextra', wait_until='load')
         note = page.evaluate('window.rawaaSourceNote()')
         check("رموز الحملة محدودة وآمنة من محارف التحكم", note.splitlines() == ['— المصدر: launch forged', '— نسخة المحتوى: scene extra'] and len(note) < 230, note)
         ctx.close()
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         page = ctx.new_page(); page.goto(base + path + '?utm_content=finish', wait_until='load')
         solo = parse_qs(urlparse(page.locator('[data-wa-direct]').first.get_attribute('href') or '').query).get('text', [''])[0]
         check("نسخة المحتوى تُرفق حتى دون اسم حملة", '— نسخة المحتوى: finish' in solo and '— المصدر:' not in solo)
         ctx.close()
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
         no_source = parse_qs(urlparse(page.locator('[data-wa-direct]').first.get_attribute('href') or '').query).get('text', [''])[0]
         check("زيارة بلا حملة لا تختلق مصدرًا", page.evaluate('window.rawaaSourceNote()') == '' and '— المصدر:' not in no_source and '— نسخة المحتوى:' not in no_source)
         ctx.close()
 
         # رموز حملات تجريبية فقط: لا تُرسل رسالة ولا يُفعّل قياس حقيقي.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         page = ctx.new_page()
         q = urlencode({'utm_source':'facebook','utm_medium':'paid',
                        'utm_campaign':'demo@example.invalid','utm_content':'+963 999 111 222'})
@@ -740,7 +746,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         check("سجل الأحداث لا يكرر الرمز المستبعد", 'demo@example.invalid' not in log and '+963 999 111 222' not in log)
         ctx.close()
 
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         page = ctx.new_page()
         q = urlencode({'utm_campaign':'رواء-عناية-20261029','utm_content':'scene_1'})
         page.goto(base + path + '?' + q, wait_until='load')
@@ -754,7 +760,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         check("المصدر المستبعد لا يعود بعد التنقّل", page.evaluate('window.rawaaSourceNote()') == '')
         ctx.close()
 
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         page = ctx.new_page()
         q = urlencode({'utm_campaign':'x' * 513, 'utm_content':'demo%40example.invalid'})
         page.goto(base + path + '?' + q, wait_until='load')
@@ -762,7 +768,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               page.evaluate("sessionStorage.getItem('rawaa_src')") is None and page.evaluate('window.rawaaSourceNote()') == '')
         ctx.close()
 
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         ctx.add_init_script("""sessionStorage.setItem('rawaa_src', JSON.stringify({utm_source:'facebook',utm_campaign:'demo@example.invalid'}));
           sessionStorage.setItem('rawaa_events', JSON.stringify([{e:'ViewContent',t:1,src:'+963 999 111 222'}]));""")
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
@@ -773,7 +779,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.close()
 
         # خصوصية ذاكرة عامل الخدمة: لا تحفظ الاستعلامات، لكن الصفحة النظيفة تعمل دون إنترنت.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
         controller = page.evaluate("""async () => {
           await navigator.serviceWorker.ready;
@@ -804,7 +810,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         # مسار الصفحة النظيفة وصورة المشهد حتى بعد انقطاع الشبكة.
         # خادم CI البسيط لا ينفّذ تحويل /serum، لذا يُفحص ذلك على الخادم المهيأ والحي.
         if path == '/serum':
-            ctx = browser.new_context(viewport={"width":390,"height":844}, device_scale_factor=3,
+            ctx = new_test_context(browser,viewport={"width":390,"height":844}, device_scale_factor=3,
                                       locale="ar", ignore_https_errors=ignore_https)
             page = ctx.new_page()
             page.goto(base + '/?utm_campaign=offline_test&utm_content=finish', wait_until='load')
@@ -882,7 +888,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
 
         # تكبير النص 200%: الترويسة وخيارات الأحجام والمشاهد لا تُقصّ أفقيًا.
         for zoom_path in [path]:
-            ctx = browser.new_context(viewport={"width":320,"height":844}, is_mobile=True, has_touch=True,
+            ctx = new_test_context(browser,viewport={"width":320,"height":844}, is_mobile=True, has_touch=True,
                                       locale="ar", ignore_https_errors=ignore_https)
             page = ctx.new_page(); page.goto(base + zoom_path, wait_until='load')
             page.wait_for_selector('#products .size-option input', state='attached')
@@ -905,7 +911,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             ctx.close()
 
         # الإلغاء يزيل الخيارات من الاستفسار؛ رابط الشروط يبقى مستقلاً عنه.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         ctx.add_init_script('window.__waCalls = []; window.open = url => { window.__waCalls.push(url); return null; };')
         page = ctx.new_page(); page.goto(base + path + '?utm_campaign=reset', wait_until='load')
         page.locator('[data-size-for="serum-30"]').click()
@@ -923,7 +929,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.close()
 
         # الرابط يفتح سؤال الإرجاع بلوحة المفاتيح، بلا اختلاق سياسة.
-        ctx = browser.new_context(viewport={"width":320,"height":640}, locale="ar", ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":320,"height":640}, locale="ar", ignore_https_errors=ignore_https)
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
         return_link = page.locator('.purchase-shortcuts a[href="#returns"]')
         return_link.focus(); page.keyboard.press('Enter')
@@ -934,7 +940,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.close()
 
         # تغيير الإعدادات أثناء الاختبار فقط يثبت أن الحاسبة ورابط السؤال لا يخمّنان السعر.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         def mock_prices(route):
             # يعمل مع الملف المصدر (price: 13,) ونسخة النشر المولّدة ("price": 13,).
             # لا نرفع استثناءً داخل معالج المسار: ذلك يعلّق التنقّل بدل أن يُظهر فشلًا واضحًا.
@@ -958,7 +964,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.close()
 
         # لا JavaScript: أسعار حقيقية وزر واتساب يعمل، وزر السلة معطّل بدل وهم وظيفي.
-        ctx = browser.new_context(java_script_enabled=False, ignore_https_errors=ignore_https, viewport={"width":390,"height":844})
+        ctx = new_test_context(browser,java_script_enabled=False, ignore_https_errors=ignore_https, viewport={"width":390,"height":844})
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
         check("بدون JavaScript: الأسعار وسعر الوحدة وواتساب ظاهرة وزر السلة معطّل", all(s in page.locator('#products').inner_text() for s in ['$13','$16','$25']) and page.locator('[data-unit-live]').is_visible() and '$0.32' in page.locator('[data-unit-live]').inner_text() and page.locator('[data-add-current]').is_disabled() and page.locator('[data-wa-direct]').first.is_visible())
         check("دون JavaScript: مقارنة الأحجام كاملة ورابط التخصيص بديل مباشر",
@@ -978,7 +984,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               page.locator('[data-estimate-fallback]').is_visible() and
               'واتساب' in page.locator('[data-estimate-fallback]').inner_text())
         ctx.close()
-        ctx = browser.new_context(java_script_enabled=False, ignore_https_errors=ignore_https, viewport={"width":390,"height":844})
+        ctx = new_test_context(browser,java_script_enabled=False, ignore_https_errors=ignore_https, viewport={"width":390,"height":844})
         page = ctx.new_page(); page.goto(base + '/', wait_until='load')
         check("الرئيسية الجديدة تعمل دون JavaScript وتوجّه لصفحة المنتج",
               page.locator('.brand-logo').is_visible() and page.locator('.hero h1').count() == 1 and
@@ -987,7 +993,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.close()
 
         # فشل القياس الاختياري لا يعطّل إضافة المنتج.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
         page = ctx.new_page(); page.goto(base + path, wait_until='load')
         page.evaluate("() => { window.rawaaTrack = () => { throw new Error('test tracking failure'); }; }")
         page.locator('[data-add-current]').click()
@@ -997,7 +1003,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.close()
 
         # فحص الموافقة على بكسل وهمي في الذاكرة فقط؛ كل طلب Meta يُعترض محليًا.
-        ctx = browser.new_context(viewport={"width":390,"height":844}, ignore_https_errors=ignore_https, service_workers='block')
+        ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https, service_workers='block')
         seen_meta: list[str] = []
         def mock_config(route):
             # المصدر يكتب facebookPixelId: '' ونسخة النشر تكتب "facebookPixelId": "".
