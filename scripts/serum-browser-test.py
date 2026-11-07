@@ -528,10 +528,11 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx.add_init_script("Object.defineProperty(window, 'sessionStorage', {get(){throw new DOMException('blocked','SecurityError')}})")
         page = ctx.new_page(); page.goto(base + path + '?cart=serum-30x1', wait_until='load')
         open_cart_if_closed(page)
-        # رابط السلة المشترك لا يحمل طريقة دفع (بقرار التصميم: الرابط للأحجام والكميات
-        # فقط)، فلا خصم — الإجمالي $13 لا $13.70. الـ$13.70 كانت تفترض شام كاش.
+        # الرابط يحمل الأحجام والكميات فقط، لكن طريقة الدفع تُؤخذ من الافتراضي
+        # (أول طريقة متاحة = شام كاش)، فالخصم يُطبَّق: 13 − 1.30 = $11.70.
+        # التوصيل صفر، فلا إضافة.
         check("رابط السلة المشترك يفتح حتى عند منع التخزين",
-              page.locator('[data-cart-count]').inner_text() == '1' and page.locator('[data-cart-total]').inner_text() == '$13')
+              page.locator('[data-cart-count]').inner_text() == '1' and page.locator('[data-cart-total]').inner_text() == '$11.70')
         ctx.close()
 
         # اختبر عجلة المستخدم الفعلية لا النقر الآلي الذي يمرّر overflow:hidden برمجيًا.
