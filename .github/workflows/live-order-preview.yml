@@ -10,7 +10,10 @@ on:
     paths:
       - 'js/config.js'
       - 'scripts/order-config-monitor.mjs'
+      - 'scripts/strip-internal-config.mjs'
       - 'scripts/order-config-monitor.test.mjs'
+      - 'scripts/lib/public-config.mjs'
+      - 'scripts/published-config-contract.test.mjs'
       - '.github/workflows/live-order-preview.yml'
   workflow_dispatch:
 
@@ -34,5 +37,8 @@ jobs:
           check-latest: true
       - name: اختبار منطق المراقب
         run: node --test scripts/order-config-monitor.test.mjs
+      # يفشل هذا قبل مقارنة الشبكة إن انحرف مخرَج البناء عن القارئ الحيّ.
+      - name: عقد الإعدادات المنشورة
+        run: node --test scripts/published-config-contract.test.mjs
       - name: مقارنة إعدادات الطلب بالإصدار الحي
         run: node scripts/order-config-monitor.mjs
