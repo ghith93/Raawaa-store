@@ -33,9 +33,9 @@ test('رسوم التوصيل في عدّة التشغيل تطابق إعداد
   const hamaZone = config.match(/id:\s*'hama',[^}]*fee:\s*(\d+(?:\.\d+)?)/s);
   assert.ok(hamaZone, 'تعرفة حماة موجودة في config.js');
   assert.ok(otherZone, 'تعرفة باقي المحافظات موجودة في config.js');
-  assert.equal(Number(hamaZone[1]), 2);
+  assert.equal(Number(hamaZone[1]), 0);
   assert.equal(Number(otherZone[1]), 2);
-  assert.match(doc, /توصيل ٢\$ داخل حماة \(٢\$ لباقي المحافظات/);
+  assert.match(doc, /التوصيل مجاني داخل حماة لجميع طرق الدفع/);
   assert.doesNotMatch(doc, /باقي المحافظات ٤\$/);
 });
 
