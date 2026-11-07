@@ -63,9 +63,16 @@ test('delivery examples and WhatsApp address use owner config without sending or
   assert.match(delivery, /شام كاش/);
   assert.match(delivery, /توصيل مجاني/);
   assert.match(delivery, /الدفع عند الاستلام/);
-  // الرسوم تُشتق من الإعدادات: لا رقم مثبّت يتقادم عند تغيير المالك للرسوم.
+  // الرسوم تُشتق من السياسة: توصيل مجاني => نتحقق من كلمة «مجاني» لكل تركيبة،
+  // وإن غيّر المالك السياسة غدًا نتحقق من الرقم المكوَّن فعليًا بلا تثبيت قيمة.
+  const alwaysFree = RAWAA_CONFIG.delivery.policy?.alwaysFree !== false;
   const fees = new Set(RAWAA_CONFIG.delivery.zones.map(zone => zone.fee));
-  for (const fee of fees) assert.ok(delivery.includes('$' + fee), `missing configured delivery fee $${fee}`);
+  if (alwaysFree) {
+    assert.equal([...fees].filter(fee => Number(fee) !== 0).length, 0, 'alwaysFree يجب أن يكون معه رسم صفر');
+    assert.match(delivery, /توصيل مجاني/, 'السياسة المجانية يجب أن تظهر في نسخة الحملة');
+  } else {
+    for (const fee of fees) assert.ok(delivery.includes('$' + fee), `missing configured delivery fee $${fee}`);
+  }
 
   const wa = document.querySelector('[data-campaign-whatsapp]');
   const url = new URL(wa.href);

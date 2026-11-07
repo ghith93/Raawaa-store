@@ -2,6 +2,8 @@
 // نفس محرّك العروض الذي يعمل في المتصفح: الخادم يجب أن يحسب الرقم نفسه الذي رأته الزبونة.
 // الملف لا يحمل أي قيمة بنفسه، ويُسقط نفسه إلى لا عرض إن كانت الخانات فارغة.
 import '../js/offers.js';
+// سياسة التوصيل والخصم من مصدر واحد؛ الحساب لا يُعاد كتابته هنا.
+import pricingPolicy from '../js/pricing-policy.js';
 const cents = n => Math.round(n * 100);
 const offerEngine = globalThis.RawaaOffers || null;
 
@@ -62,8 +64,8 @@ export function prepareOrder(input, config) {
   // أساس خصم طريقة الدفع هو قيمة المنتجات بعد العرض وحدها؛ العطر لا يدخل الخصم.
   const discountedProductCents = productCents - generalCut;
   const subtotalCents = discountedProductCents + scentCents * quantity;
-  const discountCents = Math.round(discountedProductCents * method.discountPercent / 100);
-  const deliveryCents = method.freeDeliveryIn.includes(zone.id) ? 0 : cents(zone.fee);
+  const discountCents = pricingPolicy.discountCentsFor(method, discountedProductCents);
+  const deliveryCents = pricingPolicy.deliveryCentsFor(method, zone, config.delivery);
   return { name, phone, address, entries, scent, oil, zone: zone.id, method: method.id,
     subtotalCents, offerCents, discountCents, deliveryCents, totalCents: subtotalCents - discountCents + deliveryCents,
     oilPricePending: Boolean(oil), status: 'pending_review' };

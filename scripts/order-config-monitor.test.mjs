@@ -10,14 +10,15 @@ test('reads size and price as a pair, phone and both delivery zones', () => {
   assert.deepEqual(result.products.map(p => [p.id, p.size, p.price]), [
     ['serum-100', 100, 25], ['serum-30', 30, 13], ['serum-50', 50, 16]
   ]);
+  // السياسة المعتمدة: التوصيل مجاني للمنطقتين.
   assert.deepEqual(result.zones.map(z => [z.id, z.fee, z.freeWithShamCash]), [
-    ['hama', 2, true], ['other', 2, false]
+    ['hama', 0, true], ['other', 0, true]
   ]);
   assert.match(result.phone, /^\d+$/);
   assert.equal(result.defaultZone, 'hama');
   assert.deepEqual(result.methods, [
-    { id: 'cod', discount: 0, freeDeliveryIn: [], available: true },
-    { id: 'shamcash', discount: 10, freeDeliveryIn: ['hama'], available: true }
+    { id: 'cod', discount: 0, freeDeliveryIn: ['hama', 'other'], available: true },
+    { id: 'shamcash', discount: 10, freeDeliveryIn: ['hama', 'other'], available: true }
   ]);
 });
 
@@ -33,22 +34,23 @@ test('fails closed for missing products, duplicated phone, or missing zone', () 
 });
 
 test('detects delivery charge drift', () => {
-  assert.notDeepEqual(extractOrderConfig(source.replace("fee: 2, freeWithShamCash: false", "fee: 3, freeWithShamCash: false")).zones, extractOrderConfig(source).zones);
+  // الرسوم الآن صفر؛ أي رقم غير صفر يُعدّ انحرافًا ويجب أن يُكتشف.
+  assert.notDeepEqual(extractOrderConfig(source.replace('fee: 0, freeWithShamCash: true', 'fee: 3, freeWithShamCash: true')).zones, extractOrderConfig(source).zones);
 });
 
 test('detects payment discount, free-shipping and availability drift', () => {
   const original = extractOrderConfig(source);
   for (const changed of [
     source.replace('discountPercent: 10,', 'discountPercent: 15,'),
-    source.replace("freeDeliveryIn: ['hama'],", "freeDeliveryIn: ['other'],"),
+    source.replace("freeDeliveryIn: ['hama', 'other'],", "freeDeliveryIn: ['hama'],"),
     source.replace('available: true,', 'available: false,'),
     source.replace("defaultZone: 'hama',", "defaultZone: 'other',")
   ]) assert.notDeepEqual(extractOrderConfig(changed), original);
 });
 
 test('fails closed if payment rules cannot be safely extracted', () => {
-  assert.throws(() => extractOrderConfig(source.replace("freeDeliveryIn: ['hama'],", "freeDeliveryIn: [externalValue],")));
+  assert.throws(() => extractOrderConfig(source.replace("freeDeliveryIn: ['hama', 'other'],", "freeDeliveryIn: [externalValue],")));
   assert.throws(() => extractOrderConfig(source.replace('discountPercent: 10,', 'discountPercent: calculation(),')));
   assert.throws(() => extractOrderConfig(source.replace("id: 'cod',", "id: 'other-method',")));
-  assert.throws(() => extractOrderConfig(source.replace("freeDeliveryIn: ['hama'],", "freeDeliveryIn: ['hama', 'hama'],")));
+  assert.throws(() => extractOrderConfig(source.replace("freeDeliveryIn: ['hama', 'other'],", "freeDeliveryIn: ['hama', 'hama'],")));
 });

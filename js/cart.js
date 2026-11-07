@@ -29,17 +29,42 @@
     return zones.filter(function (z) { return z.id === selectedZoneId; })[0] || zones[0] || null;
   }
 
-  /** هل التوصيل مجاني لهذه الطريقة في هذه المنطقة؟ */
-  function isFreeDelivery(method, zone) {
-    if (!method || !zone) return false;
-    return Array.isArray(method.freeDeliveryIn) && method.freeDeliveryIn.indexOf(zone.id) !== -1;
+  /**
+   * الحساب كله من js/pricing-policy.js — لا تكرار هنا.
+   * سبب وجود الملف: نفس المعادلة كانت مكتوبة في أربعة ملفات فتعارضت.
+   */
+  function policy() {
+    return (typeof window !== 'undefined' && window.RawaaPricingPolicy) ? window.RawaaPricingPolicy : null;
   }
 
-  /** رسوم التوصيل الفعلية = 0 إن كانت مجانية، وإلا رسم المنطقة. */
+  /*
+   * لا نسخة احتياطية محلية للسياسة.
+   *
+   * كان هنا سابقًا `return Number(zone.fee) || 0` — أي أن الملف يُعيد تطبيق
+   * السياسة بنفسه إن غاب js/pricing-policy.js. هذا بالضبط مصدر التعارض: رقم
+   * صحيح في ملف، ورقم قديم في آخر. الآن إن غاب المصدر نفشل بصوت مسموع بدل أن
+   * نحسب بقاعدة ثانية. البديل الآمن المعلن صريح: بلا وحدة سياسة ⇒ بلا رسوم
+   * وبلا خصم، وهو الاتجاه الذي لا يبالغ في تحصيل مبلغ من الزبونة.
+   */
+  function requirePolicy() {
+    var api = policy();
+    if (api) return api;
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('RAWAA: js/pricing-policy.js غير محمّل — التوصيل والخصم معطّلان حتى يُحمَّل.');
+    }
+    return null;
+  }
+
+  function isFreeDelivery(method, zone) {
+    var api = requirePolicy();
+    if (!api) return true;
+    return api.isFreeDelivery(method, zone, CONFIG.delivery);
+  }
+
   function deliveryFeeFor(method, zone) {
-    if (!zone) return 0;
-    if (isFreeDelivery(method, zone)) return 0;
-    return zone.fee || 0;
+    var api = requirePolicy();
+    if (!api) return 0;
+    return api.deliveryFeeFor(method, zone, CONFIG.delivery);
   }
 
   /* ------------------------------ أدوات مساعدة ------------------------------ */
@@ -426,7 +451,8 @@
    * النص المعلن في CONFIG.payment يقول «على قيمة المنتجات» — وهذا يطابقه.
    */
   function calculateAmounts(subtotalCents, discountBaseCents, count, method, zone) {
-    var discountCents = method ? Math.round(discountBaseCents * (method.discountPercent || 0) / 100) : 0;
+    var api = requirePolicy();
+    var discountCents = api ? api.discountCentsFor(method, discountBaseCents) : 0;
     var deliveryCents = (method && count > 0) ? toCents(deliveryFeeFor(method, zone)) : 0;
     return {
       subtotalCents: subtotalCents,
@@ -871,12 +897,10 @@
       outTotal.textContent = money(amounts.totalCents / 100);
 
       var note = '';
-      if (methodId === 'shamcash' && zoneId !== 'hama') {
-        note = 'مع شام كاش خارج حماة: الخصم 10% يُطبَّق، ورسوم التوصيل 2 دولار. المجاني داخل حماة فقط.';
-      } else if (methodId === 'shamcash') {
-        note = 'داخل حماة مع شام كاش: خصم 10% وتوصيل مجاني — أفضل سعر متاح.';
+      if (methodId === 'shamcash') {
+        note = 'مع شام كاش: خصم 10% على قيمة المنتجات، والتوصيل مجاني — أفضل سعر متاح.';
       } else {
-        note = 'الدفع عند الاستلام: بلا خصم، وتُضاف رسوم التوصيل. المبلغ يُدفع كاملًا للمندوب.';
+        note = 'الدفع عند الاستلام: بلا خصم، والتوصيل مجاني. المبلغ يُدفع كاملًا للمندوب.';
       }
       if (sampleUnit.cutCents > 0) {
         note = 'عرض «' + sampleUnit.slot.label + '»: ' + money(sample.price) + ' ← ' +
@@ -972,7 +996,7 @@
       var priced = unitOffer(sample);
       var unitCents = priced.cents + toCents(scentFee());
       // الخصم على سعر المنتج وحده؛ العطر يُضاف بعدها بلا خصم.
-      var discountCents = Math.round(priced.cents * (method.discountPercent || 0) / 100);
+      var discountCents = requirePolicy().discountCentsFor(method, priced.cents);
       var deliveryCents = toCents(deliveryFeeFor(method, activeZone()));
       var finalCents = unitCents - discountCents + deliveryCents;
 
@@ -1065,12 +1089,14 @@
 
     if ((method.discountPercent || 0) > 0) {
       return isFreeDelivery(method, z)
-        ? 'خصم ' + method.discountPercent + '% على قيمة المنتجات + توصيل مجاني داخل ' + zoneName + '.'
+        ? 'خصم ' + method.discountPercent + '% على قيمة المنتجات + توصيل مجاني إلى ' + zoneName + '.'
         : 'خصم ' + method.discountPercent + '% على قيمة المنتجات + توصيل ' +
           money(deliveryFeeFor(method, z)) + ' إلى ' + zoneName + '.';
     }
-    return 'بلا خصم، وتُضاف رسوم التوصيل: ' + money(deliveryFeeFor(method, z)) +
-      ' إلى ' + zoneName + '.';
+    return isFreeDelivery(method, z)
+      ? 'بلا خصم، والتوصيل مجاني إلى ' + zoneName + '.'
+      : 'بلا خصم، وتُضاف رسوم التوصيل: ' + money(deliveryFeeFor(method, z)) +
+        ' إلى ' + zoneName + '.';
   }
 
   function renderPaymentMethods() {

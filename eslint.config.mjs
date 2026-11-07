@@ -15,7 +15,9 @@ export default [
         requestAnimationFrame: 'readonly', matchMedia: 'readonly',
         IntersectionObserver: 'readonly', ResizeObserver: 'readonly',
         AbortController: 'readonly', Blob: 'readonly', Response: 'readonly',
-        Request: 'readonly', Headers: 'readonly', structuredClone: 'readonly'
+        Request: 'readonly', Headers: 'readonly', structuredClone: 'readonly',
+        // UMD: الملف يعرّف نفسه لـNode أيضًا (module عند وجوده).
+        module: 'readonly', globalThis: 'readonly'
       }
     },
     linterOptions: { reportUnusedDisableDirectives: true },

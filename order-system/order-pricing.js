@@ -13,6 +13,19 @@
 
   const cents = value => Math.round(Number(value) * 100);
 
+  // سياسة التوصيل والخصم من مصدر واحد (js/pricing-policy.js) — لا تُكرَّر هنا.
+  let policyModule = null;
+  function policyApi() {
+    if (policyModule) return policyModule;
+    if (typeof require === 'function') {
+      policyModule = require('../js/pricing-policy.js');
+    } else if (globalThis.RawaaPricingPolicy) {
+      policyModule = globalThis.RawaaPricingPolicy;
+    }
+    if (!policyModule) throw new Error('PRICING_POLICY_UNAVAILABLE');
+    return policyModule;
+  }
+
   function calculateOrderEstimate(input, config, offersApi) {
     if (!input || typeof input !== 'object' || !config) throw new Error('INVALID_ORDER');
     if (!Array.isArray(input.items) || input.items.length < 1 || input.items.length > config.products.length) {
@@ -76,8 +89,8 @@
     // surcharge is added to the total but never discounted. Matches js/cart.js.
     const discountedProductCents = productCents - generalCut;
     const subtotalCents = discountedProductCents + scentCents * quantity;
-    const discountCents = Math.round(discountedProductCents * method.discountPercent / 100);
-    const deliveryCents = method.freeDeliveryIn.includes(zone.id) ? 0 : cents(zone.fee);
+    const discountCents = policyApi().discountCentsFor(method, discountedProductCents);
+    const deliveryCents = policyApi().deliveryCentsFor(method, zone, config.delivery);
 
     return {
       entries,

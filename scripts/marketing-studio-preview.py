@@ -18,6 +18,7 @@ ALLOWED = {
     "/docs/ORGANIC-TEST-KIT-AR.md": "docs/ORGANIC-TEST-KIT-AR.md",
     "/docs/PRIVACY-ORDER-COLLECTION-DRAFT-AR.md": "docs/PRIVACY-ORDER-COLLECTION-DRAFT-AR.md",
     "/js/config.js": "js/config.js",
+    "/js/pricing-policy.js": "js/pricing-policy.js",
     "/js/offers.js": "js/offers.js",
     "/order-system/order-pricing.js": "order-system/order-pricing.js",
     "/docs/visual-drafts/rawaa-flow-concept-01-1080x1350.jpg": "docs/visual-drafts/rawaa-flow-concept-01-1080x1350.jpg",

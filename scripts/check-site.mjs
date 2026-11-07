@@ -1107,8 +1107,11 @@ async function checkOwnerDecisions(config) {
     offers.some(o => o.name?.includes(p.sizeMl + ' مل') && Number(o.price) === p.price)), 'أسعار JSON-LD مطابقة للإعدادات');
   expect(Number(product?.offers?.lowPrice) === Math.min(...config.products.map(p => p.price)) &&
     Number(product?.offers?.highPrice) === Math.max(...config.products.map(p => p.price)), 'حدود أسعار JSON-LD مطابقة');
-  expect(visibleHtml.includes('باقي المحافظات') && visibleHtml.includes('$2') && !visibleHtml.includes('$4'),
-    'رسوم التوصيل للمنطقتين $2 ولا توجد رسوم قديمة');
+  // الرسوم تُقرأ من السياسة لا من رقم مكتوب هنا: تغييرها مرة واحدة لا يفشل الفحص.
+  const alwaysFree = config.delivery?.policy?.alwaysFree !== false;
+  const maxFee = Math.max(...(config.delivery?.zones || []).map(z => Number(z.fee) || 0));
+  expect(alwaysFree ? (maxFee === 0 && !visibleHtml.includes('$4')) : (maxFee > 0 && !visibleHtml.includes('$4')),
+    alwaysFree ? 'التوصيل مجاني في السياسة ولكل المناطق' : `رسوم التوصيل تطابق السياسة (${maxFee})`);
   expect(!product?.offers?.availability && offers.every(o => !o.availability), 'لا مخزون مختلق في بيانات البحث');
 }
 
@@ -1153,7 +1156,7 @@ async function checkProductPage(config) {
     worker.includes('const visual = url.pathname.match') && worker.includes('ritual-v5|trio-v6|size-'), 'بدائل صور المشاهد والأحجام محفوظة بلا إنترنت لكل صيغة');
   ok(landing.includes('السيروم جاهز') && landing.includes('العبوة تُجهَّز عند الطلب') && landing.includes('موعد'), 'جاهزية السيروم وتجهيز العبوة وموعدها المعلّق مذكورة في مسار الشراء');
   ok(landing.includes('class="serum-size-guide"') && landing.includes('لكل ملليلتر') && landing.includes('$2') &&
-    !landing.includes('$4') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
+    !landing.includes('$4') && landing.includes('التوصيل مجاني'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
   for (const [label, page] of [['المنتج', visible]]) {
     ok(!page.includes('data-unit-comparison') && !page.includes('قارني تكلفة كل 10 مل'), `${label}: إزالة مقارنة تكلفة 10 مل`);
     ok(page.includes('الأسعار بلا عطر') && page.includes('إضافة العطر $2 للعبوة'), `${label}: توضيح سعر العطر`);
@@ -1190,15 +1193,32 @@ async function checkProductPage(config) {
   ok(!/\d\s*[%٪]|[٠-٩]\s*[%٪]/.test(ingredients), 'لا نسب تركيبة غير مصححة');
   ok(/تصميم عبوة/.test(visible) && /تصميم مقترح/.test(visible), 'الصورة موصوفة كتصميم للعبوة لا كصورة فوتوغرافية');
   ok(!/الأكثر اختيارًا|الأكثر طلبًا|التصنيع حسب الطلب|كيراتين/.test(visible), 'لا شعبية أو مدة تصنيع أو تركيبة متناقضة');
-  ok(visible.includes('توصيل مجاني داخل حماة فقط') && visible.includes('$2') && !visible.includes('$4'), 'قيود ورسوم التوصيل واضحة');
+  ok(visible.includes('التوصيل مجاني لجميع المحافظات') && !visible.includes('$4') && !visible.includes('حماة فقط'), 'قيود ورسوم التوصيل واضحة');
   ok(/data-estimate-interface[^>]*hidden/.test(visible) && visible.includes('data-estimate-fallback') && visible.includes('تقدير عبوة واحدة مع التوصيل'), 'التقدير الرقمي مخفي دون JavaScript وله بديل ومحدّد بعبوة واحدة');
   ok(['data-estimate-zone', 'data-estimate-method', 'data-estimate-total', 'data-estimate-discount', 'data-estimate-delivery'].every(hook => visible.includes(hook)), 'خيارات وتفاصيل التقدير موجودة');
   const cartLogic = await read('js/cart.js');
   // نتحقق من القاعدة لا من نص حرفي: أساس الخصم منفصل عن المجموع، وكل المستدعين
   // يمرّرون قيمة المنتجات وحدها كأساس للخصم. أي إعادة صياغة لا تكسر الفحص.
-  const sharedAmounts = /function\s+calculateAmounts\(\s*subtotalCents\s*,\s*discountBaseCents\s*,\s*count\s*,\s*method\s*,\s*zone\s*\)/.test(cartLogic) &&
-    /discountBaseCents\s*\*\s*\(method\.discountPercent \|\| 0\)\s*\/\s*100/.test(cartLogic);
-  const callers = [...cartLogic.matchAll(/calculateAmounts\(([^;]*?)\);/g)].map(m => m[1].replace(/\s+/g, ' '));
+  // القاعدة صارت في js/pricing-policy.js وحدها؛ نفحص أن السلة تستدعيها لا أن تعيد كتابتها.
+  const pricingPolicy = await read('js/pricing-policy.js');
+  // السلة تنادي وحدة السياسة ولا تحسب بنفسها. الفحص يقبل أي اسم متغيّر محلي
+  // (`api`, `requirePolicy()`, …) لأن المهم أن النداء موجود، والنسخة الاحتياطية
+  // المحلية أُزيلت عمدًا: كانت هي طريق عودة السياسة القديمة.
+  // نفحص الكود المنفَّذ لا التعليقات: الشرح الذي يوثّق الخطأ القديم يذكر
+  // صيغته حرفيًا، ولو فُحص النص الخام لصار التوثيق نفسه مخالفة (فشل كاذب).
+  const cartCode = cartLogic
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+  const singleSource = cartCode.includes('RawaaPricingPolicy') &&
+    /\.discountCentsFor\(/.test(cartCode) && /\.deliveryFeeFor\(/.test(cartCode) &&
+    /\.isFreeDelivery\(/.test(cartCode) &&
+    !/(Number\s*\(\s*zone\.fee\s*\))/.test(cartCode) &&
+    !/method\.freeDeliveryIn\.(indexOf|includes)/.test(cartCode);
+  const sharedAmounts = /function\s+calculateAmounts\(\s*subtotalCents\s*,\s*discountBaseCents\s*,\s*count\s*,\s*method\s*,\s*zone\s*\)/.test(cartLogic) && singleSource;
+  // استدعاء فقط: نحذف تعريف الدالة أولًا (يحتوي أقواسًا متداخلة تُفسد المطابقة)
+  // ثم نقرأ كل سطر يستدعي calculateAmounts ويمرّر أساسًا معه.
+  const callerSource = cartLogic.replace(/function\s+calculateAmounts\([\s\S]*?\n  \}/, '');
+  const callers = [...callerSource.matchAll(/calculateAmounts\((.*?)\);/g)].map(m => m[1].replace(/\s+/g, ' '));
   const productOnlyBases = ['productCents', 'unitOffer(product).cents', 'sampleUnit.cents'];
   ok(sharedAmounts && callers.length >= 3 &&
     callers.every(args => productOnlyBases.some(base => args.includes(', ' + base + ','))),

@@ -23,7 +23,8 @@ test('uses trusted configuration and calculates fragrance and sham cash in cents
 });
 
 test('both delivery methods and zones use store rules', () => {
-  const expected = { 'hama:shamcash': 1440, 'hama:cod': 1800, 'other:shamcash': 1640, 'other:cod': 1800 };
+  // سياسة 7 نوفمبر 2026: التوصيل مجاني دائمًا، وخصم 10% لشام كاش على المنتجات.
+  const expected = { 'hama:shamcash': 1440, 'hama:cod': 1600, 'other:shamcash': 1440, 'other:cod': 1600 };
   for (const [choice, total] of Object.entries(expected)) {
     const [zone, method] = choice.split(':');
     assert.equal(prepareOrder({ ...base, zone, method }, cfg).totalCents, total);
@@ -32,8 +33,8 @@ test('both delivery methods and zones use store rules', () => {
 
 test('multiple sizes charge fragrance for each unit and unscented is free', () => {
   const items = [{ id: 'serum-30', qty: 2 }, { id: 'serum-100', qty: 1 }];
-  assert.equal(prepareOrder({ ...base, items, scent: 'rose', method: 'cod' }, cfg).totalCents, 5900);
-  assert.equal(prepareOrder({ ...base, items, scent: 'unscented', method: 'cod' }, cfg).totalCents, 5300);
+  assert.equal(prepareOrder({ ...base, items, scent: 'rose', method: 'cod' }, cfg).totalCents, 5700);
+  assert.equal(prepareOrder({ ...base, items, scent: 'unscented', method: 'cod' }, cfg).totalCents, 5100);
 });
 
 test('fails closed on malformed contact, products, quantities, options and delivery', () => {
@@ -107,11 +108,11 @@ test('bundle offer: the server charges the package price, not qty × unit', () =
   const order = prepareOrder({ ...base, items: [{ id: 'serum-50', qty: 2 }], method: 'cod' }, withBundle);
   assert.equal(order.offerCents, 200);       // 32 − 30
   assert.equal(order.subtotalCents, 3000);
-  assert.equal(order.totalCents, 3200);      // + توصيل حماة 2$
+  assert.equal(order.totalCents, 3000);      // التوصيل مجاني الآن (سياسة 7 نوفمبر 2026)
   // 3 عبوات = عبوتان + واحدة بسعرها
   const three = prepareOrder({ ...base, items: [{ id: 'serum-50', qty: 3 }], method: 'cod' }, withBundle);
   assert.equal(three.subtotalCents, 4600);
-  assert.equal(three.totalCents, 4800);
+  assert.equal(three.totalCents, 4600);      // بلا رسوم توصيل
 });
 
 test('scent surcharge is never discounted by the payment method', () => {
