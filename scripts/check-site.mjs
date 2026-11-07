@@ -1050,11 +1050,14 @@ async function checkPwa() {
     ['rel="manifest"', 'ربط المانيفست'],
     ['apple-touch-icon', 'أيقونة آيفون'],
     ['apple-mobile-web-app-capable', 'دعم التثبيت على iOS'],
-    ['serviceWorker.register', 'تسجيل عامل الخدمة']
   ];
+  // سكربت الصفحة صار ملفًا خارجيًا (js/index-inline.js) بدل <script> مضمّن،
+  // لتُزال الحاجة إلى script-src 'unsafe-inline'. الفحص يجب أن يتبع ما تحمّله
+  // الصفحة فعلًا، لا مكان وجود النص.
+  const indexScripts = index + '\n' + await read('js/index-inline.js');
   for (const [needle, label] of declared) {
-    if (index.includes(needle)) pass(label);
-    else fail(`مفقود في index.html: ${label}`);
+    if (indexScripts.includes(needle)) pass(label);
+    else fail(`مفقود في index.html وسكربتاته: ${label}`);
   }
 
   // عامل الخدمة يجب ألا يخزّن نطاقات خارجية (لا تتبّع، لا تسريب)
@@ -1131,8 +1134,9 @@ async function checkProductPage(config) {
     'الرئيسية تعرض صورًا متجاوبة وبيانات مشاركة اجتماعية');
   ok(home.includes('js/config.js') && home.includes('js/marketing.js'),
     'مصدر الحملة يُحفظ عند الانتقال من الرئيسية إلى صفحة المنتج');
+  const homeScripts = home + '\n' + await read('js/index-inline.js');
   ok(home.includes('rel="manifest"') && home.includes('apple-touch-icon') &&
-    home.includes('serviceWorker.register') && !/fonts\.googleapis|fonts\.gstatic/.test(home),
+    homeScripts.includes('serviceWorker.register') && !/fonts\.googleapis|fonts\.gstatic/.test(homeScripts),
     'الرئيسية تستخدم خطوطًا محلية وتدعم PWA دون خطوط خارجية');
   // يحتوي قسم الشراء أقسامًا متداخلة؛ نصل إلى إغلاقه الذي يسبق الفوائد، لا أول إغلاق داخلي.
   const landing = visible.match(/<section[^>]*class="serum-landing"[\s\S]*?<\/section>\s*(?=<section[^>]*id="benefits")/)?.[0] || '';

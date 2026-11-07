@@ -37,15 +37,15 @@
 </header>
 
 <main id="main" class="section">
-  <div class="shell" style="max-width: 78ch;">
+  <div class="shell policy-narrow">
     <p class="eyebrow">الخصوصية</p>
-    <h1 style="font-size: clamp(1.8rem, 4.5vw, 2.6rem);">سياسة الخصوصية</h1>
+    <h1 class="policy-title">سياسة الخصوصية</h1>
     <p class="section-lead">
       هذه سياسة خصوصية أولية لمتجر RAWAA | رواء. تصف ما يفعله الموقع فعليًا وقت إعداد هذه النسخة،
       ولا تصف خدمات لم تُفعَّل. آخر تحديث: أكتوبر 2026.
     </p>
 
-    <div class="notice" style="margin-block: var(--space-6);">
+    <div class="notice policy-block">
       <strong>مسودة:</strong> هذه الصفحة أُعِدّت كنص أولي واضح، وتحتاج إلى مراجعة قانونية أو تنظيمية
       تناسب السوق السوري قبل الإطلاق التجاري، وأيضًا عند إضافة أدوات قياس أو إعلانات أو خدمات دفع.
     </div>
@@ -154,7 +154,7 @@
       <a href="https://wa.me/963997310856">0997310856</a>.
     </p>
 
-    <p style="margin-top: var(--space-6);">
+    <p class="policy-tail">
       <a class="btn btn-ghost" href="index.html">العودة إلى المتجر</a>
     </p>
   </div>
@@ -167,10 +167,6 @@
   </div>
 </footer>
 
-<script>
-  Array.prototype.forEach.call(document.querySelectorAll('[data-current-year]'), function (node) {
-    node.textContent = String(new Date().getFullYear());
-  });
-</script>
+<script src="js/privacy-inline.js" defer></script>
 </body>
 </html>

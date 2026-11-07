@@ -1,0 +1,5 @@
+/*
+ * CSS صفحة setup.html — كان مضمّنًا في <style> داخلها.
+ * استُخرج ليصبح style-src 'self' كافيًا بدل 'unsafe-inline' (CSP).
+ */
+:root{color-scheme:dark}body{font-family:-apple-system,"Segoe UI",Tahoma,sans-serif;background:#101418;color:#eef2f5;margin:0;padding:16px;line-height:1.7;max-width:760px;margin-inline:auto}h1{font-size:1.3rem;margin:0 0 4px}h2{font-size:1.05rem;margin:0 0 8px;color:#ffd479}section{background:#1a2129;border-radius:14px;padding:16px;margin:14px 0}button{font-size:1rem;padding:12px 18px;border-radius:12px;border:0;background:#2f81f7;color:#fff;margin:6px 4px 6px 0;min-height:48px}button.alt{background:#3a4653}input,pre{width:100%;box-sizing:border-box;background:#0d1117;color:#7ee787;border:1px solid #30363d;border-radius:10px;padding:10px;font-size:.95rem;margin:8px 0}pre{white-space:pre-wrap;word-break:break-word;direction:ltr;text-align:left}a{color:#79c0ff}.small{font-size:.88rem;color:#b2bdc6}code{direction:ltr;display:inline-block;background:#0d1117;padding:4px 8px;border-radius:8px;word-break:break-all}

@@ -408,8 +408,8 @@
   <h2 id="consent-title" class="sr-only">إذن القياس</h2>
   <p>إن وافقتِ، نستخدم قياسًا اختياريًا للتفاعل مع الموقع وروابط واتساب. لا يثبت هذا القياس استلام الرسالة أو إتمام الطلب.</p>
   <div class="consent-actions">
-    <button type="button" class="btn btn-primary btn-sm" onclick="rawaaConsent(true)">موافقة</button>
-    <button type="button" class="btn btn-ghost btn-sm" onclick="rawaaConsent(false)">بلا شكرًا</button>
+    <button type="button" class="btn btn-primary btn-sm" data-consent-choice="yes">موافقة</button>
+    <button type="button" class="btn btn-ghost btn-sm" data-consent-choice="no">بلا شكرًا</button>
   </div>
 </div>
 
@@ -556,14 +556,6 @@
 
 <div class="toast-region" role="status" aria-live="polite" aria-atomic="true" data-toast-region></div>
 
-<script>
-// تسجيل عامل الخدمة: يجعل الموقع يعمل بلا إنترنت ويُثبَّت على الشاشة الرئيسية.
-// إن لم يكن مدعومًا (أو كان الملف مفتوحًا من القرص) لا يحدث شيء ولا تتأثر الوظائف.
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  window.addEventListener('load', function () {
-    navigator.serviceWorker.register('sw.js').catch(function () { /* اختياري تمامًا */ });
-  });
-}
-</script>
+<script src="js/serum-inline.js" defer></script>
 </body>
 </html>

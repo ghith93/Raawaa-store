@@ -2195,6 +2195,8 @@ details[id="returns"] {
   font-size: 0.78rem;
   color: #2F6B4F;
 }
+/* حالة الخطأ — بديل الصنف عن النمط السطري في js/cart.js (CSP: style-src 'self') */
+.product-hero-feedback.is-error { color: var(--brown); }
 .product-hero-facts {
   list-style: none;
   margin: var(--space-4) 0 0;
@@ -2449,3 +2451,9 @@ details[id="returns"] {
   justify-self: center;
   max-width: 420px;
 }
+
+/* صفحة الخصوصية — أصناف بدل سمات style السطرية (CSP: style-src 'self'). */
+.policy-narrow { max-width: 78ch; }
+.policy-title  { font-size: clamp(1.8rem, 4.5vw, 2.6rem); }
+.policy-block  { margin-block: var(--space-6); }
+.policy-tail   { margin-top: var(--space-6); }

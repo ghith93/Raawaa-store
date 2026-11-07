@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 
 const migration = await readFile(new URL('./migrations/004_order_retention.sql', import.meta.url), 'utf8');
 const rollback = await readFile(new URL('./migrations/004_order_retention.down.sql', import.meta.url), 'utf8');
@@ -88,8 +88,12 @@ test('local Supabase CLI harness is temporary, explicitly local, and never links
 });
 
 test('owner setup generates secrets locally and no longer calls the retired identity probe', async () => {
-  assert.match(ownerSetupHtml, /crypto\.getRandomValues/);
-  assert.doesNotMatch(ownerSetupHtml, /rawaa-header-probe|fetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket/i);
+  // سكربت الصفحة صار ملفًا خارجيًا (js/setup-inline.js) بدل <script> مضمّن،
+  // لتُزال الحاجة إلى script-src 'unsafe-inline'. نفحص الصفحة **وسكربتاتها**:
+  // الادعاء الأمني هو «لا اتصال شبكي في هذه الصفحة»، وهو يشمل ما تحمّله.
+  const ownerSetupScripts = ownerSetupHtml + '\n' + readFileSync(new URL('../js/setup-inline.js', import.meta.url), 'utf8');
+  assert.match(ownerSetupScripts, /crypto\.getRandomValues/);
+  assert.doesNotMatch(ownerSetupScripts, /rawaa-header-probe|fetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket/i);
   await assert.rejects(readFile(new URL('../.github/workflows/identity-header-probe.yml', import.meta.url)), { code: 'ENOENT' });
   await assert.rejects(readFile(new URL('./edge/owner-setup-page.mjs', import.meta.url)), { code: 'ENOENT' });
 });

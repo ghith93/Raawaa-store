@@ -29,56 +29,8 @@
 <link rel="preload" href="assets/fonts/plexar-400.subset.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/plexar-700.subset.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/styles.css">
-<style>
-  .hama-hero { padding-block: clamp(2.4rem, 6vw, 4rem) clamp(1.4rem, 4vw, 2.4rem); }
-  .hama-hero-grid { display: grid; gap: clamp(1.4rem, 4vw, 3rem); align-items: center; grid-template-columns: 1fr; }
-  @media (min-width: 860px) { .hama-hero-grid { grid-template-columns: 1.05fr 0.95fr; } }
-  .hama-hero h1 { font-size: clamp(2rem, 5.4vw, 3.4rem); line-height: 1.25; margin: 0.4rem 0 0.8rem; }
-  .hama-hero .lead { color: var(--ink-soft); max-width: 44ch; margin: 0 0 1.2rem; }
-  .hama-price { display: flex; align-items: baseline; gap: 0.6rem; margin: 0 0 1.2rem; }
-  .hama-price b { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 700; }
-  .hama-price span { color: var(--ink-soft); }
-  .hama-actions { display: flex; flex-wrap: wrap; gap: 0.7rem; }
-  .hama-hero img { width: 100%; height: auto; border-radius: 18px; display: block; }
-  .hama-qr { margin: 1.1rem 0 0; }
-  .hama-qr img { width: 100%; max-width: 230px; height: auto; border-radius: 14px; background: #fff; padding: 8px; display: block; }
-  .hama-qr figcaption { font-size: 0.82rem; color: var(--ink-soft); margin-top: 0.45rem; }
-  .hama-note { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.9rem; }
-  .sizes { display: grid; gap: 1rem; grid-template-columns: 1fr; }
-  @media (min-width: 760px) { .sizes { grid-template-columns: repeat(3, 1fr); } }
-  .size-card { border: 1px solid var(--line-soft); border-radius: 18px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
-  .size-card.is-hero { border-color: var(--gold); box-shadow: 0 10px 30px rgba(84, 64, 40, 0.08); }
-  .size-card img { width: 100%; height: 220px; object-fit: cover; display: block; }
-  .size-card .body { padding: 1rem 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 0.35rem; }
-  .size-card .tag { align-self: flex-start; background: var(--gold); color: #fff; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 999px; }
-  .size-card h3 { margin: 0.2rem 0 0; font-size: 1.25rem; }
-  .size-card .p { font-weight: 700; font-size: 1.5rem; color: var(--gold); }
-  .size-card p { margin: 0; color: var(--ink-soft); font-size: 0.92rem; }
-  .hama-media { display: grid; gap: 1.2rem; grid-template-columns: 1fr; }
-  @media (min-width: 820px) { .hama-media { grid-template-columns: 1fr 1fr; } }
-  .hama-media figure { margin: 0; }
-  .hama-media video { width: 100%; max-width: 360px; aspect-ratio: 9 / 16; border-radius: 18px; background: #1b1510; display: block; }
-  .hama-media figcaption { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.5rem; }
-  .hama-gallery { display: grid; gap: 0.8rem; grid-template-columns: repeat(2, 1fr); }
-  @media (min-width: 820px) { .hama-gallery { grid-template-columns: repeat(4, 1fr); } }
-  .hama-gallery img { width: 100%; height: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 14px; display: block; }
-  .hama-pay { display: grid; gap: 1.4rem; grid-template-columns: 1fr; align-items: start; }
-  @media (min-width: 820px) { .hama-pay { grid-template-columns: 0.8fr 1.2fr; } }
-  .hama-pay img { width: 100%; max-width: 340px; height: auto; border-radius: 18px; border: 1px solid var(--line-soft); }
-  .hama-steps { margin: 0; padding-inline-start: 1.2rem; color: var(--ink-soft); display: grid; gap: 0.5rem; }
-  .hama-faq details { border-top: 1px solid var(--line-soft); padding: 0.9rem 0; }
-  .hama-faq summary { cursor: pointer; font-weight: 600; }
-  .hama-faq details p { margin: 0.6rem 0 0; color: var(--ink-soft); }
-  .hama-cta { background: var(--ink); color: var(--ivory, #FBF8F3); border-radius: 20px; padding: clamp(1.4rem, 4vw, 2.4rem); text-align: center; }
-  .hama-cta h2 { color: inherit; margin-top: 0; }
-  .hama-cta p { color: rgba(251, 248, 243, 0.82); max-width: 46ch; margin: 0.6rem auto 1.2rem; }
-  .hama-cta .btn-primary { background: var(--ivory, #FBF8F3); color: var(--ink); border-color: var(--ivory, #FBF8F3); }
-  .hama-footer { border-top: 1px solid var(--line-soft); background: var(--ivory); padding: 2rem 0 2.4rem; margin-top: 2rem; }
-  .hama-footer .inner { display: flex; flex-wrap: wrap; gap: 0.8rem 1.4rem; align-items: center; justify-content: space-between; }
-  .hama-footer a { color: var(--ink-soft); text-decoration: none; font-size: 0.92rem; }
-  .hama-footer a:hover { color: var(--ink); text-decoration: underline; }
-  .hama-footer .note { width: 100%; margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--ink-soft); }
-</style>
+<link rel="stylesheet" href="css/home-inline.css">
+<link rel="stylesheet" href="css/hama.css">
 </head>
 <body>
 <a class="skip-link" href="#main">تجاوز إلى المحتوى</a>
@@ -121,7 +73,7 @@
         </div>
         <p class="hama-note">١٠٠ مل ٢٥$ · التوصيل مجاني لجميع المحافظات.</p>
       </div>
-      <figure style="margin:0">
+      <figure class="u-m-0">
         <img src="assets/img/hama/duo-sizes.jpg" width="928" height="1152"
              alt="عبوتا رواء ٣٠ مل و٥٠ مل على حجر ترافرتين" fetchpriority="high">
       </figure>
@@ -173,7 +125,7 @@
         <p class="section-lead">فرق ٣ دولارات، وكمية تكفي ضعف المدة تقريبًا. نفس التركيبة ونفس العبوة — والفرق الحقيقي في السعر لكل مل: ٠.٤٣$ مقابل ٠.٣٢$.</p>
       </div>
       <img src="assets/img/hama/card-compare.jpg" width="1080" height="1350" loading="lazy"
-           alt="بطاقة مقارنة بين ٣٠ مل بـ١٣ دولارًا و٥٠ مل بـ١٦ دولارًا" style="width:100%;max-width:560px;height:auto;border-radius:18px;display:block">
+           alt="بطاقة مقارنة بين ٣٠ مل بـ١٣ دولارًا و٥٠ مل بـ١٦ دولارًا" class="u-figure">
       <p class="hama-note">مدة الاستخدام تقديرية وتعتمد على كمية الاستخدام وطول الشعر.</p>
     </div>
   </section>
@@ -300,8 +252,8 @@
 <footer class="hama-footer">
   <div class="shell">
     <div class="inner">
-      <p class="brand" style="margin:0"><span class="brand-latin">RAWAA</span> <span class="brand-arabic">رواء</span></p>
-      <nav aria-label="روابط التذييل" style="display:flex;flex-wrap:wrap;gap:1rem">
+      <p class="brand u-m-0" ><span class="brand-latin">RAWAA</span> <span class="brand-arabic">رواء</span></p>
+      <nav aria-label="روابط التذييل" class="u-row">
         <a href="/">الرئيسية</a>
         <a href="/serum">صفحة السيروم</a>
         <a href="/privacy">الخصوصية</a>

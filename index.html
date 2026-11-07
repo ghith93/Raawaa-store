@@ -30,51 +30,7 @@
   <link rel="preload" href="assets/img/products/size-50-v6-720.avif" as="image" type="image/avif" imagesrcset="assets/img/products/size-50-v6-480.avif 480w, assets/img/products/size-50-v6-720.avif 720w, assets/img/products/size-50-v6-900.avif 900w" imagesizes="(min-width: 960px) 42vw, 90vw" fetchpriority="high">
   <script src="js/config.js" defer></script>
   <script src="js/marketing.js" defer></script>
-  <style>
-    @font-face{font-family:'Plex Arabic';src:url('assets/fonts/plexar-400.subset.woff2') format('woff2');font-weight:400;font-display:swap}
-    @font-face{font-family:'Plex Arabic';src:url('assets/fonts/plexar-700.subset.woff2') format('woff2');font-weight:700;font-display:swap}
-    @font-face{font-family:'Cormorant Garamond';src:url('assets/fonts/cormorant-500-latin.subset.woff2') format('woff2');font-weight:500;font-display:swap}
-    :root{--bg:#0c0b0a;--bg-elevated:#151311;--text:#f5f0e8;--text-muted:#9a9083;--gold:#c9a86c;--gold-light:#e2c58f;--border:rgba(201,168,108,0.13);--radius:2px;--font-ar:'Plex Arabic',system-ui,sans-serif;--font-display:'Cormorant Garamond',Georgia,serif;--header-h:70px}
-    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:var(--font-ar);background:var(--bg);color:var(--text);line-height:1.75;font-weight:400;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-    h1,h2,h3{font-family:var(--font-display);font-weight:500}.eyebrow{font-size:0.68rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--gold);font-weight:500}
-    .shell{max-width:1140px;margin:0 auto;padding:0 1.3rem}@media(min-width:768px){.shell{padding:0 2rem}}
-    .btn{display:inline-flex;align-items:center;justify-content:center;padding:0.92rem 1.85rem;font-family:var(--font-ar);font-size:0.88rem;font-weight:500;border:none;cursor:pointer;transition:all .3s;border-radius:var(--radius)}
-    .btn-gold{background:var(--gold);color:#0c0b0a}.btn-gold:hover{background:var(--gold-light);transform:translateY(-2px)}
-    .btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
-    .btn-sm{padding:.6rem 1.2rem;font-size:.8rem}
-    .offer-bar{background:linear-gradient(90deg,#181512,#221e19);border-bottom:1px solid var(--border);padding:.8rem 0;text-align:center;font-size:.84rem}.offer-bar strong{color:var(--gold)}
-    .site-header{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--header-h);background:rgba(12,11,10,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
-    .header-inner{display:flex;align-items:center;justify-content:space-between;height:100%}
-    .brand{display:flex;align-items:center;line-height:1.15}.brand-logo{display:block;width:132px;height:auto;max-height:52px;object-fit:contain}
-    .brand-latin{font-family:var(--font-display);font-size:1.4rem;letter-spacing:.38em}.brand-ar{font-size:.68rem;color:var(--gold);letter-spacing:.18em}
-    .nav-desktop{display:none;list-style:none;gap:1.8rem}@media(min-width:900px){.nav-desktop{display:flex}.nav-desktop a{color:var(--text-muted);font-size:.82rem}.nav-desktop a:hover{color:var(--gold)}}
-    .header-cta{display:flex;align-items:center;gap:.8rem}.nav-toggle{display:flex;width:40px;height:40px;background:none;border:1px solid var(--border);color:var(--text);cursor:pointer}@media(min-width:900px){.nav-toggle{display:none}}
-    .mobile-nav{position:fixed;inset:var(--header-h) 0 0 0;z-index:90;background:var(--bg);padding:2rem 1.3rem;transform:translateY(-110%);opacity:0;visibility:hidden;transition:all .4s}.mobile-nav.open{transform:translateY(0);opacity:1;visibility:visible}
-    .mobile-nav ul{list-style:none}.mobile-nav a{display:block;padding:1.05rem 0;font-size:1.05rem;border-bottom:1px solid var(--border)}
-    .hero{min-height:100vh;display:flex;align-items:center;padding:calc(var(--header-h)+2.5rem) 0 4rem;position:relative}
-    .hero-grid{display:grid;gap:3rem;align-items:center}@media(min-width:960px){.hero-grid{grid-template-columns:1.05fr .95fr}}
-    .hero-content{max-width:500px}.hero h1{font-size:clamp(2.7rem,5.8vw,4rem);line-height:1.12;margin-bottom:1.2rem}.hero h1 em{color:var(--gold);font-style:italic}
-    .hero-lead{font-size:1.08rem;color:var(--text-muted);margin-bottom:1.9rem;font-weight:300}
-    .hero-actions{display:flex;flex-wrap:wrap;gap:.8rem;margin-bottom:2.3rem}
-    .hero-meta{display:flex;flex-wrap:wrap;gap:1.5rem;font-size:.75rem;color:var(--text-muted)}.hero-meta strong{color:var(--gold);display:block;font-size:.88rem}
-    .visual-panel{aspect-ratio:4/5;background:linear-gradient(150deg,#1a1714,#100e0c);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden}
-    .visual-panel picture{display:block;width:100%;height:100%}.visual-panel img{display:block;width:100%;height:100%;object-fit:contain;padding:.6rem}
-    .product-visual picture{display:block;width:100%;height:100%}.product-visual img{display:block;width:100%;height:100%;object-fit:cover}
-    .visual-inner{text-align:center;padding:2rem}.visual-inner .mark{font-family:var(--font-display);font-size:2.4rem;color:var(--gold);letter-spacing:.22em;margin-bottom:.5rem}
-    section{padding:5.5rem 0}.section-head{text-align:center;max-width:580px;margin:0 auto 3.2rem}.section-head h2{font-size:clamp(1.9rem,3.8vw,2.55rem);margin-bottom:.85rem}
-    .products-grid{display:grid;gap:1.3rem}@media(min-width:800px){.products-grid{grid-template-columns:repeat(3,1fr)}}
-    .product-card{background:var(--bg-elevated);border:1px solid var(--border);overflow:hidden;transition:transform .35s}.product-card:hover{transform:translateY(-4px)}
-    .product-visual{aspect-ratio:1;background:linear-gradient(145deg,#1f1b17,#12100e);display:flex;align-items:center;justify-content:center;position:relative}
-    .product-visual .tag{position:absolute;top:1rem;right:1rem;background:var(--gold);color:#0c0b0a;font-size:.6rem;padding:.32rem .65rem;font-weight:600}
-    .product-visual .size{font-family:var(--font-display);font-size:2rem;color:var(--gold)}
-    .product-info{padding:1.6rem 1.45rem}.product-info h3{font-size:1.22rem;margin-bottom:.35rem}.product-info .desc{color:var(--text-muted);font-size:.88rem;margin-bottom:1.15rem}
-    .product-price{display:flex;align-items:center;justify-content:space-between}.price{font-family:var(--font-display);font-size:1.45rem;color:var(--gold)}
-    .why{background:var(--bg-elevated)}.why-grid{display:grid;gap:1.2rem}@media(min-width:768px){.why-grid{grid-template-columns:repeat(3,1fr)}}
-    .why-card{padding:2rem 1.6rem;border:1px solid var(--border);background:var(--bg)}.why-card .num{font-family:var(--font-display);font-size:1.8rem;color:var(--gold);margin-bottom:.8rem}
-    .process-list{list-style:none;display:flex;flex-direction:column;gap:1.6rem;max-width:620px;margin:0 auto}.process-list li{display:flex;gap:1.2rem}.process-list h3{font-size:1rem;font-weight:600;margin:0}.process-list .step{font-family:var(--font-display);font-size:1.45rem;color:var(--gold)}
-    .cta{background:linear-gradient(145deg,#141210,#221e19);border-top:1px solid var(--border);text-align:center;padding:4.8rem 0}.cta h2{font-size:clamp(1.8rem,3.6vw,2.4rem);margin-bottom:.85rem}
-    footer{padding:3.8rem 0 2rem;border-top:1px solid var(--border)}.footer-grid{display:grid;gap:2.3rem}@media(min-width:768px){.footer-grid{grid-template-columns:1.5fr 1fr 1fr}}.footer-bottom{padding-top:1.6rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:.74rem;color:var(--text-muted)}
-  </style>
+  <link rel="stylesheet" href="css/home-inline.css">
 </head>
 <body>
   <aside class="offer-bar" aria-label="عرض شام كاش والتوصيل"><div class="shell"><strong>شام كاش: خصم 10%</strong> · <strong>التوصيل مجاني لجميع المحافظات</strong></div></aside>
@@ -83,7 +39,7 @@
     <nav><ul class="nav-desktop"><li><a href="#products">الأحجام</a></li><li><a href="#why">لماذا رواء</a></li><li><a href="#order">كيف تطلبين</a></li></ul></nav>
     <div class="header-cta"><a href="/serum" class="btn btn-gold btn-sm" data-discover-serum>اكتشفي السيروم</a><button type="button" class="nav-toggle" id="navToggle" aria-label="فتح القائمة" aria-expanded="false">☰</button></div>
   </div></header>
-  <div class="mobile-nav" id="mobileNav" hidden><ul><li><a href="#products">الأحجام</a></li><li><a href="#why">لماذا رواء</a></li><li><a href="#order">كيف تطلبين</a></li><li style="margin-top:1.3rem;border:none"><a href="https://wa.me/963997310856" class="btn btn-gold" style="width:100%" target="_blank" rel="noopener noreferrer">واتساب</a></li></ul></div>
+  <div class="mobile-nav" id="mobileNav" hidden><ul><li><a href="#products">الأحجام</a></li><li><a href="#why">لماذا رواء</a></li><li><a href="#order">كيف تطلبين</a></li><li class="u-footer-note"><a href="https://wa.me/963997310856" class="btn btn-gold u-w-full"  target="_blank" rel="noopener noreferrer">واتساب</a></li></ul></div>
   <main>
     <section class="hero"><div class="shell"><div class="hero-grid">
       <div class="hero-content"><span class="eyebrow">لمعان يُرى، ونعومة تُلمَس</span>
@@ -119,14 +75,14 @@
         <li><span class="step">٢</span><div><h3>تواصلي معنا</h3><p>أرسلي واتساب. نؤكد خلال دقائق.</p></div></li>
         <li><span class="step">٣</span><div><h3>استلمي وادفعي</h3><p>الدفع عند الاستلام أو شام كاش بخصم 10%.</p></div></li>
       </ol></div></section>
-    <section class="cta"><div class="shell"><h2>جاهزة لتجربة رواء؟</h2><p style="color:var(--text-muted);margin:1rem auto 1.8rem;max-width:420px">تواصلي عبر واتساب وسنساعدكِ في اختيار الحجم الأنسب.</p>
-      <div style="display:flex;justify-content:center;gap:.8rem;flex-wrap:wrap"><a href="/serum" class="btn btn-gold" data-discover-serum>اختاري حجمك واطلبي</a><a href="#products" class="btn btn-outline">عودي للأحجام</a></div></div></section>
+    <section class="cta"><div class="shell"><h2>جاهزة لتجربة رواء؟</h2><p class="u-lead">تواصلي عبر واتساب وسنساعدكِ في اختيار الحجم الأنسب.</p>
+      <div class="u-center-row"><a href="/serum" class="btn btn-gold" data-discover-serum>اختاري حجمك واطلبي</a><a href="#products" class="btn btn-outline">عودي للأحجام</a></div></div></section>
   </main>
   <footer><div class="shell"><div class="footer-grid">
-    <div><div class="brand-latin">RAWAA</div><div class="brand-ar" style="color:var(--gold)">رواء</div><p style="color:var(--text-muted);margin-top:.75rem;max-width:250px">سيروم شعر سوري فاخر.</p></div>
-    <div><h3 style="color:var(--gold);font-size:.68rem;letter-spacing:.16em;margin:0 0 1.1rem">استكشفي</h3><ul style="list-style:none"><li style="margin-bottom:.5rem"><a href="#products" style="color:var(--text-muted)">الأحجام</a></li><li style="margin-bottom:.5rem"><a href="#why" style="color:var(--text-muted)">لماذا رواء</a></li></ul></div>
-    <div><h3 style="color:var(--gold);font-size:.68rem;letter-spacing:.16em;margin:0 0 1.1rem">تواصلي</h3><ul style="list-style:none"><li style="margin-bottom:.5rem"><a href="https://wa.me/963997310856" style="color:var(--text-muted)" target="_blank" rel="noopener noreferrer">واتساب</a></li><li style="color:var(--text-muted)">حماة، سوريا</li></ul></div>
+    <div><div class="brand-latin">RAWAA</div><div class="brand-ar u-gold" >رواء</div><p class="u-note">سيروم شعر سوري فاخر.</p></div>
+    <div><h3 class="u-eyebrow">استكشفي</h3><ul class="u-plain-list"><li class="u-mb-05"><a href="#products" class="u-muted">الأحجام</a></li><li class="u-mb-05"><a href="#why" class="u-muted">لماذا رواء</a></li></ul></div>
+    <div><h3 class="u-eyebrow">تواصلي</h3><ul class="u-plain-list"><li class="u-mb-05"><a href="https://wa.me/963997310856"  target="_blank" rel="noopener noreferrer" class="u-muted">واتساب</a></li><li class="u-muted">حماة، سوريا</li></ul></div>
   </div><div class="footer-bottom"><span>© 2026 رواء | RAWAA</span><span>صُنع بحب في سوريا</span></div></div></footer>
-  <script>(function(){const t=document.getElementById('navToggle'),n=document.getElementById('mobileNav');if(!t||!n)return;t.setAttribute('aria-expanded','false');t.setAttribute('aria-label','فتح القائمة');t.type='button';t.onclick=function(){const o=n.classList.toggle('open');n.hidden=!o;t.setAttribute('aria-expanded',String(o));t.setAttribute('aria-label',o?'إغلاق القائمة':'فتح القائمة');document.body.style.overflow=o?'hidden':''};n.querySelectorAll('a').forEach(a=>a.onclick=function(){n.classList.remove('open');n.hidden=true;t.setAttribute('aria-expanded','false');document.body.style.overflow=''})})();if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})})}</script>
+  <script src="js/index-inline.js" defer></script>
 </body>
 </html>

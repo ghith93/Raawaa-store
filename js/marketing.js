@@ -93,6 +93,18 @@
     if (!granted && window.fbq) location.reload();
   };
 
+  /*
+   * أزرار شريط الإذن: مستمع واحد على الحاوية بدل onclick="" في serum.html.
+   *
+   * النمط السطري يحتاج script-src 'unsafe-inline' — أي أن زرَّي «موافقة/بلا شكرًا»
+   * كانا يفرضان تساهلًا أمنيًا على الموقع كله. التفويض يحقق السلوك نفسه بلا ذلك.
+   */
+  document.addEventListener('click', function (event) {
+    var button = event.target.closest && event.target.closest('[data-consent-choice]');
+    if (!button) return;
+    window.rawaaConsent(button.getAttribute('data-consent-choice') === 'yes');
+  });
+
   function loadPixel() {
     if (!PIXEL_ID || window.fbq) return;
     !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
