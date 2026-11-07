@@ -110,6 +110,10 @@ jobs:
           check-latest: true
       - name: اختبار مراقب إعدادات الطلب
         run: node --test scripts/order-config-monitor.test.mjs
+      # قبل الاتصال بالشبكة: تأكد أن مخرَج البناء الحالي يُقرأ بالمراقب نفسه.
+      # لولا هذا الحارس لفشلت هذه المهمة ١١ دورة متتالية بإنذار كاذب.
+      - name: عقد الإعدادات المنشورة (بناء ↔ مراقبة)
+        run: node --test scripts/published-config-contract.test.mjs
       - name: مطابقة الأسعار والتوصيل والدفع ورقم واتساب مع المصدر
         run: node scripts/order-config-monitor.mjs
       - name: الخط الجديد منشور فعلًا

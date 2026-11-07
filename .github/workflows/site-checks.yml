@@ -59,6 +59,12 @@ jobs:
       - name: اختبار مراقب إعدادات الطلب
         run: node --test scripts/order-config-monitor.test.mjs
 
+      # هذا الحارس كان غائبًا، فمرّ عطل حقيقي: البناء ينشر config.js كـJSON
+      # والمراقب يقرأه بتعبيرات نمطية للمصدر، ففشلت المراقبة الحيّة ١١ مرة
+      # متتالية بإنذار كاذب. الاختبار هنا يشغّل البناء الفعلي ويقرأ مخرَجه.
+      - name: عقد الإعدادات المنشورة (مخرَج البناء يُقرَأ بالمراقب نفسه)
+        run: node --test scripts/published-config-contract.test.mjs
+
       - name: اختبار تجميع ميزانية Lighthouse المتسامح مع الضجيج
         run: node --test scripts/perf-budget.test.mjs
 
