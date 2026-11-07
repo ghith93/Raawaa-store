@@ -699,8 +699,9 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                                       reduced_motion="reduce", ignore_https_errors=ignore_https)
             page = ctx.new_page(); page.goto(base + path, wait_until='load')
             page.locator('[data-add-current]').click()
+            zoom_stylesheet = None
             if text_zoom:
-                page.evaluate("document.documentElement.style.fontSize = '200%'")
+                zoom_stylesheet = page.add_style_tag(url=base.rstrip('/') + '/scripts/test-text-zoom.css')
                 page.wait_for_timeout(250)  # ResizeObserver يعيد ضبط التذييل والحجم الفعلي.
                 check("تكبير النص 200% يحوّل التذييل الطويل إلى تمرير عادي",
                       page.locator('.cart-foot').evaluate('(e) => getComputedStyle(e).position') == 'static')
@@ -726,7 +727,8 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check(f"{label}: لا تمرير أفقي والتركيز المرئي يبقى داخل السلة",
                   geometry['scrollWidth'] <= geometry['width'] + 1 and not obscured, str(obscured[:3]))
             if text_zoom:
-                page.evaluate("document.documentElement.style.fontSize = '100%'")
+                if zoom_stylesheet is not None:
+                    zoom_stylesheet.evaluate('(e) => e.remove()')
                 page.wait_for_timeout(250)
                 check("إعادة النص إلى حجمه تعيد تثبيت التذييل عندما تتسع الشاشة",
                       page.locator('.cart-foot').evaluate('(e) => getComputedStyle(e).position') == 'sticky')
