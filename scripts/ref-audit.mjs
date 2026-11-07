@@ -239,14 +239,19 @@ console.log('\n▸ ثوابت الأسعار والدفع (من js/config.js)');
 
     // 2) هامش موجب في أسوأ حالة: أعلى تكلفة + أكبر خصم.
     const maxCost = cfg.costing?.unitCostMax ?? 0;
+    // تكلفة التوصيل يتحمّلها المالك عن كل طلب، لا الزبونة (التوصيل مجاني لها).
+    // تجاهلها كان يجعل «أسوأ حالة» تُظهر ربحًا أعلى من الحقيقة بـ2$ لكل طلب.
+    const shipping = cfg.costing?.shippingCostPerOrder ?? 0;
     const maxDiscount = Math.max(0, ...(cfg.payment?.methods || []).map((m) => m.discountPercent || 0));
+    // أسوأ حالة بيع: وحدة واحدة + أعلى خصم + تكلفتها + تكلفة التوصيل كاملة على المالك.
+    // (طلبٌ أكبر يوزّع الـ2$ على أكثر من عبوة، فهو أفضل لا أسوأ.)
     const worst = products.map((p) => ({
       size: p.sizeMl,
-      profit: +(p.price * (1 - maxDiscount / 100) - maxCost).toFixed(2)
+      profit: +(p.price * (1 - maxDiscount / 100) - maxCost - shipping).toFixed(2)
     }));
     const losing = worst.filter((w) => w.profit <= 0);
     if (losing.length) fail('حجم لا يحقق ربحًا في أسوأ حالة', losing.map((w) => `${w.size}ml=${w.profit}$`).join(', '));
-    else ok(`هامش موجب في أسوأ حالة (تكلفة ${maxCost}$ + خصم ${maxDiscount}%): ${worst.map((w) => `${w.size}ml=${w.profit}$`).join(' · ')}`);
+    else ok(`هامش موجب في أسوأ حالة (تكلفة ${maxCost}$ + توصيل ${shipping}$ + خصم ${maxDiscount}%): ${worst.map((w) => `${w.size}ml=${w.profit}$`).join(' · ')}`);
 
     // 3) مناطق التوصيل: رسوم غير سالبة، والتوصيل المجاني يخصّ مناطق موجودة.
     const zones = cfg.delivery?.zones || [];
