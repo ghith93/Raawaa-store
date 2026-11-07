@@ -21,7 +21,7 @@ checks: list[tuple[str, bool, str]] = []
 
 def new_test_context(browser, **kwargs):
     """حمّل axe كـ Playwright init script قبل المستند؛ لا نضعف CSP ولا نحقن inline بعد التحميل."""
-    context = new_test_context(browser,**kwargs)
+    context = browser.new_context(**kwargs)
     context.add_init_script(script=AXE)
     return context
 
