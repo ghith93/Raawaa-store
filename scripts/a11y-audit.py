@@ -57,6 +57,7 @@ def run(base: str) -> int:
                 is_mobile=mobile, has_touch=mobile, locale="ar",
                 reduced_motion="no-preference",
             )
+            ctx.add_init_script(script=axe_src)
             page = ctx.new_page()
 
             # قياس الوزن الفعلي للتحميل الأول
@@ -74,7 +75,6 @@ def run(base: str) -> int:
                 "by_type_kb": {k: round(v / 1024, 1) for k, v in transfer["by_type"].items()},
             }
 
-            page.add_script_tag(content=axe_src)
             result = page.evaluate(
                 """async () => {
                     const r = await axe.run(document, {
@@ -105,7 +105,6 @@ def run(base: str) -> int:
             product_page.wait_for_selector("#products [data-add-current]")
             product_page.evaluate("document.fonts.ready")
             product_page.wait_for_timeout(350)
-            product_page.add_script_tag(content=axe_src)
             product_result = product_page.evaluate(
                 """async () => {
                     const r = await axe.run(document, {
@@ -134,7 +133,6 @@ def run(base: str) -> int:
             campaign_page = ctx.new_page()
             campaign_page.goto(base + "/campaign.html?utm_source=facebook&utm_medium=organic&utm_campaign=a11y_probe&utm_content=benefit", wait_until="load")
             campaign_page.wait_for_selector(".campaign-product-card")
-            campaign_page.add_script_tag(content=axe_src)
             campaign_result = campaign_page.evaluate(
                 """async () => {
                     const r = await axe.run(document, {
