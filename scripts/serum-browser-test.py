@@ -892,7 +892,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                                       locale="ar", ignore_https_errors=ignore_https)
             page = ctx.new_page(); page.goto(base + zoom_path, wait_until='load')
             page.wait_for_selector('#products .size-option input', state='attached')
-            page.add_style_tag(content='html { font-size: 200% !important; }')
+            page.add_style_tag(url=base.rstrip('/') + '/scripts/test-text-zoom.css')
             target_selector = '.header-actions button, #products .size-option, [data-serum-controls]:visible button'
             target_selector += ', .unit-comparison-list li, .purchase-shortcuts a'
             in_bounds = page.locator(target_selector).evaluate_all("""els => els.every(e => {
