@@ -14,7 +14,7 @@
   "private": true,
   "description": "RAWAA | رواء — متجر سيروم ثابت. أدوات النشر والتحقق فقط.",
   "scripts": {
-    "build": "bash scripts/build-deploy.sh",
+    "build": "bash scripts/build-deploy.sh && node scripts/sw-build-coverage.mjs",
     "deploy": "bash scripts/deploy-cloudflare.sh",
     "check": "node scripts/check-site.mjs",
     "lint": "eslint js/*.js sw.js",

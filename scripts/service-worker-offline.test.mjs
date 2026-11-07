@@ -84,7 +84,9 @@ test('install precaches only the compact offline shell and required small image 
   const imagePaths = paths.filter((path) => /\.(?:avif|webp|jpe?g)$/i.test(path));
   const allPaths = paths.join('\n');
 
-  assert.equal(paths.length, 43, '43 shell resources include the canonical root route, Hama landing page, and active logo');
+  // العدد ثابت عمدًا: الزيادة تعني أصلًا جديدًا يُخزَّن لكل زيارة، وهذا قرار
+  // واعٍ لا أثر جانبي. 43 ← 50 عند إضافة أصول الصفحات المستخرجة (7 نوفمبر 2026).
+  assert.equal(paths.length, 50, '50 shell resources include the canonical root route, Hama landing page, and active logo');
   assert.ok(paths.includes('/'), 'canonical root is cached for offline reload after Pages redirects /index.html');
   assert.ok(paths.includes('/privacy'), 'canonical clean privacy route is cached for Pages .html redirects');
   assert.ok(!paths.includes('/privacy.html'), 'the redirected privacy alias is not relied on as a cache key');
@@ -148,4 +150,50 @@ test('offline high-density images fall back to the cached small equivalent', asy
     assert.ok(response, `${requested} returns an offline response`);
     assert.equal(await response.text(), `cached:./${fallback.slice(1)}`, `${requested} uses ${fallback}`);
   }
+});
+
+/* ── تغطية: كل صفحة مخزّنة يجب أن تكون أصولها المخزّنة كاملة ──────────────────
+ *
+ * العطل الذي أوجب هذا الحارس (7 نوفمبر 2026): بعد إخراج <style> و<script> من
+ * الصفحات إلى ملفات، بقيت قائمة CORE كما هي. النتيجة أن الزائرة التي تحفظ
+ * الموقع — أو تنقط�� عنها الشبكة — تحصل على صفحة مخزّنة **بلا تنسيق وبلا
+ * سكربت**، وصفحة المنتج بلا `js/pricing-policy.js`: أي أن حساب التوصيل
+ * والخصم يسقط على الرفض الآلي بلا أي رسالة خطأ.
+ *
+ * الحارس كان يفحص **وجود** ما في القائمة، لا **تغطية** ما تحتاجه الصفحات.
+ * الوجود لا يكفي: قائمة صحيحة تمامًا لصفحات تغيّرت أصولها.
+ */
+test('كل صفحة في CORE مخزّنة مع كل ملفات CSS/JS التي تطلبها', async () => {
+  const cache = await installWorker();
+  const cached = new Set([...cache.entries.keys()].map((key) => new URL(key).pathname));
+  const pageFiles = { '/': './index.html', '/serum': './serum.html', '/campaign': './campaign.html',
+    '/hama': './hama.html', '/privacy': './privacy.html', '/404.html': './404.html' };
+  const missing = [];
+  for (const [route, file] of Object.entries(pageFiles)) {
+    assert.ok(cached.has(route), `${route} يجب أن تكون في الذاكرة أولًا`);
+    const html = await readFile(new URL(file, root), 'utf8');
+    const refs = [...html.matchAll(/(?:href|src)="([^"]+)"/g)]
+      .map((m) => m[1].split('?')[0])
+      .filter((ref) => /\.(?:css|js)$/.test(ref) && !/^(?:https?:|\/\/)/.test(ref))
+      .map((ref) => new URL(ref, `${origin}${route}`).pathname);
+    for (const ref of new Set(refs)) {
+      if (!cached.has(ref)) missing.push(`${route} → ${ref}`);
+    }
+  }
+  assert.deepEqual(missing, [],
+    `صفحات مخزّنة تعتمد ملفات غير مخزّنة (ستظهر بلا تنسيق أو بلا وظيفة بلا إنترنت):\n${missing.join('\n')}`);
+});
+
+test('كل ملف في CORE موجود فعلًا على القرص', async () => {
+  const cache = await installWorker();
+  const gone = [];
+  for (const key of cache.entries.keys()) {
+    const path = new URL(key).pathname;
+    if (!/\.(?:css|js|svg|png|woff2)$/.test(path)) continue; // مسارات الصفحات تُعاد توجيهها في Pages
+    try {
+      const info = await stat(new URL(`.${path}`, root));
+      assert.ok(info.size > 0);
+    } catch { gone.push(path); }
+  }
+  assert.deepEqual(gone, [], `CORE يشير إلى ملفات غير موجودة أو فارغة:\n${gone.join('\n')}`);
 });

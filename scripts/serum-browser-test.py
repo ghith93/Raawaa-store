@@ -859,6 +859,15 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
               page.locator('[data-serum-control="sizes"]').count() > 0 and
               page.locator('[data-add-current]').is_enabled() and
               'offline-safe-probe' in page.evaluate('window.rawaaSourceNote()'))
+        # القيمة لا الشكل: بلا js/pricing-policy.js يبقى الزر مفعّلًا والصفحة
+        # تعمل، لكن الخصم يسقط صفرًا بصمت. فحص الصور والزر وحده لا يكشف ذلك.
+        # 1600 سنت (50 مل) − 10% شام كاش = $14.40 بلا إنترنت.
+        check('سياسة التسعير محمّلة بلا إنترنت (لا رفض صامت)',
+              page.evaluate("!!(window.RawaaPricingPolicy && window.RawaaPricingPolicy.totalsFor)"))
+        page.locator('#products .size-option').nth(1).click()
+        offline_total = page.locator('[data-estimate-total]').inner_text()
+        check('التقدير بلا إنترنت يطبّق خصم شام كاش بالقيمة الصحيحة',
+              offline_total == '$14.40', offline_total)
         ctx.close()
 
         # مسار الصفحة النظيفة وصورة المشهد حتى بعد انقطاع الشبكة.
