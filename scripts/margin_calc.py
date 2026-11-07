@@ -9,10 +9,9 @@ RAWAA — حاسبة الهامش.
     python3 scripts/margin_calc.py
     python3 scripts/margin_calc.py --shipping 2.5
 
-`--shipping` هو ما تدفعه أنتِ فعليًا لشركة التوصيل عن كل طلب. التوصيل على
-الزبونة صار مجانيًا بقرارك، لكنه ليس مجانيًا عليك: هذه هي تكلفته الحقيقية.
-بلا `--shipping` لا يُحتسب شيء — وهذا مذكور صراحة في المخرجات حتى لا يُقرأ
-الربح كأنه صافٍ نهائيًا.
+`--shipping` هو ما تدفعه أنتِ فعليًا عن كل طلب. القيمة الافتراضية تُقرأ من
+`costing.shippingCostPerOrder` في js/config.js (٢ دولار، من المالك 2026-11-07).
+مرّر رقمًا آخر لتجربة سيناريو مختلف، أو `--shipping 0` لرؤية الربح قبله.
 """
 import json, re, subprocess, sys
 from pathlib import Path
@@ -46,16 +45,19 @@ def grab(name):
 import argparse
 
 _parser = argparse.ArgumentParser(add_help=True, description="حاسبة الهامش — تقرأ الأرقام من js/config.js")
-_parser.add_argument("--shipping", type=float, default=0.0,
-                     help="تكلفة التوصيل التي تدفعها أنتِ عن كل طلب بالدولار (افتراضي 0 = غير محتسبة)")
+_parser.add_argument("--shipping", type=float, default=None,
+                     help="تكلفة التوصيل التي تدفعها أنتِ عن كل طلب بالدولار (افتراضي: القيمة في js/config.js)")
 _args = _parser.parse_args()
-SHIPPING = max(0.0, _args.shipping)
 
 products = grab("products")
 methods = grab("methods")
 zones = grab("zones")
 costing = grab("costing")
 delivery_cfg = grab("delivery")
+
+# تكلفة التوصيل التي يتحمّلها المالك — من الإعدادات، لا رقم مكتوب هنا.
+SHIPPING = (float(costing.get("shippingCostPerOrder") or 0)
+            if _args.shipping is None else max(0.0, _args.shipping))
 
 """
 تكلفة العبوة — من `costing` في js/config.js وحده.

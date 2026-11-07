@@ -787,10 +787,13 @@
       var costOfUnit = function () {
         return c ? (c.unitCostMax || c.unitCostMin || 0) : 0;
       };
+      // التوصيل مجاني على الزبونة، لكنه ليس مجانيًا على المالك:
+      // costing.shippingCostPerOrder هو ما يدفعه هو عن الطلب.
+      var shippingCost = Number(c.shippingCostPerOrder) || 0;
       var worst = null;
       summary.entries.forEach(function (e) {
         var net = unitOffer(e.product).cents / 100 * (1 - (summary.method.discountPercent || 0) / 100);
-        var profit = net - summary.delivery - costOfUnit();
+        var profit = net - summary.delivery - costOfUnit() - shippingCost;
         if (profit <= 0 && (!worst || profit < worst.profit)) {
           worst = { size: e.product.sizeLabel, profit: profit };
         }
