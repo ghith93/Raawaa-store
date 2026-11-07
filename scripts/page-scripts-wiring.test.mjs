@@ -112,3 +112,47 @@ test('سنة التذييل تُملأ من السكربت لا يدويًا', (
   if (node) assert.match(node.textContent, /^20\d\d$/, 'السنة لم تُحدَّث');
   window.close();
 });
+
+/*
+ * قيمة لا شكل: هل يصل السعر الصحيح إلى الزائرة؟
+ *
+ * عطل 7 نوفمبر 2026: `js/pricing-policy.js` لم يكن في ذاكرة عامل الخدمة.
+ * الصفحة تعمل، والزر مفعّل، والصور تُحمّل — لكن `requirePolicy()` يعيد null
+ * فتُعرض رسوم خاطئة بصمت. فحص «السكربتات تُنفّذ بلا استثناء» لا يكشف ذلك،
+ * لأن الغياب ليس استثناءً في كل مسار.
+ */
+test('صفحة المنتج تُنتج خصم شام كاش الصحيح عند تحميل سكربتها كاملة', () => {
+  const { window, errors } = boot('serum.html');
+  assert.deepEqual(errors, [], 'سكربتات صفحة المنتج لم تُنفّذ كاملة');
+  const policy = window.RawaaPricingPolicy;
+  assert.ok(policy, 'window.RawaaPricingPolicy غائب — js/pricing-policy.js مفقود من الصفحة أو من الذاكرة');
+
+  const config = window.RAWAA_CONFIG;
+  const sham = config.payment.methods.find((m) => m.id === 'shamcash');
+  const cod = config.payment.methods.find((m) => m.id === 'cod');
+  // 50 مل = 1600 سنت. الخصم على قيمة المنتج وحده.
+  const withSham = policy.totalsFor({ productCents: 1600, scentCents: 0, method: sham,
+    zone: config.delivery.zones[0], delivery: config.delivery });
+  assert.equal(withSham.discountCents, 160, 'خصم شام كاش يجب أن يكون ١٠٪ من ١٦٠٠ سنتًا');
+  assert.equal(withSham.totalCents, 1440, 'الإجمالي يجب أن يكون $14.40');
+  assert.equal(withSham.deliveryCents, 0, 'التوصيل مجاني في السياسة الحالية');
+
+  const withCod = policy.totalsFor({ productCents: 1600, scentCents: 0, method: cod,
+    zone: config.delivery.zones[0], delivery: config.delivery });
+  assert.equal(withCod.discountCents, 0, 'الدفع عند الاستلام بلا خصم');
+  assert.equal(withCod.totalCents, 1600, 'الإجمالي مع الدفع عند الاستلام $16.00');
+  window.close();
+});
+
+test('العطر يُضاف بلا خصم — الخصم على قيمة المنتج وحدها', () => {
+  const { window } = boot('serum.html');
+  const policy = window.RawaaPricingPolicy;
+  const config = window.RAWAA_CONFIG;
+  const sham = config.payment.methods.find((m) => m.id === 'shamcash');
+  const scentCents = 200; // سعر العطر من الإعدادات
+  const result = policy.totalsFor({ productCents: 1600, scentCents, method: sham,
+    zone: config.delivery.zones[0], delivery: config.delivery });
+  assert.equal(result.discountCents, 160, 'الخصم لا يتغير بوجود العطر');
+  assert.equal(result.totalCents, 1640, 'الإجمالي ١٦٠٠ + ٢٠٠ − ١٦٠');
+  window.close();
+});
