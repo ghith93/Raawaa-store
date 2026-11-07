@@ -1,0 +1,2 @@
+/* Test-only stylesheet loaded from the same origin so strict style-src 'self' remains enabled. */
+html { font-size: 200% !important; }
