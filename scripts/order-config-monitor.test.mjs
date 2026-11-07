@@ -11,12 +11,12 @@ test('reads size and price as a pair, phone and both delivery zones', () => {
     ['serum-100', 100, 25], ['serum-30', 30, 13], ['serum-50', 50, 16]
   ]);
   assert.deepEqual(result.zones.map(z => [z.id, z.fee, z.freeWithShamCash]), [
-    ['hama', 2, true], ['other', 2, false]
+    ['hama', 0, true], ['other', 2, false]
   ]);
   assert.match(result.phone, /^\d+$/);
   assert.equal(result.defaultZone, 'hama');
   assert.deepEqual(result.methods, [
-    { id: 'cod', discount: 0, freeDeliveryIn: [], available: true },
+    { id: 'cod', discount: 0, freeDeliveryIn: ['hama'], available: true },
     { id: 'shamcash', discount: 10, freeDeliveryIn: ['hama'], available: true }
   ]);
 });
