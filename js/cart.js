@@ -1062,12 +1062,16 @@
   function methodDescription(method) {
     var z = activeZone();
     var zoneName = z ? z.label : 'حماة';
+    var discount = method.discountPercent || 0;
 
-    if ((method.discountPercent || 0) > 0) {
-      return isFreeDelivery(method, z)
-        ? 'خصم ' + method.discountPercent + '% على قيمة المنتجات + توصيل مجاني داخل ' + zoneName + '.'
-        : 'خصم ' + method.discountPercent + '% على قيمة المنتجات + توصيل ' +
-          money(deliveryFeeFor(method, z)) + ' إلى ' + zoneName + '.';
+    if (isFreeDelivery(method, z)) {
+      return discount > 0
+        ? 'خصم ' + discount + '% على قيمة المنتجات + توصيل مجاني داخل ' + zoneName + '.'
+        : 'بلا خصم + توصيل مجاني داخل ' + zoneName + '.';
+    }
+    if (discount > 0) {
+      return 'خصم ' + discount + '% على قيمة المنتجات + توصيل ' +
+        money(deliveryFeeFor(method, z)) + ' إلى ' + zoneName + '.';
     }
     return 'بلا خصم، وتُضاف رسوم التوصيل: ' + money(deliveryFeeFor(method, z)) +
       ' إلى ' + zoneName + '.';
