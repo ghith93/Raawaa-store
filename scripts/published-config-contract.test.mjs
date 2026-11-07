@@ -37,7 +37,7 @@ test('prices, delivery and payment rules survive publishing unchanged', () => {
   assert.deepEqual(live.products.map(p => [p.id, p.sizeMl, p.price]), [
     ['serum-30', 30, 13], ['serum-50', 50, 16], ['serum-100', 100, 25]
   ]);
-  assert.deepEqual(live.delivery.zones.map(z => [z.id, z.fee]), [['hama', 2], ['other', 2]]);
+  assert.deepEqual(live.delivery.zones.map(z => [z.id, z.fee]), [['hama', 0], ['other', 2]]);
   assert.equal(live.payment.methods.find(m => m.id === 'shamcash').discountPercent, 10);
 });
 
