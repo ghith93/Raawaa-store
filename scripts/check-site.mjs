@@ -1201,9 +1201,19 @@ async function checkProductPage(config) {
   // يمرّرون قيمة المنتجات وحدها كأساس للخصم. أي إعادة صياغة لا تكسر الفحص.
   // القاعدة صارت في js/pricing-policy.js وحدها؛ نفحص أن السلة تستدعيها لا أن تعيد كتابتها.
   const pricingPolicy = await read('js/pricing-policy.js');
-  const singleSource = cartLogic.includes('RawaaPricingPolicy') &&
-    cartLogic.includes('api.discountCentsFor') && cartLogic.includes('api.deliveryFeeFor') &&
-    !/method\.freeDeliveryIn\.(indexOf|includes)/.test(cartLogic);
+  // السلة تنادي وحدة السياسة ولا تحسب بنفسها. الفحص يقبل أي اسم متغيّر محلي
+  // (`api`, `requirePolicy()`, …) لأن المهم أن النداء موجود، والنسخة الاحتياطية
+  // المحلية أُزيلت عمدًا: كانت هي طريق عودة السياسة القديمة.
+  // نفحص الكود المنفَّذ لا التعليقات: الشرح الذي يوثّق الخطأ القديم يذكر
+  // صيغته حرفيًا، ولو فُحص النص الخام لصار التوثيق نفسه مخالفة (فشل كاذب).
+  const cartCode = cartLogic
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+  const singleSource = cartCode.includes('RawaaPricingPolicy') &&
+    /\.discountCentsFor\(/.test(cartCode) && /\.deliveryFeeFor\(/.test(cartCode) &&
+    /\.isFreeDelivery\(/.test(cartCode) &&
+    !/(Number\s*\(\s*zone\.fee\s*\))/.test(cartCode) &&
+    !/method\.freeDeliveryIn\.(indexOf|includes)/.test(cartCode);
   const sharedAmounts = /function\s+calculateAmounts\(\s*subtotalCents\s*,\s*discountBaseCents\s*,\s*count\s*,\s*method\s*,\s*zone\s*\)/.test(cartLogic) && singleSource;
   // استدعاء فقط: نحذف تعريف الدالة أولًا (يحتوي أقواسًا متداخلة تُفسد المطابقة)
   // ثم نقرأ كل سطر يستدعي calculateAmounts ويمرّر أساسًا معه.

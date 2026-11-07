@@ -37,17 +37,34 @@
     return (typeof window !== 'undefined' && window.RawaaPricingPolicy) ? window.RawaaPricingPolicy : null;
   }
 
-  function isFreeDelivery(method, zone) {
+  /*
+   * لا نسخة احتياطية محلية للسياسة.
+   *
+   * كان هنا سابقًا `return Number(zone.fee) || 0` — أي أن الملف يُعيد تطبيق
+   * السياسة بنفسه إن غاب js/pricing-policy.js. هذا بالضبط مصدر التعارض: رقم
+   * صحيح في ملف، ورقم قديم في آخر. الآن إن غاب المصدر نفشل بصوت مسموع بدل أن
+   * نحسب بقاعدة ثانية. البديل الآمن المعلن صريح: بلا وحدة سياسة ⇒ بلا رسوم
+   * وبلا خصم، وهو الاتجاه الذي لا يبالغ في تحصيل مبلغ من الزبونة.
+   */
+  function requirePolicy() {
     var api = policy();
-    if (!api) return !zone || (Number(zone.fee) || 0) === 0;
+    if (api) return api;
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('RAWAA: js/pricing-policy.js غير محمّل — التوصيل والخصم معطّلان حتى يُحمَّل.');
+    }
+    return null;
+  }
+
+  function isFreeDelivery(method, zone) {
+    var api = requirePolicy();
+    if (!api) return true;
     return api.isFreeDelivery(method, zone, CONFIG.delivery);
   }
 
   function deliveryFeeFor(method, zone) {
-    var api = policy();
-    if (api) return api.deliveryFeeFor(method, zone, CONFIG.delivery);
-    if (!zone) return 0;
-    return Number(zone.fee) || 0;
+    var api = requirePolicy();
+    if (!api) return 0;
+    return api.deliveryFeeFor(method, zone, CONFIG.delivery);
   }
 
   /* ------------------------------ أدوات مساعدة ------------------------------ */
@@ -434,10 +451,8 @@
    * النص المعلن في CONFIG.payment يقول «على قيمة المنتجات» — وهذا يطابقه.
    */
   function calculateAmounts(subtotalCents, discountBaseCents, count, method, zone) {
-    var api = policy();
-    var discountCents = api
-      ? api.discountCentsFor(method, discountBaseCents)
-      : (method ? Math.round(discountBaseCents * (method.discountPercent || 0) / 100) : 0);
+    var api = requirePolicy();
+    var discountCents = api ? api.discountCentsFor(method, discountBaseCents) : 0;
     var deliveryCents = (method && count > 0) ? toCents(deliveryFeeFor(method, zone)) : 0;
     return {
       subtotalCents: subtotalCents,
@@ -981,7 +996,7 @@
       var priced = unitOffer(sample);
       var unitCents = priced.cents + toCents(scentFee());
       // الخصم على سعر المنتج وحده؛ العطر يُضاف بعدها بلا خصم.
-      var discountCents = Math.round(priced.cents * (method.discountPercent || 0) / 100);
+      var discountCents = requirePolicy().discountCentsFor(method, priced.cents);
       var deliveryCents = toCents(deliveryFeeFor(method, activeZone()));
       var finalCents = unitCents - discountCents + deliveryCents;
 

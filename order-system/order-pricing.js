@@ -89,7 +89,7 @@
     // surcharge is added to the total but never discounted. Matches js/cart.js.
     const discountedProductCents = productCents - generalCut;
     const subtotalCents = discountedProductCents + scentCents * quantity;
-    const discountCents = Math.round(discountedProductCents * method.discountPercent / 100);
+    const discountCents = policyApi().discountCentsFor(method, discountedProductCents);
     const deliveryCents = policyApi().deliveryCentsFor(method, zone, config.delivery);
 
     return {

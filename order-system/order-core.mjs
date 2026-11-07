@@ -64,7 +64,7 @@ export function prepareOrder(input, config) {
   // أساس خصم طريقة الدفع هو قيمة المنتجات بعد العرض وحدها؛ العطر لا يدخل الخصم.
   const discountedProductCents = productCents - generalCut;
   const subtotalCents = discountedProductCents + scentCents * quantity;
-  const discountCents = Math.round(discountedProductCents * method.discountPercent / 100);
+  const discountCents = pricingPolicy.discountCentsFor(method, discountedProductCents);
   const deliveryCents = pricingPolicy.deliveryCentsFor(method, zone, config.delivery);
   return { name, phone, address, entries, scent, oil, zone: zone.id, method: method.id,
     subtotalCents, offerCents, discountCents, deliveryCents, totalCents: subtotalCents - discountCents + deliveryCents,

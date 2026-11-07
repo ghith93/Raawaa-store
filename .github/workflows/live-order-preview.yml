@@ -40,5 +40,22 @@ jobs:
       # يفشل هذا قبل مقارنة الشبكة إن انحرف مخرَج البناء عن القارئ الحيّ.
       - name: عقد الإعدادات المنشورة
         run: node --test scripts/published-config-contract.test.mjs
+      # على فرع: سياسة/سعر معدّل بقرار المالك قبل النشر يُنتج اختلافًا متوقعًا
+      # مع النسخة الحيّة. نفشل فقط عند عدم توقّع الاختلاف: على main، أو عند
+      # وجود علامة RAWAA_EXPECT_LIVE_DRIFT غير المضبوطة.
+      # الغرض: ألا يمنع قرارُ تسعيرٍ شرعيٌّ الدمجَ، وألا يمرّ انحراف حقيقي.
       - name: مقارنة إعدادات الطلب بالإصدار الحي
-        run: node scripts/order-config-monitor.mjs
+        env:
+          RAWAA_EXPECT_LIVE_DRIFT: ${{ vars.RAWAA_EXPECT_LIVE_DRIFT }}
+        run: |
+          set +e
+          OUTPUT=$(node scripts/order-config-monitor.mjs 2>&1)
+          STATUS=$?
+          set -e
+          printf '%s\n' "$OUTPUT"
+          if [ "$STATUS" = "0" ]; then exit 0; fi
+          if [ "$RAWAA_EXPECT_LIVE_DRIFT" = "true" ] && [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::warning::الموقع الحيّ يعرض إصدار main السابق، والفرع يعدّل السياسة عمدًا. المقارنة ستُعاد بعد النشر."
+            exit 0
+          fi
+          exit $STATUS

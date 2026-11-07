@@ -19,6 +19,7 @@ const serumHtml = (await read('serum.html')).replace(/<script[\s\S]*?<\/script>/
 const html = serumHtml;
 const serumViewsJs = await read('js/serum-views.js');
 const offersJs = await read('js/offers.js');
+const policyJs = await read('js/pricing-policy.js');
 const cartJs = await read('js/cart.js');
 const configJs = await read('js/config.js');
 
@@ -47,6 +48,7 @@ async function boot(slots, pageHtml = serumHtml) {
   const clone = JSON.parse(JSON.stringify(window.RAWAA_CONFIG));
   clone.offers.slots = slots;
   window.RAWAA_CONFIG = clone;
+  window.eval(policyJs);
   window.eval(offersJs);
   window.eval(cartJs);
   if (pageHtml) window.eval(serumViewsJs);

@@ -56,6 +56,6 @@ assert.equal((await worker(jobRequest(schedulerSecret))).status,200);assert.equa
 const owner=createEdgeOwner({getEnv:key=>settings[key],postgresFactory:()=>sql,fetchImpl});
 const noAuth=await owner(new Request('https://edge.example/owner',{headers:{origin}}));assert.equal(noAuth.status,401);
 const ownerRes=await owner(new Request('https://edge.example/owner',{headers:{origin,authorization:'Bearer owner'}}));
-assert.equal(ownerRes.status,200);const ownerData=await ownerRes.json();assert.equal(ownerData.orders.length,1);assert.equal(ownerData.orders[0].reference,saved.reference);assert.equal(ownerData.orders[0].notification,'sent');assert.equal(ownerData.orders[0].totalCents,1800);
+assert.equal(ownerRes.status,200);const ownerData=await ownerRes.json();assert.equal(ownerData.orders.length,1);assert.equal(ownerData.orders[0].reference,saved.reference);assert.equal(ownerData.orders[0].notification,'sent');assert.equal(ownerData.orders[0].totalCents,1600);
 assert.equal(storageValue,null);
 await db.close();console.log('End-to-end staged: lost confirmation, safe retry, queued alert, private owner view and mock Telegram passed.');

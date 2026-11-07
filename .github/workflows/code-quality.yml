@@ -35,7 +35,7 @@ jobs:
         run: node --test scripts/workflow-runner-policy.test.mjs scripts/workflow-dependency-policy.test.mjs scripts/offers.test.mjs scripts/cart-offers.test.mjs scripts/service-worker-offline.test.mjs scripts/pwa-install.test.mjs
 
       - name: html-validate — صحة HTML وإمكانية الوصول (كل الصفحات)
-        run: npx html-validate index.html serum.html privacy.html 404.html setup.html check.html owner/index.html
+        run: npx html-validate index.html serum.html privacy.html 404.html setup.html check.html campaign.html hama.html owner/index.html owner/pricing.html
 
       - name: تدقيق المراجع والأصول (بلا شبكة)
         run: node scripts/ref-audit.mjs

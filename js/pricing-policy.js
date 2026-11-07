@@ -23,9 +23,24 @@
 }(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
+  /** دولار (رقم أو نص) ← سنتات صحيحة. للاستخدام مع الأرقام القادمة من config فقط. */
   function toCents(value) {
     var n = Number(value);
     return Number.isFinite(n) ? Math.round(n * 100) : 0;
+  }
+
+  /**
+   * تطبيع قيمة **بالسنتات أصلًا**: تقبل العدد الصحيح كما هو، وتقرّب الكسر.
+   * هذا هو المدخل الصحيح لكل دالة هنا، لأن كل مستدعيها يعمل بالسنتات:
+   * js/cart.js و order-pricing و order-core كلها تمرّر `priced.cents`.
+   *
+   * خطأ حقيقي حدث قبل هذا التعليق: كانت `discountCentsFor` تمرّر الأساس على
+   * `toCents` فيصير 1600 سنتًا = 160000 سنتًا، أي خصمًا أكبر 100 مرة. لم
+   * يظهر في الفحص اليدوي لأن `totalCents` كان يُقرأ من السلة بطريق آخر.
+   */
+  function asCents(value) {
+    var n = Number(value);
+    return Number.isFinite(n) ? Math.round(n) : 0;
   }
 
   /**
@@ -58,7 +73,7 @@
 
   /** مبلغ الخصم بالدولار على أساس محدد (قيمة المنتجات بعد العروض، بلا عطر ولا توصيل). */
   function discountCentsFor(method, baseCents) {
-    var base = toCents(baseCents);
+    var base = asCents(baseCents);
     if (base <= 0) return 0;
     return Math.round(base * discountPercentFor(method) / 100);
   }
@@ -73,8 +88,8 @@
     var method = input.method;
     var zone = input.zone;
     var delivery = input.delivery;
-    var productCents = toCents(input.productCents);
-    var scentCents = toCents(input.scentCents);
+    var productCents = asCents(input.productCents);
+    var scentCents = asCents(input.scentCents);
     var discountCents = discountCentsFor(method, productCents);
     var deliveryCents = deliveryCentsFor(method, zone, delivery);
     var subtotalCents = productCents + scentCents;
@@ -88,6 +103,7 @@
 
   return {
     toCents: toCents,
+    asCents: asCents,
     deliveryFeeFor: deliveryFeeFor,
     deliveryCentsFor: deliveryCentsFor,
     discountPercentFor: discountPercentFor,

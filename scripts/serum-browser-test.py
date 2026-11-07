@@ -120,7 +120,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("استفسار واتساب يوضح الحجم الافتراضي والسعر المرجعي وموعد التجهيز",
                   all(x in direct_msg for x in ['50 مل','$16','قبل الخصم والتوصيل','موعد تجهيز العبوة']) and
                   page.locator('[data-wa-context]').is_visible() and 'راجعي الرسالة' in page.locator('[data-wa-context]').inner_text())
-            check("رسوم التوصيل وشروطها قرب الشراء", all(x in page.locator('.serum-trust').inner_text() for x in ['حماة فقط','$2','بلا خصم']) and '$4' not in page.locator('.serum-trust').inner_text())
+            check("التوصيل المجاني وشروطه قرب الشراء", all(x in page.locator('.serum-trust').inner_text() for x in ['التوصيل مجاني','بلا خصم']) and '$4' not in page.locator('.serum-trust').inner_text())
             estimate = page.locator('[data-order-estimate]')
             check("تقدير العبوة الواحدة يظهر بافتراضاته قبل فتح السلة",
                   estimate.is_visible() and 'عبوة واحدة' in estimate.inner_text() and
@@ -195,14 +195,14 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("50 مل + شام كاش حماة = $14.40", page.locator('[data-cart-subtotal]').inner_text() == '$16' and page.locator('[data-cart-total]').inner_text() == '$14.40' and page.locator('[data-cart-delivery]').inner_text() == 'مجاني')
             hama_fee = page.locator('[data-zone-select="hama"]').locator('..').locator('.zone-fee')
             other_fee = page.locator('[data-zone-select="other"]').locator('..').locator('.zone-fee')
-            check("بطاقتا المنطقة تتبعان رسوم شام كاش الفعلية", 'مجاني' in hama_fee.inner_text() and '$2' in other_fee.inner_text())
+            check("بطاقتا المنطقة تعرضان التوصيل المجاني مع شام كاش", 'مجاني' in hama_fee.inner_text() and 'مجاني' in other_fee.inner_text())
             page.locator('[data-zone-select="other"]').check()
-            check("50 مل + شام كاش المحافظات = $16.40", page.locator('[data-cart-total]').inner_text() == '$16.40')
+            check("50 مل + شام كاش المحافظات = $14.40 (توصيل مجاني)", page.locator('[data-cart-total]').inner_text() == '$14.40')
             page.locator('[data-pay-select="cod"]').check()
-            check("بطاقتا المنطقة تتبعان رسوم الاستلام الفعلية", '$2' in hama_fee.inner_text() and '$2' in other_fee.inner_text())
-            check("50 مل + استلام المحافظات = $18", page.locator('[data-cart-total]').inner_text() == '$18')
+            check("بطاقتا المنطقة تعرضان التوصيل المجاني مع الاستلام", 'مجاني' in hama_fee.inner_text() and 'مجاني' in other_fee.inner_text())
+            check("50 مل + استلام المحافظات = $16", page.locator('[data-cart-total]').inner_text() == '$16')
             page.locator('[data-zone-select="hama"]').check()
-            check("50 مل + استلام حماة = $18", page.locator('[data-cart-total]').inner_text() == '$18')
+            check("50 مل + استلام حماة = $16", page.locator('[data-cart-total]').inner_text() == '$16')
             audit(page, 'السلة المفتوحة')
             page.locator('[data-cart-close]').click()
             if width < 600:
@@ -210,7 +210,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                 sticky.wait_for(state='visible', timeout=5000)
                 check("شريط السلة يوضح أن المبلغ تقديري ويتبع المنطقة والدفع",
                       sticky.is_visible() and 'تقديري' in sticky.inner_text() and
-                      page.locator('[data-sticky-total]').inner_text() == '$18')
+                      page.locator('[data-sticky-total]').inner_text() == '$16')
                 check("تسمية التقدير وزر السلة مقروءان دون اقتطاع",
                       sticky.locator('.sticky-bar-btn').evaluate("""e => {
                         const bounds = e.getBoundingClientRect();
@@ -221,7 +221,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                         });
                       }"""))
             check("تغيير المنطقة والدفع في السلة يحدّث تقدير الصفحة",
-                  page.locator('[data-estimate-total]').inner_text() == '$18' and
+                  page.locator('[data-estimate-total]').inner_text() == '$16' and
                   page.locator('[data-estimate-zone]').input_value() == 'hama' and
                   page.locator('[data-estimate-method]').input_value() == 'cod')
 
@@ -302,7 +302,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         audit(page, 'التقدير المفتوح')
         cases = [
             (0, '30 مل', {'hama': {'shamcash':'$11.70', 'cod':'$15'}, 'other': {'shamcash':'$13.70', 'cod':'$15'}}),
-            (1, '50 مل', {'hama': {'shamcash':'$14.40', 'cod':'$18'}, 'other': {'shamcash':'$16.40', 'cod':'$18'}}),
+            (1, '50 مل', {'hama': {'shamcash':'$14.40', 'cod':'$16'}, 'other': {'shamcash':'$14.40', 'cod':'$16'}}),
             (2, '100 مل', {'hama': {'shamcash':'$22.50', 'cod':'$27'}, 'other': {'shamcash':'$24.50', 'cod':'$27'}})
         ]
         for index, size, zones in cases:
@@ -331,7 +331,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page = ctx.new_page(); page.goto(base + path + '?offer=cod', wait_until='load')
         check("رابط عرض الاستلام يضبط التقدير الافتراضي بوضوح",
               page.locator('[data-estimate-method]').input_value() == 'cod' and
-              page.locator('[data-estimate-total]').inner_text() == '$18' and
+              page.locator('[data-estimate-total]').inner_text() == '$16' and
               'الدفع عند الاستلام' in page.locator('[data-estimate-context]').inner_text())
         ctx.close()
 
@@ -499,7 +499,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.goto(base + path, wait_until='load')
         page.goto(base + path + '?offer=cod', wait_until='load')
         check("فتح رابط عرض جديد يختار الاستلام مجددًا",
-              page.locator('[data-estimate-method]').input_value() == 'cod' and page.locator('[data-estimate-total]').inner_text() == '$18')
+              page.locator('[data-estimate-method]').input_value() == 'cod' and page.locator('[data-estimate-total]').inner_text() == '$16')
         page.goto(base + path + '?offer=invalid', wait_until='load')
         check("العرض غير الصالح لا يلغي الاختيار المحفوظ", page.locator('[data-estimate-method]').input_value() == 'cod')
         ctx.close()
