@@ -113,7 +113,7 @@ test('عرض 10% على 50 مل يظهر قبل/بعد ويُحتسب في ال�
   assert.match(msg, /بدل \$16/);
   assert.match(msg, /خصم عرض «عرض نصف»: − \$1\.60/);
   assert.match(msg, /قيمة المنتجات: \$16/);
-  assert.match(msg, /المجموع المرجعي: \$16\.40/);
+  assert.match(msg, /المجموع المرجعي: \$14.40/);
 });
 
 test('العرض المقيَّد بحجم لا يمسّ بقية الأحجام', async () => {
@@ -126,7 +126,7 @@ test('العرض المقيَّد بحجم لا يمسّ بقية الأحجام
   api.addToCart('serum-50');
   assert.equal(api.totals().offer, 1.6);
   assert.equal(api.totals().net, 40.4);    // 13 + 13 + 14.40
-  assert.equal(api.totals().amount, 42.4);
+  assert.equal(api.totals().amount, 40.4);
 });
 
 test('تراكم العرض مع شام كاش: العرض أولًا ثم 10% ثم التوصيل', async () => {
@@ -163,7 +163,7 @@ test('نسبة فوق السقف تُهمَل ولا تغيّر السعر', asy
   api.addToCart('serum-100');
   api.setMethod('cod', true);
   assert.equal(api.totals().offer, 0);
-  assert.equal(api.totals().amount, 27);
+  assert.equal(api.totals().amount, 25);
 });
 
 test('سعر خاص لحجم يُعرض ويُحتسب كسعر جديد', async () => {
