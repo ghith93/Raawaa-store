@@ -54,13 +54,22 @@ def open_cart_if_closed(page):
         page.locator('[data-cart-open]').first.click()
 
 
-def audit(page, label: str) -> None:
-    violations = page.evaluate("""async () => {
-      const r = await axe.run(document, {runOnly: {type: 'tag',
-        values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']}});
-      return r.violations.map(v => ({id: v.id, impact: v.impact,
-        targets: v.nodes.slice(0, 3).map(n => n.target.join(' '))}));
-    }""")
+def audit(page, label: str, console_state: dict[str, bool] | None = None) -> None:
+    # WebKit blocks axe-core's own temporary inline stylesheet under the real
+    # production CSP. Ignore only that known test-harness warning while axe runs;
+    # keep collecting all page console errors before and after the audit.
+    if console_state is not None:
+        console_state["axe_running"] = True
+    try:
+        violations = page.evaluate("""async () => {
+          const r = await axe.run(document, {runOnly: {type: 'tag',
+            values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']}});
+          return r.violations.map(v => ({id: v.id, impact: v.impact,
+            targets: v.nodes.slice(0, 3).map(n => n.target.join(' '))}));
+        }""")
+    finally:
+        if console_state is not None:
+            console_state["axe_running"] = False
     check(f"{label}: axe بلا مخالفات", not violations, json.dumps(violations, ensure_ascii=False))
 
 
@@ -79,8 +88,19 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             page = ctx.new_page()
             errors: list[str] = []
             bad: list[str] = []
+            console_state = {"axe_running": False}
             page.on("pageerror", lambda e: errors.append(str(e)))
-            page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+            def capture_console(message):
+                if message.type != "error":
+                    return
+                axe_csp_style_warning = (
+                    "Refused to apply a stylesheet because its hash, its nonce, or "
+                    "'unsafe-inline' does not appear in the style-src directive of the Content Security Policy."
+                )
+                if console_state["axe_running"] and axe_csp_style_warning in message.text:
+                    return
+                errors.append(message.text)
+            page.on("console", capture_console)
             page.on("response", lambda r: bad.append(f"{r.status} {r.url}") if r.status >= 400 else None)
             response = page.goto(base + path + "?utm_source=facebook&utm_medium=paid&utm_campaign=serum-oct&utm_content=moment", wait_until="load", timeout=45000)
             try:
@@ -209,7 +229,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("50 مل + استلام المحافظات = $18", page.locator('[data-cart-total]').inner_text() == '$18')
             page.locator('[data-zone-select="hama"]').check()
             check("50 مل + استلام حماة = $18", page.locator('[data-cart-total]').inner_text() == '$18')
-            audit(page, 'السلة المفتوحة')
+            audit(page, 'السلة المفتوحة', console_state)
             page.locator('[data-cart-close]').click()
             if width < 600:
                 sticky = page.locator('[data-sticky-bar]')
