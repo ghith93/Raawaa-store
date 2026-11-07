@@ -120,7 +120,8 @@
     config.payment.methods.forEach(function (method) {
       config.delivery.zones.forEach(function (zone) {
         var item = document.createElement('li');
-        var fee = method.freeDeliveryIn && method.freeDeliveryIn.indexOf(zone.id) !== -1 ? 0 : zone.fee;
+        var policy = window.RawaaPricingPolicy;
+        var fee = policy ? policy.deliveryFeeFor(method, zone, config.delivery) : 0;
         var discount = method.discountPercent ? ' · خصم ' + method.discountPercent + '% على المنتجات' : ' · بلا خصم';
         var deliveryText = fee === 0 ? 'توصيل مجاني' : 'توصيل ' + formatMoney(fee);
         item.textContent = method.label + ' — ' + zone.label + ': ' + deliveryText + discount + '.';

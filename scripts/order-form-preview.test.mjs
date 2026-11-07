@@ -8,6 +8,7 @@ const html = await readFile(new URL('docs/order-flow-prototype/index.html', root
 const configSource = await readFile(new URL('js/config.js', root), 'utf8');
 const appSource = await readFile(new URL('docs/order-flow-prototype/app.js', root), 'utf8');
 const offersSource = await readFile(new URL('js/offers.js', root), 'utf8');
+const pricingPolicySource = await readFile(new URL('js/pricing-policy.js', root), 'utf8');
 const pricingSource = await readFile(new URL('order-system/order-pricing.js', root), 'utf8');
 const previewServerSource = await readFile(new URL('scripts/marketing-studio-preview.py', root), 'utf8');
 
@@ -52,6 +53,7 @@ function bootPreview() {
   context.window = context;
   const window = context;
   vm.runInContext(configSource, context);
+  vm.runInContext(pricingPolicySource, context);
   vm.runInContext(offersSource, context);
   vm.runInContext(pricingSource, context);
   vm.runInContext(appSource, context);
@@ -71,6 +73,7 @@ test('consents are separate: processing required, marketing optional and initial
 test('the local preview allowlists its pricing scripts while keeping network access disabled', () => {
   for (const [url, file] of [
     ['/js/config.js', 'js/config.js'],
+    ['/js/pricing-policy.js', 'js/pricing-policy.js'],
     ['/js/offers.js', 'js/offers.js'],
     ['/order-system/order-pricing.js', 'order-system/order-pricing.js']
   ]) assert.ok(previewServerSource.includes(`"${url}": "${file}"`));
@@ -98,18 +101,18 @@ test('local form validation discards synthetic fields and never calls network or
   assert.equal(api.validPhone('0991234567'), true);
   assert.equal(api.validPhone('٠٩٩١٢٣٤٥٦٧'), true);
   assert.equal(api.validPhone('letters-only'), false);
-  assert.equal(ids['estimate-total'].textContent, '$11.70');
+  assert.equal(ids['estimate-total'].textContent, '$11.70');  // 13 − 10% + 0 توصيل
   assert.equal(api.formatAmount(2340, config), '$23.40');
   assert.equal(api.formatAmount(123400, config), '$1,234');
   ids.quantity.value = '2';
   ids.quantity.listeners.input();
   assert.equal(ids['estimate-products'].textContent, '$26');
-  assert.equal(ids['estimate-total'].textContent, '$23.40');
+  assert.equal(ids['estimate-total'].textContent, '$23.40');  // 26 − 10% + 0 توصيل
   ids['payment-method'].value = 'cod';
   ids['scent-option'].value = 'vanilla';
   ids['payment-method'].listeners.change();
   assert.equal(ids['estimate-scent'].textContent, '$4');
-  assert.equal(ids['estimate-total'].textContent, '$32');
+  assert.equal(ids['estimate-total'].textContent, '$30');    // 32 + 4 عطر − 10%، بلا رسوم توصيل
   ids['oil-option'].value = 'argan';
   ids['oil-option'].listeners.change();
   assert.match(ids['estimate-note'].textContent, /لا يشمل الإجمالي إضافة الزيت/);

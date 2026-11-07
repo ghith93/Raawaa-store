@@ -5,8 +5,18 @@ import vm from 'node:vm';
 import { webcrypto } from 'node:crypto';
 
 const bundle = await readFile(new URL('./edge/order-entry-bundle.mjs', import.meta.url), 'utf8');
-const importMatch = /^import\s+(\w+)\s+from\s*["']npm:postgres@3\.4\.7["'];/m.exec(bundle);
-assert.ok(importMatch, 'built edge entry should expose only the external Postgres import');
+// الحزمة قد تُضمّن وحدات داخلية قبل الاستيراد الخارجي (مثل سياسة التسعير)،
+// فالموضع ليس العقد. العقد هو: لا استيراد خارجي غير postgres، ولا استيراد نسبي
+// يفلت إلى Runtime Deno.
+const POSTGRES_IMPORT = /\bimport\s+([\w$]+)\s*from\s*["']npm:postgres@3\.4\.7["']/;
+const importMatch = POSTGRES_IMPORT.exec(bundle);
+assert.ok(importMatch, 'built edge entry must import postgres');
+const externalImports = [...bundle.matchAll(/\bimport\s+[\w${}\s,*]*?from\s*["']([^"']+)["']/g)].map(m => m[1]);
+assert.deepEqual(
+  externalImports.filter(spec => spec !== 'npm:postgres@3.4.7'),
+  [],
+  'built edge entry should expose only the external Postgres import'
+);
 
 function makeHarness({ marketingConsent = true, marketingKey = 'synthetic-bundle-hmac-key-never-use-in-production' } = {}) {
   const queries = [];
