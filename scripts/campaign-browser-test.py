@@ -52,8 +52,19 @@ def run(base: str, browser_name: str, ignore_https: bool) -> int:
             errors: list[str] = []
             failures: list[str] = []
             external: list[str] = []
+            axe_running = {"value": False}
             page.on('pageerror', lambda e: errors.append(str(e)))
-            page.on('console', lambda m: errors.append(m.text) if m.type == 'error' else None)
+            def capture_console(message):
+                if message.type != 'error':
+                    return
+                axe_csp_style_warning = (
+                    "Refused to apply a stylesheet because its hash, its nonce, or "
+                    "'unsafe-inline' does not appear in the style-src directive of the Content Security Policy."
+                )
+                if axe_running["value"] and axe_csp_style_warning in message.text:
+                    return
+                errors.append(message.text)
+            page.on('console', capture_console)
             page.on('response', lambda r: failures.append(f'{r.status} {r.url}') if r.status >= 400 else None)
             page.on('request', lambda r: external.append(r.url) if urlparse(r.url).netloc != same_origin else None)
             response = page.goto(base + '/campaign.html?utm_source=facebook&utm_medium=organic&utm_campaign=pilot_14day&utm_content=reference_prices', wait_until='load', timeout=45000)
@@ -84,9 +95,13 @@ def run(base: str, browser_name: str, ignore_https: bool) -> int:
             check('لا بكسل أو اتصال بخدمة تحليل خارجية', not page.evaluate('!!window.fbq') and not any('facebook.net' in u for u in external))
             check('لا تمرير أفقي على هذا العرض', page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), str(page.evaluate('({scroll:document.documentElement.scrollWidth,width:innerWidth})')))
             # axe-core is installed before navigation as an init script to honor strict CSP.
-            violations = page.evaluate("""async () => (await axe.run(document, {
-              runOnly: {type:'tag', values:['wcag2a','wcag2aa','wcag21a','wcag21aa','best-practice']}
-            })).violations.map(v => `${v.impact}:${v.id}:${v.nodes.length}`)""")
+            axe_running["value"] = True
+            try:
+                violations = page.evaluate("""async () => (await axe.run(document, {
+                  runOnly: {type:'tag', values:['wcag2a','wcag2aa','wcag21a','wcag21aa','best-practice']}
+                })).violations.map(v => `${v.impact}:${v.id}:${v.nodes.length}`)""")
+            finally:
+                axe_running["value"] = False
             check('axe: لا مخالفات إتاحة', not violations, json.dumps(violations, ensure_ascii=False))
             check('لا أخطاء JavaScript ولا طلبات ملفات فاشلة', not errors and not failures,
                   json.dumps({'errors':errors[:2],'failed':failures[:2]}, ensure_ascii=False))
