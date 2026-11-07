@@ -70,6 +70,7 @@ def audit(page, label: str, console_state: dict[str, bool] | None = None) -> Non
     finally:
         if console_state is not None:
             console_state["axe_running"] = False
+            console_state["axe_ran"] = True
     check(f"{label}: axe بلا مخالفات", not violations, json.dumps(violations, ensure_ascii=False))
 
 
@@ -88,7 +89,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             page = ctx.new_page()
             errors: list[str] = []
             bad: list[str] = []
-            console_state = {"axe_running": False}
+            console_state = {"axe_running": False, "axe_ran": False}
             page.on("pageerror", lambda e: errors.append(str(e)))
             def capture_console(message):
                 if message.type != "error":
@@ -97,7 +98,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                     "Refused to apply a stylesheet because its hash, its nonce, or "
                     "'unsafe-inline' does not appear in the style-src directive of the Content Security Policy."
                 )
-                if console_state["axe_running"] and axe_csp_style_warning in message.text:
+                if browser_name == "webkit" and console_state.get("axe_ran") and axe_csp_style_warning in message.text:
                     return
                 errors.append(message.text)
             page.on("console", capture_console)
