@@ -35,6 +35,11 @@ def audit(base: str, threshold: str, viewport: tuple[int, int]) -> int:
         browser = p.chromium.launch()
         ctx = browser.new_context(viewport={"width": viewport[0], "height": viewport[1]},
                                   locale="ar")
+        # axe-core كسكربت init قبل أي تنقّل — يعمل تحت CSP الإنتاجية كما هي.
+        # كان هنا `Page.setBypassCSP` + add_script_tag: أي أن التدقيق كان يعمل
+        # في وضع **معطَّل الحماية**، فلا يكشف عطلًا يسبّبه CSP الحقيقي. بعد إزالة
+        # unsafe-inline صار هذا الفرق مؤثرًا، فالتجاوز يُبطِل قيمة الفحص نفسه.
+        ctx.add_init_script(script=AXE)
         for path, state in PAGES:
             page = ctx.new_page()
             label = f"{path} [{state}]"
@@ -45,8 +50,6 @@ def audit(base: str, threshold: str, viewport: tuple[int, int]) -> int:
                 # Cloudflare Pages clean-URL routing. Test the canonical file path;
                 # production clean URLs are covered by the dedicated browser suite.
                 suffix = "?cart=serum-50x1" if state in ("cart", "fallback") else ""
-                cdp = page.context.new_cdp_session(page)
-                cdp.send("Page.setBypassCSP", {"enabled": True})
                 response = page.goto(base.rstrip("/") + path + suffix, wait_until="load", timeout=45000)
                 if not response or (response.status >= 400 and path != "/404.html"):
                     raise RuntimeError(f"HTTP {response.status if response else 'no response'}")
@@ -56,8 +59,6 @@ def audit(base: str, threshold: str, viewport: tuple[int, int]) -> int:
                 if state == "fallback":
                     page.locator('[data-cart-checkout]').click()
                     page.locator('[data-cart-fallback]').wait_for(state="visible")
-                # أداة التدقيق تُحقن من سياق Playwright؛ تجاوز CSP محصور بجلسة الاختبار هذه.
-                page.add_script_tag(content=AXE)
                 res = page.evaluate("""async () => {
                     const r = await axe.run(document, {
                       runOnly: { type: 'tag',

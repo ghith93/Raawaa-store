@@ -344,6 +344,8 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         # سياق جديد حتى لا تغيّر هذه التجارب سلة الاختبارات الأخرى.
         ctx = browser.new_context(viewport={"width":390,"height":844}, locale="ar",
                                   reduced_motion="reduce", ignore_https_errors=ignore_https)
+        install_axe(ctx)
+        console_state = {"axe_running": False, "axe_ran": False}
         page = ctx.new_page()
         page.goto(base + path + '?utm_campaign=estimate_test&utm_content=proof', wait_until='load')
         page.wait_for_selector('#products .size-option input', state='attached')
