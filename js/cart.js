@@ -1168,7 +1168,9 @@
     img.loading = 'lazy';
     img.decoding = 'async';
     img.alt = '';
-    img.style.objectFit = 'cover';
+    // لا نمط سطري هنا: `.cart-item img { object-fit: cover; }` في css/styles.css
+    // يفعل الشيء نفسه. النمط السطري كان يمنع تفعيل CSP صارم على style-src بلا
+    // 'unsafe-inline'، ويخلق مصدرَي حقيقة لنفس القاعدة.
 
     var main = document.createElement('div');
     main.className = 'cart-item-main';
@@ -1297,7 +1299,8 @@
     var feedback = holderId ? document.getElementById(holderId) : null;
     if (feedback) {
       feedback.textContent = text;
-      feedback.style.color = isError ? 'var(--brown)' : '';
+      // الصنف لا النمط السطري — يبقي style-src 'self' كافيًا.
+      feedback.classList.toggle('is-error', !!isError);
     }
     var original = button.dataset.originalLabel || button.textContent;
     button.dataset.originalLabel = original;
@@ -1305,7 +1308,7 @@
     window.clearTimeout(button._feedbackTimer);
     button._feedbackTimer = window.setTimeout(function () {
       button.textContent = button.dataset.originalLabel;
-      if (feedback) feedback.textContent = '';
+      if (feedback) { feedback.textContent = ''; feedback.classList.remove('is-error'); }
     }, 2200);
   }
 

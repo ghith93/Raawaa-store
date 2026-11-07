@@ -17,7 +17,11 @@ export default [
         AbortController: 'readonly', Blob: 'readonly', Response: 'readonly',
         Request: 'readonly', Headers: 'readonly', structuredClone: 'readonly',
         // UMD: الملف يعرّف نفسه لـNode أيضًا (module عند وجوده).
-        module: 'readonly', globalThis: 'readonly'
+        module: 'readonly', globalThis: 'readonly',
+        // سكربتات الصفحات المستخرجة من <script> المضمّن (index/privacy/serum/setup/check):
+        // كانت تعمل داخل صفحة، فلم تكن تمرّ على ESLint. واجهات المتصفح التي تستخدمها:
+        Image: 'readonly', alert: 'readonly', prompt: 'readonly',
+        crypto: 'readonly', btoa: 'readonly'
       }
     },
     linterOptions: { reportUnusedDisableDirectives: true },

@@ -68,7 +68,7 @@ jobs:
       # محرّر المالك: المنطق + الواجهة في DOM حقيقي. أي عرض يُقبله المحرّر
       # ويُسقطه المتجر بصمت يعني أن المالك نشر عرضًا لا يعمل.
       - name: محرّر الأسعار والعروض للمالك
-        run: node --test scripts/pricing-editor.test.mjs scripts/pricing-tool-dom.test.mjs scripts/pricing-policy-single-source.test.mjs scripts/shipping-cost.test.mjs
+        run: node --test scripts/pricing-editor.test.mjs scripts/pricing-tool-dom.test.mjs scripts/pricing-policy-single-source.test.mjs scripts/shipping-cost.test.mjs scripts/csp-no-inline.test.mjs scripts/page-scripts-wiring.test.mjs scripts/axe-csp-honesty.test.mjs
 
       - name: اختبار تجميع ميزانية Lighthouse المتسامح مع الضجيج
         run: node --test scripts/perf-budget.test.mjs

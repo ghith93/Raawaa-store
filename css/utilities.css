@@ -1,0 +1,29 @@
+/*
+ * أدوات عامة مشتركة بين الصفحات.
+ *
+ * لماذا ملف مستقل؟ كانت هذه الأصناف في css/home-inline.css، وذلك الملف يحمل
+ * كذلك :root الخاص بالصفحة الرئيسية (لوحة داكنة). ربطُه بـhama.html — وهي
+ * صفحة فاتحة — استبدل متغيّرات ألوانها، فصار شعارها الأسود باهتًا على خلفية
+ * داكنة: مخالفة تباين حقيقية التقطها تدقيق axe في CI.
+ *
+ * القاعدة المستفادة: ملف الأنماط الذي يحمل لوحة ألوان لا يُعاد استخدامه في
+ * صفحة بلوحة أخرى. هذه التعريفات **تعتمد** على المتغيّرات ولا تعرّفها، فتعمل
+ * مع أي لوحة يورّثها الصفحة المضيفة.
+ *
+ * المصدر: سمات style السطرية في index.html وhama.html — نفس التعريفات حرفيًا،
+ * لكن كأصناف: يبقى style-src 'self' كافيًا بلا 'unsafe-inline'.
+ */
+.u-muted        { color: var(--text-muted); }
+.u-gold         { color: var(--gold); }
+.u-mb-05        { margin-bottom: .5rem; }
+.u-m-0          { margin: 0; }
+.u-mt-13        { margin-top: 1.3rem; border: none; }
+.u-w-full       { width: 100%; }
+.u-plain-list   { list-style: none; }
+.u-lead         { color: var(--text-muted); margin: 1rem auto 1.8rem; max-width: 420px; }
+.u-center-row   { display: flex; justify-content: center; gap: .8rem; flex-wrap: wrap; }
+.u-row          { display: flex; flex-wrap: wrap; gap: 1rem; }
+.u-note         { color: var(--text-muted); margin-top: .75rem; max-width: 250px; }
+.u-eyebrow      { color: var(--gold); font-size: .68rem; letter-spacing: .16em; margin: 0 0 1.1rem; }
+.u-footer-note  { margin-top: 1.3rem; border: none; }
+.u-figure       { width: 100%; max-width: 560px; height: auto; border-radius: 18px; display: block; }

@@ -49,7 +49,10 @@ python3 - "$OUT" <<'PYEOF'
 import re, sys
 from pathlib import Path
 out = Path(sys.argv[1])
-css = (out / "css/styles.css").read_text(encoding="utf-8")
+# كل stylesheet قد يشير إلى خط — لا styles.css وحدها.
+# بعد إخراج @font-face من index.html إلى css/home-inline.css، صار الاعتماد على
+# ملف واحد خطرًا: الخط كان سيُحذف من النشر لعدم ذكره هناك.
+css = "\n".join(p.read_text(encoding="utf-8") for p in (out / "css").glob("*.css"))
 used = set(re.findall(r'fonts/([A-Za-z0-9_.\-]+\.woff2)', css))
 fdir = out / "assets" / "fonts"
 if fdir.is_dir():

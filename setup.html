@@ -6,25 +6,16 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#101418">
 <title>إعداد رواء من الآيفون</title>
-<style>
-:root{color-scheme:dark}body{font-family:-apple-system,"Segoe UI",Tahoma,sans-serif;background:#101418;color:#eef2f5;margin:0;padding:16px;line-height:1.7;max-width:760px;margin-inline:auto}h1{font-size:1.3rem;margin:0 0 4px}h2{font-size:1.05rem;margin:0 0 8px;color:#ffd479}section{background:#1a2129;border-radius:14px;padding:16px;margin:14px 0}button{font-size:1rem;padding:12px 18px;border-radius:12px;border:0;background:#2f81f7;color:#fff;margin:6px 4px 6px 0;min-height:48px}button.alt{background:#3a4653}input,pre{width:100%;box-sizing:border-box;background:#0d1117;color:#7ee787;border:1px solid #30363d;border-radius:10px;padding:10px;font-size:.95rem;margin:8px 0}pre{white-space:pre-wrap;word-break:break-word;direction:ltr;text-align:left}a{color:#79c0ff}.small{font-size:.88rem;color:#b2bdc6}code{direction:ltr;display:inline-block;background:#0d1117;padding:4px 8px;border-radius:8px;word-break:break-all}
-</style>
+<link rel="stylesheet" href="css/setup.css">
 </head>
 <body>
 <h1>إعداد رواء من الآيفون</h1>
 <p class="small">صفحة إعداد للمالك. توليد السرّ يجري داخل هاتفك فقط؛ لا يُرسل إلى هذه الصفحة أو إلى أي خادم.</p>
 <section><h2>١) ولِّد السرّ</h2><button type="button" id="genBtn">ولِّد سرًّا جديدًا</button><div id="secretWrap" hidden><input type="text" id="secretOut" readonly dir="ltr" aria-label="السرّ"><button type="button" class="alt" id="copySecret">نسخ السرّ</button><p class="small">احفظه عندك. لا ترسله لأحد.</p></div></section>
-<section><h2>٢) أضِفه إلى أسرار Supabase</h2><p><a href="https://supabase.com/dashboard/project/oyoyozdugicmnkfhjovo/functions/secrets">افتح أسرار Supabase مباشرة</a> وأضف:</p><p><code onclick="copyText('RAWAA_OUTBOX_SCHEDULER_SECRET')">RAWAA_OUTBOX_SCHEDULER_SECRET</code></p><p class="small">ألصق السرّ الذي ولّدته في الخطوة الأولى.</p></section>
+<section><h2>٢) أضِفه إلى أسرار Supabase</h2><p><a href="https://supabase.com/dashboard/project/oyoyozdugicmnkfhjovo/functions/secrets">افتح أسرار Supabase مباشرة</a> وأضف:</p><p><code data-copy-text="RAWAA_OUTBOX_SCHEDULER_SECRET">RAWAA_OUTBOX_SCHEDULER_SECRET</code></p><p class="small">ألصق السرّ الذي ولّدته في الخطوة الأولى.</p></section>
 <section><h2>٣) أضِفه إلى أسرار GitHub</h2><p><a href="https://github.com/ghith93/Raawaa-store/settings/secrets/actions/new">افتح إضافة سرّ GitHub</a> وأدخل الاسم نفسه والقيمة نفسها، ثم اضغط Add secret.</p><p><a href="https://github.com/ghith93/Raawaa-store/actions/workflows/outbox-scheduler.yml">صفحة مجدول التنبيهات</a></p></section>
-<section><h2>٤) مفتاح حماية الطلبات (خطوة لاحقة)</h2><p class="small">هذا مفتاح منفصل عن سرّ المجدول. أنشئه فقط عند متابعة إعداد استقبال الطلبات؛ يُحفظ في Supabase وحده ولا يُضاف إلى GitHub.</p><button type="button" id="genRateBtn">ولِّد مفتاح حماية جديدًا</button><div id="rateWrap" hidden><input type="text" id="rateOut" readonly dir="ltr" aria-label="مفتاح حماية الطلبات"><button type="button" class="alt" id="copyRate">نسخ المفتاح</button></div><p><a href="https://supabase.com/dashboard/project/oyoyozdugicmnkfhjovo/functions/secrets">افتح أسرار Supabase مباشرة</a></p><p>اسم السرّ:<br><code onclick="copyText('RAWAA_RATE_LIMIT_HMAC_KEY')">RAWAA_RATE_LIMIT_HMAC_KEY</code></p><p class="small">لا تضف هذا السر قبل أن نكمل قائمة التحقق ونقرر تفعيل استقبال الطلبات.</p></section>
+<section><h2>٤) مفتاح حماية الطلبات (خطوة لاحقة)</h2><p class="small">هذا مفتاح منفصل عن سرّ المجدول. أنشئه فقط عند متابعة إعداد استقبال الطلبات؛ يُحفظ في Supabase وحده ولا يُضاف إلى GitHub.</p><button type="button" id="genRateBtn">ولِّد مفتاح حماية جديدًا</button><div id="rateWrap" hidden><input type="text" id="rateOut" readonly dir="ltr" aria-label="مفتاح حماية الطلبات"><button type="button" class="alt" id="copyRate">نسخ المفتاح</button></div><p><a href="https://supabase.com/dashboard/project/oyoyozdugicmnkfhjovo/functions/secrets">افتح أسرار Supabase مباشرة</a></p><p>اسم السرّ:<br><code data-copy-text="RAWAA_RATE_LIMIT_HMAC_KEY">RAWAA_RATE_LIMIT_HMAC_KEY</code></p><p class="small">لا تضف هذا السر قبل أن نكمل قائمة التحقق ونقرر تفعيل استقبال الطلبات.</p></section>
 
-<script>
-function copyText(text){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(()=>alert("تم النسخ"),()=>alert("انسخ يدويًا: "+text))}else{window.prompt("انسخ النص التالي",text)}}
-document.getElementById("genBtn").onclick=()=>{const bytes=crypto.getRandomValues(new Uint8Array(48));let binary="";for(const byte of bytes)binary+=String.fromCharCode(byte);document.getElementById("secretOut").value=btoa(binary).replaceAll("+","-").replaceAll("/","_").replaceAll("=","");document.getElementById("secretWrap").hidden=false};
-document.getElementById("copySecret").onclick=()=>copyText(document.getElementById("secretOut").value);
-document.getElementById("genRateBtn").onclick=()=>{const bytes=crypto.getRandomValues(new Uint8Array(48));let binary="";for(const byte of bytes)binary+=String.fromCharCode(byte);document.getElementById("rateOut").value=btoa(binary).replaceAll("+","-").replaceAll("/","_").replaceAll("=","");document.getElementById("rateWrap").hidden=false};
-document.getElementById("copyRate").onclick=()=>copyText(document.getElementById("rateOut").value);
-
-</script>
+<script src="js/setup-inline.js" defer></script>
 </body>
 </html>

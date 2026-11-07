@@ -42,19 +42,54 @@ def check(name: str, condition: bool, detail: str = "") -> None:
         print(f"::error::{name}")
 
 
+# نمط <style> الداخلي الذي يبنيه axe-core لقياس التباين — ليس من صفحات المتجر.
+AXE_CSP_STYLE_WARNING = (
+    "Refused to apply a stylesheet because its hash, its nonce, or "
+    "'unsafe-inline' does not appear in the style-src directive of the Content Security Policy."
+)
+
+
+def install_axe(ctx) -> None:
+    """
+    يحمّل axe-core **قبل** أي تنقّل، كسكربت init.
+
+    لماذا: `page.add_script_tag(content=...)` يُنشئ عنصر <script> سطريًا، فيرفضه
+    CSP صارم على script-src. تحميله قبل التنقّل يعني أن الصفحة تُحمَّل وحدها تحت
+    السياسة الحقيقية، بلا استثناء — وهو الشرط الوحيد ليكون فحص CSP ذا معنى.
+    """
+    ctx.add_init_script(script=AXE)
+
+
 def open_cart_if_closed(page):
     if not page.locator('#cart-dialog').evaluate('(dialog) => dialog.open'):
         page.locator('[data-cart-open]').first.click()
 
 
-def audit(page, label: str) -> None:
-    page.add_script_tag(content=AXE)
-    violations = page.evaluate("""async () => {
-      const r = await axe.run(document, {runOnly: {type: 'tag',
-        values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']}});
-      return r.violations.map(v => ({id: v.id, impact: v.impact,
-        targets: v.nodes.slice(0, 3).map(n => n.target.join(' '))}));
-    }""")
+def audit(page, label: str, console_state: dict | None = None) -> None:
+    """
+    تدقيق axe-core.
+
+    axe-core يُحمَّل الآن كسكربت init **قبل** التنقّل (انظر install_axe)، لا عبر
+    add_script_tag الذي يُنشئ <script> سطريًا فيرفضه CSP صارم. هذا يجعل الاختبار
+    صادقًا: نفس الصفحة، ونفس السياسة، بلا استثناء.
+
+    التحذير الوحيد المتجاهَل هو نمط <style> **الداخلي في axe نفسه** الذي يبنيه
+    لقياس التباين. نستثنيه في WebKit فقط وبالنص الحرفي، وأثناء تشغيل axe ونافذة
+    قصيرة بعده (WebKit يبلّغ متأخرًا). كل خطأ آخر — من الصفحة أو السكربتات — يبقى فشلًا.
+    """
+    if console_state is not None:
+        console_state["axe_running"] = True
+    try:
+        violations = page.evaluate("""async () => {
+          const r = await axe.run(document, {runOnly: {type: 'tag',
+            values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice']}});
+          return r.violations.map(v => ({id: v.id, impact: v.impact,
+            targets: v.nodes.slice(0, 3).map(n => n.target.join(' '))}));
+        }""")
+    finally:
+        if console_state is not None:
+            console_state["axe_running"] = False
+            console_state["axe_ran"] = True
     check(f"{label}: axe بلا مخالفات", not violations, json.dumps(violations, ensure_ascii=False))
 
 
@@ -70,11 +105,23 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                                       ignore_https_errors=ignore_https)
             ctx.add_init_script("""window.__waCalls = [];
                 window.open = function(url) { window.__waCalls.push(url); return null; };""")
+            install_axe(ctx)
             page = ctx.new_page()
             errors: list[str] = []
             bad: list[str] = []
+            console_state = {"axe_running": False, "axe_ran": False}
             page.on("pageerror", lambda e: errors.append(str(e)))
-            page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+
+            def capture_console(message):
+                if message.type != "error":
+                    return
+                # استثناء موثّق ومحدود: نمط axe الداخلي، في WebKit، والنص حرفي.
+                if (browser_name == "webkit" and AXE_CSP_STYLE_WARNING in message.text
+                        and (console_state["axe_running"] or console_state["axe_ran"])):
+                    return
+                errors.append(message.text)
+
+            page.on("console", capture_console)
             page.on("response", lambda r: bad.append(f"{r.status} {r.url}") if r.status >= 400 else None)
             response = page.goto(base + path + "?utm_source=facebook&utm_medium=paid&utm_campaign=serum-oct&utm_content=moment", wait_until="load", timeout=45000)
             try:
@@ -147,7 +194,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                   page.locator('[data-serum-view="ritual"]').is_visible() and ritual_view.get_attribute('aria-pressed') == 'true' and
                   'مولّد' in (page.locator('[data-serum-caption]').text_content() or '') and 'لا يعرض المنتج' in (page.locator('[data-serum-caption]').text_content() or ''))
             if width == 390:
-                audit(page, 'المشهد المفتوح')
+                audit(page, 'المشهد المفتوح', console_state)
                 sizes_view.tap()
                 check("تبديل المشهد باللمس المحاكى يعمل", page.locator('[data-serum-view="sizes"]').is_visible())
             page.locator('#products .size-option').nth(2).click()
@@ -167,7 +214,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             if screenshot_dir and width == 390:
                 Path(screenshot_dir).mkdir(parents=True, exist_ok=True)
                 page.screenshot(path=str(Path(screenshot_dir) / f'serum-{browser_name}-390.png'), full_page=False)
-            audit(page, 'الصفحة')
+            audit(page, 'الصفحة', console_state)
             page.locator('#ritual img').scroll_into_view_if_needed()
             image_loaded = page.locator('#ritual img').evaluate("""el => new Promise(resolve => {
               if (el.complete) return resolve(el.naturalWidth > 0);
@@ -203,7 +250,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check("50 مل + استلام المحافظات = $16", page.locator('[data-cart-total]').inner_text() == '$16')
             page.locator('[data-zone-select="hama"]').check()
             check("50 مل + استلام حماة = $16", page.locator('[data-cart-total]').inner_text() == '$16')
-            audit(page, 'السلة المفتوحة')
+            audit(page, 'السلة المفتوحة', console_state)
             page.locator('[data-cart-close]').click()
             if width < 600:
                 sticky = page.locator('[data-sticky-bar]')
@@ -274,6 +321,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         ctx = browser.new_context(viewport={"width":390,"height":844}, locale="ar",
                                   ignore_https_errors=ignore_https, service_workers='block')
         ctx.add_init_script("window.__waCalls = []; window.open = function(url) { window.__waCalls.push(url); return null; };")
+        install_axe(ctx)
         if path.endswith('.html') and urlparse(base).hostname in ('127.0.0.1', 'localhost'):
             ctx.route('**/serum', lambda route: route.continue_(url=base + path))
         page = ctx.new_page()
@@ -296,11 +344,13 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         # سياق جديد حتى لا تغيّر هذه التجارب سلة الاختبارات الأخرى.
         ctx = browser.new_context(viewport={"width":390,"height":844}, locale="ar",
                                   reduced_motion="reduce", ignore_https_errors=ignore_https)
+        install_axe(ctx)
+        console_state = {"axe_running": False, "axe_ran": False}
         page = ctx.new_page()
         page.goto(base + path + '?utm_campaign=estimate_test&utm_content=proof', wait_until='load')
         page.wait_for_selector('#products .size-option input', state='attached')
         page.locator('.serum-estimate-details summary').click()
-        audit(page, 'التقدير المفتوح')
+        audit(page, 'التقدير المفتوح', console_state)
         cases = [
             # التوصيل مجاني في كل الحالات، فالسعر واحد للمنطقتين (D-2026-11-07).
             (0, '30 مل', {'hama': {'shamcash':'$11.70', 'cod':'$13'}, 'other': {'shamcash':'$11.70', 'cod':'$13'}}),
@@ -590,6 +640,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                 writeText: text => window.__clipboardFail ? Promise.reject(new Error('denied')) :
                   (window.__copied.push(text), Promise.resolve())
               }});""")
+            install_axe(ctx)
             page = ctx.new_page(); page.goto(base + target_path + '?utm_campaign=copy-test', wait_until='load')
             page.locator('[data-add-current]').click()
             if not page.locator('#cart-dialog').evaluate('(d) => d.open'):
@@ -679,8 +730,10 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                                       reduced_motion="reduce", ignore_https_errors=ignore_https)
             page = ctx.new_page(); page.goto(base + path, wait_until='load')
             page.locator('[data-add-current]').click()
+            zoom_sheet = None
             if text_zoom:
-                page.evaluate("document.documentElement.style.fontSize = '200%'")
+                # stylesheet من نفس الأصل لا نمط سطري — حتى يبقى style-src 'self' كافيًا.
+                zoom_sheet = page.add_style_tag(url=base + '/scripts/test-text-zoom.css')
                 page.wait_for_timeout(250)  # ResizeObserver يعيد ضبط التذييل والحجم الفعلي.
                 check("تكبير النص 200% يحوّل التذييل الطويل إلى تمرير عادي",
                       page.locator('.cart-foot').evaluate('(e) => getComputedStyle(e).position') == 'static')
@@ -706,7 +759,8 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             check(f"{label}: لا تمرير أفقي والتركيز المرئي يبقى داخل السلة",
                   geometry['scrollWidth'] <= geometry['width'] + 1 and not obscured, str(obscured[:3]))
             if text_zoom:
-                page.evaluate("document.documentElement.style.fontSize = '100%'")
+                if zoom_sheet is not None:
+                    zoom_sheet.evaluate('(e) => e.remove()')
                 page.wait_for_timeout(250)
                 check("إعادة النص إلى حجمه تعيد تثبيت التذييل عندما تتسع الشاشة",
                       page.locator('.cart-foot').evaluate('(e) => getComputedStyle(e).position') == 'sticky')
@@ -892,7 +946,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                                       locale="ar", ignore_https_errors=ignore_https)
             page = ctx.new_page(); page.goto(base + zoom_path, wait_until='load')
             page.wait_for_selector('#products .size-option input', state='attached')
-            page.add_style_tag(content='html { font-size: 200% !important; }')
+            page.add_style_tag(url=base + '/scripts/test-text-zoom.css')
             target_selector = '.header-actions button, #products .size-option, [data-serum-controls]:visible button'
             target_selector += ', .unit-comparison-list li, .purchase-shortcuts a'
             in_bounds = page.locator(target_selector).evaluate_all("""els => els.every(e => {
