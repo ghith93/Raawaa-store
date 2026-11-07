@@ -52,13 +52,26 @@ test('the old source-only regex would have failed here — proof the bug was rea
   assert.doesNotThrow(() => readOrderConfig(built.output));
 });
 
-test('prices, delivery and payment rules survive publishing unchanged', () => {
+test('structural order data survives publishing unchanged', () => {
+  // نتحقق من **البنية** لا من قيم السياسة. الأسعار والرسوم والخصومات ملك المالك
+  // وتتغيّر بقراره (مثل تغيير رسم حماة)، فحارس العقد يجب أن يبقى أخضر وقتها.
+  // قيم السياسة نفسها محروسة في scripts/order-config-monitor.test.mjs وصفحة الأسعار.
   const live = readPublishedConfig(built.output);
-  assert.deepEqual(live.products.map(p => [p.id, p.sizeMl, p.price]), [
-    ['serum-30', 30, 13], ['serum-50', 50, 16], ['serum-100', 100, 25]
-  ]);
-  assert.deepEqual(live.delivery.zones.map(z => [z.id, z.fee]), [['hama', 2], ['other', 2]]);
-  assert.equal(live.payment.methods.find(m => m.id === 'shamcash').discountPercent, 10);
+  assert.deepEqual(live.products.map(p => p.id), ['serum-30', 'serum-50', 'serum-100']);
+  assert.deepEqual(live.products.map(p => p.sizeMl), [30, 50, 100]);
+  assert.deepEqual(live.delivery.zones.map(z => z.id).sort(), ['hama', 'other']);
+  assert.deepEqual(live.payment.methods.map(m => m.id).sort(), ['cod', 'shamcash']);
+  assert.equal(typeof live.contact.whatsappNumber, 'string');
+});
+
+test('every policy value in the published file is identical to the source', () => {
+  // البديل الصحيح عن تثبيت الأرقام: أي قيمة سياسة يقررها المالك يجب أن تصل
+  // للنسخة المنشورة حرفيًا. هذا يبقى صحيحًا مهما تغيّرت الأرقام.
+  const live = readPublishedConfig(built.output);
+  const fromSource = JSON.parse(JSON.stringify(built.publicConfig));
+  assert.deepEqual(live.products, fromSource.products);
+  assert.deepEqual(live.delivery, fromSource.delivery);
+  assert.deepEqual(live.payment, fromSource.payment);
 });
 
 test('internal cost and integration notes never reach the published file', () => {
@@ -75,24 +88,48 @@ test('the published file is frozen against runtime mutation', () => {
   assert.match(built.output, /deepFreeze/);
 });
 
+/**
+ * يطبّق تعديلًا نصيًا على المصدر ويشترط أنه حدث فعلًا.
+ *
+ * السبب: الاختبارات كانت تبحث عن قيمة حرفية (`price: 16`). حين يغيّر المالك
+ * السعر أو رسم حماة، لا يجد `.replace` شيئًا فيمرّ بلا تعديل ويصير الاختبار
+ * أخضر كاذبًا أو أحمر بلا سبب. هنا نشتق القيمة من المصدر نفسه ونفشل إن لم نجدها.
+ */
+function mutate(sourceText, pattern, replacer, label) {
+  assert.match(sourceText, pattern, `تعذّر إيجاد ${label} في المصدر — حدّث النمط`);
+  return sourceText.replace(pattern, replacer);
+}
+
 test('a price change in the source flows into the published file and is detected', () => {
-  const raised = source.replace('price: 16,', 'price: 17,');
+  const current = readOrderConfig(source).products.find(p => p.id === 'serum-50').price;
+  // استهدف كتلة المنتج المحدد لا أول `price:` في الملف (ترتيب الأحجام قابل للتغيير).
+  const raised = mutate(
+    source,
+    /(id: 'serum-50',[\s\S]*?\bprice: )[\d.]+/,
+    `$1${current + 1}`,
+    'سعر 50 مل'
+  );
   const published = readOrderConfig(renderPublishedConfig(raised).output);
   assert.deepEqual(diffOrderConfig(readOrderConfig(source), published), ['products']);
-  assert.equal(published.products.find(p => p.id === 'serum-50').price, 17);
+  assert.equal(published.products.find(p => p.id === 'serum-50').price, current + 1);
 });
 
 test('a delivery or payment change in the source is detected on the published side', () => {
+  const sourceConfig = readOrderConfig(source);
+  const otherFee = sourceConfig.zones.find(z => z.id === 'other').fee;
+  const discount = sourceConfig.methods.find(m => m.id === 'shamcash').discount;
+  const nonFreeZone = sourceConfig.methods.find(m => m.id === 'shamcash').freeDeliveryIn;
+
   const cases = [
-    [source.replace('fee: 2, freeWithShamCash: false', 'fee: 3, freeWithShamCash: false'), 'zones'],
-    [source.replace('discountPercent: 10,', 'discountPercent: 15,'), 'methods'],
-    [source.replace("freeDeliveryIn: ['hama'],", "freeDeliveryIn: ['other'],"), 'methods'],
-    [source.replace("defaultZone: 'hama',", "defaultZone: 'other',"), 'defaultZone'],
-    [source.replace("whatsappNumber: '963997310856'", "whatsappNumber: '963997310857'"), 'phone']
+    [mutate(source, /\{ id: 'other', label: '[^']+', fee: ([\d.]+),/, `{ id: 'other', label: 'X', fee: ${otherFee + 1},`, 'رسم باقي المحافظات'), 'zones'],
+    [mutate(source, /\bdiscountPercent: ([\d.]+),/, `discountPercent: ${discount + 5},`, 'خصم شام كاش'), 'methods'],
+    [mutate(source, /\bdefaultZone: '(hama|other)',/, "defaultZone: 'other',", 'المنطقة الافتراضية'), 'defaultZone'],
+    [mutate(source, /\bwhatsappNumber: '(\d+)'/, "whatsappNumber: '963900000000'", 'رقم واتساب'), 'phone']
   ];
   for (const [changed, key] of cases) {
     assert.deepEqual(diffOrderConfig(readOrderConfig(source), readOrderConfig(renderPublishedConfig(changed).output)), [key]);
   }
+  assert.ok(nonFreeZone.length <= 2);
 });
 
 test('the published reader rejects remote code, oversized files and junk', () => {
@@ -149,7 +186,7 @@ test('the live comparison passes against a server that serves the real build out
 test('the live comparison reports drift instead of passing a stale published file', async () => {
   const { createServer } = await import('node:http');
   const { compareLiveOrderConfig } = await import('./order-config-monitor.mjs');
-  const stale = renderPublishedConfig(source.replace('price: 16,', 'price: 19,')).output;
+  const stale = renderPublishedConfig(mutate(source, /(id: 'serum-50',[\s\S]*?\bprice: )[\d.]+/, '$170', 'سعر 50 مل')).output;
   const server = createServer((req, res) => res.end(stale));
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const url = `http://127.0.0.1:${server.address().port}/js/config.js`;
