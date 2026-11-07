@@ -51,26 +51,5 @@
     .process-list{list-style:none;display:flex;flex-direction:column;gap:1.6rem;max-width:620px;margin:0 auto}.process-list li{display:flex;gap:1.2rem}.process-list h3{font-size:1rem;font-weight:600;margin:0}.process-list .step{font-family:var(--font-display);font-size:1.45rem;color:var(--gold)}
     .cta{background:linear-gradient(145deg,#141210,#221e19);border-top:1px solid var(--border);text-align:center;padding:4.8rem 0}.cta h2{font-size:clamp(1.8rem,3.6vw,2.4rem);margin-bottom:.85rem}
     footer{padding:3.8rem 0 2rem;border-top:1px solid var(--border)}.footer-grid{display:grid;gap:2.3rem}@media(min-width:768px){.footer-grid{grid-template-columns:1.5fr 1fr 1fr}}.footer-bottom{padding-top:1.6rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:.74rem;color:var(--text-muted)}
-  
-
-/* ── أدوات استُخرجت من سمات style السطرية في index.html وhama.html ──────────
- * نفس التعريفات حرفيًا، لكن كأصناف: يبقى style-src 'self' كافيًا بلا
- * 'unsafe-inline'. الأسماء موصوفة بمعناها لا بقيمها.
- */
-.u-muted        { color: var(--text-muted); }
-.u-gold         { color: var(--gold); }
-.u-mb-05        { margin-bottom: .5rem; }
-.u-m-0          { margin: 0; }
-.u-mt-13        { margin-top: 1.3rem; border: none; }
-.u-w-full       { width: 100%; }
-.u-plain-list   { list-style: none; }
-.u-lead         { color: var(--text-muted); margin: 1rem auto 1.8rem; max-width: 420px; }
-.u-center-row   { display: flex; justify-content: center; gap: .8rem; flex-wrap: wrap; }
-.u-row          { display: flex; flex-wrap: wrap; gap: 1rem; }
-.u-note         { color: var(--text-muted); margin-top: .75rem; max-width: 250px; }
-.u-eyebrow      { color: var(--gold); font-size: .68rem; letter-spacing: .16em; margin: 0 0 1.1rem; }
-.u-footer-note  { margin-top: 1.3rem; border: none; }
-.u-figure       { width: 100%; max-width: 560px; height: auto; border-radius: 18px; display: block; }
-
 /* قفل تمرير الصفحة عند فتح قائمة الجوال — صنف لا نمط سطري (CSP). */
 body.is-locked { overflow: hidden; }

@@ -17,7 +17,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
@@ -102,8 +102,8 @@ test('ملفات JS المنشورة لا تكتب el.style.x = ...', () => {
 
 test('كل stylesheet/script مستخرج مذكور في صفحته وموجود على القرص', () => {
   const expected = {
-    'index.html': ['css/home-inline.css', 'js/index-inline.js'],
-    'hama.html': ['css/hama.css', 'css/home-inline.css'],
+    'index.html': ['css/home-inline.css', 'css/utilities.css', 'js/index-inline.js'],
+    'hama.html': ['css/hama.css', 'css/utilities.css'],
     'privacy.html': ['js/privacy-inline.js'],
     'serum.html': ['js/serum-inline.js'],
     'setup.html': ['css/setup.css', 'js/setup-inline.js'],
@@ -129,4 +129,59 @@ test('الخطوط ما زالت مُعلنة بعد إخراج @font-face من 
     const onDisk = resolve(ROOT, face.replace('../', ''));
     assert.ok(existsSync(onDisk), `${face} مُعلن في CSS لكنه غير موجود — الخط سيختفي`);
   }
+});
+
+// ── حارس لوحة الألوان ────────────────────────────────────────────────────────
+//
+// عطل حقيقي وقع: index.html كان يحمل <style> فيه :root (لوحة داكنة). عند
+// استخراجه إلى css/home-inline.css ربطتُ الملف بـhama.html كي تحصل على الأدوات
+// العامة — فورثت hama لوحة الصفحة الرئيسية الداكنة، وصار شعارها الأسود باهتًا
+// على خلفية داكنة. تدقيق axe في CI هو ما التقطه.
+//
+// القاعدة: ملف يعرّف متغيّرات ألوان لا يُحمَّل في صفحة تعرّف لوحة أخرى.
+const PALETTES = {
+  'css/home-inline.css': ':root',
+};
+
+test('لا صفحة تخلط لوحتين ألوان', () => {
+  const offenders = [];
+  for (const page of SHIPPED) {
+    const html = read(page);
+    const sheets = [...html.matchAll(/<link[^>]+href="(css\/[^"]+\.css)"/g)].map(m => m[1]);
+    const paletteSheets = sheets.filter(s => PALETTES[s]);
+    // لوحة الصفحة نفسها: هل تعرّف :root في مكان آخر؟
+    if (paletteSheets.length > 1) offenders.push(`${page}: ${paletteSheets.join(' + ')}`);
+  }
+  assert.deepEqual(offenders, [],
+    `صفحة تحمّل أكثر من ملف يعرّف لوحة ألوان:\n${offenders.join('\n')}`);
+});
+
+test('الأدوات المشتركة لا تعرّف متغيّرات ألوان', () => {
+  // نزيل التعليقات: الشرح نفسه يذكر :root لأن سبب وجود هذا الحارس هو ذلك العطل.
+  const css = read('css/utilities.css').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.equal(/:root|^\s*--[a-z-]+:/m.test(css), false,
+    'css/utilities.css يجب أن يستخدم المتغيّرات لا أن يعرّفها، وإلا فرض لوحة على الصفحة');
+});
+
+test('كل صنف أدوات مستخدم في الصفحات معرَّف في utilities.css', () => {
+  const defined = new Set([...read('css/utilities.css').matchAll(/\.(u-[a-z0-9-]+)/g)].map(m => m[1]));
+  const missing = [];
+  for (const page of SHIPPED) {
+    const html = read(page);
+    const used = new Set([...html.matchAll(/class="([^"]+)"/g)]
+      .flatMap(m => m[1].split(/\s+/)).filter(c => c.startsWith('u-')));
+    for (const cls of used) if (!defined.has(cls)) missing.push(`${page}: .${cls}`);
+  }
+  assert.deepEqual(missing, [],
+    `أصناف مستخدمة بلا تعريف (ستُهمَل بصمت):\n${missing.join('\n')}`);
+});
+
+test('لا @import في الأنماط: طلب متسلسل يحجب الرسم', () => {
+  const offenders = [];
+  for (const file of readdirSync(resolve(ROOT, 'css'))) {
+    if (!file.endsWith('.css')) continue;
+    if (/@import/.test(read(`css/${file}`).replace(/\/\*[\s\S]*?\*\//g, ''))) offenders.push(file);
+  }
+  assert.deepEqual(offenders, [],
+    `@import يجعل المتصفح يكتشف الملف بعد تحميل الأول. اربط الملف مباشرة في الصفحة:\n${offenders.join(', ')}`);
 });
