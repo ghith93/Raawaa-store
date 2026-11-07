@@ -55,4 +55,6 @@
     .u-center-row{display:flex;justify-content:center;gap:.8rem;flex-wrap:wrap}
     .u-eyebrow{color:var(--gold);font-size:.68rem;letter-spacing:.16em;margin:0 0 1.1rem}
     .u-footer-note{margin-top:1.3rem;border:none}
-  
+
+/* CSP-safe mobile navigation scroll lock. */
+body.is-locked { overflow: hidden; }
