@@ -77,8 +77,8 @@ test('بلا عروض: الأسعار كما هي 13 / 16 / 25', async () => {
   const totals = api.totals();
   assert.equal(totals.subtotal, 16);
   assert.equal(totals.offer, 0);
-  assert.equal(totals.delivery, 2, 'الدفع عند الاستلام داخل حماة = 2$');
-  assert.equal(totals.amount, 18);
+  assert.equal(totals.delivery, 0, 'التوصيل داخل حماة مجاني حتى مع الدفع عند الاستلام');
+  assert.equal(totals.amount, 16);
   assert.equal(w.document.querySelector('[data-row-offer]').hidden, true);
 });
 
@@ -101,7 +101,7 @@ test('عرض 10% على 50 مل يظهر قبل/بعد ويُحتسب في ال�
   assert.equal(totals.subtotal, 16, 'قيمة المنتجات تبقى السعر المعلن');
   assert.equal(totals.offer, 1.6, 'قيمة العرض ظاهرة كخصم مستقل');
   assert.equal(totals.net, 14.4);
-  assert.equal(totals.amount, 16.4, '14.40 + 2$ توصيل حماة');
+  assert.equal(totals.amount, 14.4, '14.40 بلا رسوم توصيل داخل حماة');
 
   const row = doc.querySelector('[data-row-offer]');
   assert.equal(row.hidden, false);
@@ -122,7 +122,7 @@ test('العرض المقيَّد بحجم لا يمسّ بقية الأحجام
   api.setMethod('cod', true);
   api.addToCart('serum-30');
   api.addToCart('serum-30');
-  assert.equal(api.totals().amount, 28);   // 13×2 + 2 توصيل
+  assert.equal(api.totals().amount, 26);   // 13×2 والتوصيل مجاني داخل حماة
   api.addToCart('serum-50');
   assert.equal(api.totals().offer, 1.6);
   assert.equal(api.totals().net, 40.4);    // 13 + 13 + 14.40
@@ -152,7 +152,7 @@ test('عرض منتهٍ لا يُطبَّق ويبقى السعر الأصلي',
   api.addToCart('serum-100');
   api.setMethod('cod', true);
   assert.equal(api.totals().offer, 0);
-  assert.equal(api.totals().amount, 27);   // 25 + 2 توصيل
+  assert.equal(api.totals().amount, 25);   // 25 والتوصيل مجاني داخل حماة
   assert.equal(w.document.querySelector('[data-row-offer]').hidden, true);
 });
 
@@ -203,13 +203,13 @@ test('عرض عبوتين: الشارة على بطاقة الحجم والكم�
   const api = w.__RAWAA_TEST__;
   api.setMethod('cod', true);
   api.addToCart('serum-50');
-  assert.equal(api.totals().amount, 18, 'عبوة واحدة تبقى 16 + 2 توصيل');
+  assert.equal(api.totals().amount, 16, 'عبوة واحدة تبقى 16 والتوصيل مجاني داخل حماة');
   api.addToCart('serum-50');
   const two = api.totals();
   assert.equal(two.subtotal, 32);
   assert.equal(two.offer, 2);
   assert.equal(two.net, 30);
-  assert.equal(two.amount, 32, '30 + 2 توصيل حماة');
+  assert.equal(two.amount, 30, '30 والتوصيل مجاني داخل حماة');
 
   assert.equal(doc.querySelector('[data-row-offer]').hidden, false);
   assert.equal(doc.querySelector('[data-cart-offer]').textContent, '− $2');
@@ -229,7 +229,7 @@ test('ثلاث عبوات مع عرض «عبوتان»: عبوتان + واحد�
   const t = api.totals();
   assert.equal(t.offer, 2);
   assert.equal(t.net, 46, '30 + 16');
-  assert.equal(t.amount, 48);
+  assert.equal(t.amount, 46);
 });
 
 test('ثلاث عبوات مع عرض «3 بـ 66$»: 66$ لا 75$، ثم شام كاش', async () => {
