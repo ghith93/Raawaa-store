@@ -14,7 +14,7 @@
  * وإلا سيبقى الزائر يرى النسخة القديمة من الذاكرة.
  */
 
-const CACHE_VERSION = 'v1794074317';
+const CACHE_VERSION = 'v1794075521';
 // استبدال الذاكرة القديمة يمسح مفاتيحها التي ربما احتوت استعلامات روابط.
 const RUNTIME = 'rawaa-runtime-v7';
 
@@ -32,10 +32,22 @@ const CORE = [
   './css/styles.css',
   './css/serum.css',
   './css/campaign.css',
+  // أنماط الصفحات المستخرجة من <style> المضمّن (CSP). بلاها تُخدَم الصفحة
+  // المخزّنة عارية بلا تنسيق في وضع عدم الاتصال.
+  './css/home-inline.css',
+  './css/utilities.css',
+  './css/hama.css',
   './js/config.js',
   './js/marketing.js',
   './js/offers.js',
+  // سياسة التوصيل والخصم: بلا هذا الملف يفقد الحساب كله مرجعه (fail-closed)،
+  // والرفض الآلي لا يظهر لأن عامل الخدمة يعمل تحت HTTPS فعلًا.
+  './js/pricing-policy.js',
   './js/cart.js',
+  // سكربتات الصفحات المستخرجة من onclick والكتل المضمّنة (CSP).
+  './js/index-inline.js',
+  './js/serum-inline.js',
+  './js/privacy-inline.js',
   './js/campaign.js',
   './js/serum-views.js',
   './js/pwa-install.js',
