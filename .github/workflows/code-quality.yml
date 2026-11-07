@@ -32,7 +32,7 @@ jobs:
           npx eslint js/*.js sw.js owner/*.mjs --max-warnings 10
 
       - name: اختبار سياسات CI والعروض والسلة (بلا شبكة)
-        run: node --test scripts/workflow-runner-policy.test.mjs scripts/workflow-dependency-policy.test.mjs scripts/offers.test.mjs scripts/cart-offers.test.mjs scripts/service-worker-offline.test.mjs scripts/pwa-install.test.mjs
+        run: node --test scripts/workflow-runner-policy.test.mjs scripts/workflow-dependency-policy.test.mjs scripts/offers.test.mjs scripts/cart-offers.test.mjs scripts/service-worker-offline.test.mjs scripts/policy-copy-consistency.test.mjs scripts/pwa-install.test.mjs
 
       - name: html-validate — صحة HTML وإمكانية الوصول (كل الصفحات)
         run: npx html-validate index.html serum.html privacy.html 404.html setup.html check.html campaign.html hama.html owner/index.html owner/pricing.html
