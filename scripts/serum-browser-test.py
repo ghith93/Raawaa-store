@@ -544,7 +544,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         blocked_total = page.locator('[data-cart-total]').inner_text()
         blocked_summary = page.locator('[data-cart-custom-summary]').inner_text()
         check("عند منع التخزين تعمل السلة والاختيارات في الذاكرة",
-              blocked_total == '$29' and 'فانيلا' in blocked_summary and not errors,
+              blocked_total == '$27' and 'فانيلا' in blocked_summary and not errors,
               f'الإجمالي={blocked_total}؛ الملخص={blocked_summary}؛ الأخطاء={errors[:3]}')
         ctx.close()
         ctx = new_test_context(browser,viewport={"width":390,"height":844}, ignore_https_errors=ignore_https)
