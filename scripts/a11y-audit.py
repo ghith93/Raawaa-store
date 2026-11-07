@@ -14,6 +14,27 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def report_exception(exc_type, value, traceback) -> None:
+    """
+    ينشر موضع الاستثناء كتعليق على الـPR.
+
+    لماذا: سجلّات Actions غير قابلة للتنزيل من بيئة العمل، فكان فشل هذا السكربت
+    يظهر كـ«exit code 1» فقط. التعليق يحمل اسم الملف والسطر، وهو ما يكفي للتشخيص.
+    """
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        frame = traceback
+        location = "unknown"
+        while frame:
+            if Path(frame.tb_frame.f_code.co_filename).name == "a11y-audit.py":
+                location = f"a11y-audit.py:{frame.tb_lineno}"
+            frame = frame.tb_next
+        print(f"::error::تدقيق الإتاحة توقف باستثناء {exc_type.__name__} ({location})", flush=True)
+    sys.__excepthook__(exc_type, value, traceback)
+
+
+sys.excepthook = report_exception
 def _find_axe():
     """يبحث عن axe.min.js في المواضع المعتادة: محليًا وفي CI."""
     candidates = [
