@@ -1191,8 +1191,9 @@ async function checkProductPage(config) {
   ok(['ritual-v5-480.avif', 'ritual-v5-480.webp', 'ritual-v5-720.jpg'].every(f => worker.includes(f)) &&
     worker.includes('const visual = url.pathname.match') && worker.includes('ritual-v5|trio-v6|size-'), 'بدائل صور المشاهد والأحجام محفوظة بلا إنترنت لكل صيغة');
   ok(landing.includes('السيروم جاهز') && landing.includes('العبوة تُجهَّز عند الطلب') && landing.includes('موعد'), 'جاهزية السيروم وتجهيز العبوة وموعدها المعلّق مذكورة في مسار الشراء');
-  ok(landing.includes('class="serum-size-guide"') && landing.includes('لكل ملليلتر') && landing.includes('$2') &&
-    !landing.includes('$4') && landing.includes('حماة فقط'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
+  ok(landing.includes('class="serum-size-guide"') && landing.includes('لكل ملليلتر') &&
+    landing.includes('التوصيل مجاني داخل حماة مع جميع طرق الدفع') && landing.includes('$2') &&
+    !landing.includes('$4'), 'مقارنة الأحجام والرسوم قرب زر الشراء');
   for (const [label, page] of [['المنتج', visible]]) {
     ok(!page.includes('data-unit-comparison') && !page.includes('قارني تكلفة كل 10 مل'), `${label}: إزالة مقارنة تكلفة 10 مل`);
     ok(page.includes('الأسعار بلا عطر') && page.includes('إضافة العطر $2 للعبوة'), `${label}: توضيح سعر العطر`);
