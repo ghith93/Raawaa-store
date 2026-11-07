@@ -173,7 +173,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
                   page.locator('[data-serum-view="ritual"]').is_visible() and ritual_view.get_attribute('aria-pressed') == 'true' and
                   'مولّد' in (page.locator('[data-serum-caption]').text_content() or '') and 'لا يعرض المنتج' in (page.locator('[data-serum-caption]').text_content() or ''))
             if width == 390:
-                audit(page, 'المشهد المفتوح')
+                audit(page, 'المشهد المفتوح', console_state)
                 sizes_view.tap()
                 check("تبديل المشهد باللمس المحاكى يعمل", page.locator('[data-serum-view="sizes"]').is_visible())
             page.locator('#products .size-option').nth(2).click()
@@ -193,7 +193,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
             if screenshot_dir and width == 390:
                 Path(screenshot_dir).mkdir(parents=True, exist_ok=True)
                 page.screenshot(path=str(Path(screenshot_dir) / f'serum-{browser_name}-390.png'), full_page=False)
-            audit(page, 'الصفحة')
+            audit(page, 'الصفحة', console_state)
             page.locator('#ritual img').scroll_into_view_if_needed()
             image_loaded = page.locator('#ritual img').evaluate("""el => new Promise(resolve => {
               if (el.complete) return resolve(el.naturalWidth > 0);
@@ -325,7 +325,7 @@ def run(base: str, path: str, browser_name: str, ignore_https: bool, screenshot_
         page.goto(base + path + '?utm_campaign=estimate_test&utm_content=proof', wait_until='load')
         page.wait_for_selector('#products .size-option input', state='attached')
         page.locator('.serum-estimate-details summary').click()
-        audit(page, 'التقدير المفتوح')
+        audit(page, 'التقدير المفتوح', console_state)
         cases = [
             (0, '30 مل', {'hama': {'shamcash':'$11.70', 'cod':'$15'}, 'other': {'shamcash':'$13.70', 'cod':'$15'}}),
             (1, '50 مل', {'hama': {'shamcash':'$14.40', 'cod':'$18'}, 'other': {'shamcash':'$16.40', 'cod':'$18'}}),
