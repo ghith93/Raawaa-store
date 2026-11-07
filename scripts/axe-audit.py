@@ -77,9 +77,15 @@ def audit(base: str, threshold: str, viewport: tuple[int, int]) -> int:
                     print(f"      [{v['impact']}] {v['id']} — {v['count']} عنصر")
                     for n in v["nodes"]:
                         print(f"          {n[:90]}")
+                    # شرح ظاهر على الـPR: سجلّات Actions غير قابلة للتنزيل من بيئة
+                    # التطوير، فبدون هذا يظهر الفشل كـ«exit code 1» بلا سبب.
+                    print(f"::error title=axe {v['id']}::{label} — "
+                          f"{', '.join(v['nodes'][:3])}", flush=True)
                 total_fail += len(blocking)
             except Exception as e:
                 print(f"  ✗ {label:24} خطأ: {type(e).__name__}: {str(e)[:80]}")
+                print(f"::error title=axe-audit::{label} — {type(e).__name__}: "
+                      f"{str(e)[:120]}", flush=True)
                 total_fail += 1
             finally:
                 page.close()
