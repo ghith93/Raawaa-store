@@ -899,11 +899,17 @@
       outDeliv.textContent = amounts.deliveryCents > 0 ? money(amounts.deliveryCents / 100) : 'مجاني';
       outTotal.textContent = money(amounts.totalCents / 100);
 
+      // النسبة من الإعدادات لا مكتوبة هنا: كان النص يقول «10%» حرفيًا بينما
+      // الرقم الفعلي في js/config.js. تغييره هناك كان سيترك النص يكذب.
       var note = '';
-      if (methodId === 'shamcash') {
-        note = 'مع شام كاش: خصم 10% على قيمة المنتجات، والتوصيل مجاني — أفضل سعر متاح.';
+      var percent = Number(method.discountPercent) || 0;
+      if (percent > 0) {
+        note = 'مع ' + method.short + ': خصم ' + percent + '% على قيمة المنتجات' +
+          (amounts.deliveryCents === 0 ? '، والتوصيل مجاني — أفضل سعر متاح.' : '.');
       } else {
-        note = 'الدفع عند الاستلام: بلا خصم، والتوصيل مجاني. المبلغ يُدفع كاملًا للمندوب.';
+        note = method.label + ': بلا خصم' +
+          (amounts.deliveryCents === 0 ? '، والتوصيل مجاني.' : '.') +
+          ' المبلغ يُدفع كاملًا للمندوب.';
       }
       if (sampleUnit.cutCents > 0) {
         note = 'عرض «' + sampleUnit.slot.label + '»: ' + money(sample.price) + ' ← ' +
