@@ -876,7 +876,9 @@
       } else if (methodId === 'shamcash') {
         note = 'داخل حماة مع شام كاش: خصم 10% وتوصيل مجاني — أفضل سعر متاح.';
       } else {
-        note = 'الدفع عند الاستلام: بلا خصم، وتُضاف رسوم التوصيل. المبلغ يُدفع كاملًا للمندوب.';
+        note = zoneId === 'hama'
+          ? 'الدفع عند الاستلام: بلا خصم، والتوصيل مجاني داخل حماة. المبلغ يُدفع كاملًا للمندوب.'
+          : 'الدفع عند الاستلام: بلا خصم، ورسوم التوصيل 2 دولار لباقي المحافظات. المبلغ يُدفع كاملًا للمندوب.';
       }
       if (sampleUnit.cutCents > 0) {
         note = 'عرض «' + sampleUnit.slot.label + '»: ' + money(sample.price) + ' ← ' +
@@ -1069,8 +1071,9 @@
         : 'خصم ' + method.discountPercent + '% على قيمة المنتجات + توصيل ' +
           money(deliveryFeeFor(method, z)) + ' إلى ' + zoneName + '.';
     }
-    return 'بلا خصم، وتُضاف رسوم التوصيل: ' + money(deliveryFeeFor(method, z)) +
-      ' إلى ' + zoneName + '.';
+    return isFreeDelivery(method, z)
+      ? 'بلا خصم، والتوصيل مجاني داخل ' + zoneName + '.'
+      : 'بلا خصم، وتُضاف رسوم التوصيل: ' + money(deliveryFeeFor(method, z)) + ' إلى ' + zoneName + '.';
   }
 
   function renderPaymentMethods() {
