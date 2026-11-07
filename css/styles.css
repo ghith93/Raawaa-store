@@ -2195,6 +2195,7 @@ details[id="returns"] {
   font-size: 0.78rem;
   color: #2F6B4F;
 }
+.product-hero-feedback.is-error { color: var(--brown); }
 .product-hero-facts {
   list-style: none;
   margin: var(--space-4) 0 0;
