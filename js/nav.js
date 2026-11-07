@@ -22,7 +22,7 @@
       nav.hidden = !open;
       toggle.setAttribute('aria-expanded', String(open));
       toggle.setAttribute('aria-label', open ? 'إغلاق القائمة' : 'فتح القائمة');
-      document.body.style.overflow = open ? 'hidden' : '';
+      document.body.classList.toggle('is-locked', open);
     });
 
     nav.querySelectorAll('a').forEach(function (link) {
@@ -30,7 +30,7 @@
         nav.classList.remove('open');
         nav.hidden = true;
         toggle.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
+        document.body.classList.remove('is-locked');
       });
     });
   }
